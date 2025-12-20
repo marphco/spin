@@ -1,0 +1,127 @@
+.navShell{
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: min(980px, calc(100% - 24px));
+  pointer-events: none;
+  top: 16px;
+}
+
+/* mobile: bottom */
+@media (max-width: 720px){
+  .navShell{
+    top: auto;
+    bottom: 12px;
+    width: calc(100% - 16px);
+  }
+}
+
+.navBar{
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border-radius: 999px;
+
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-float), inset 0 1px 0 var(--glass-highlight);
+}
+
+/* brand: nessun bordo */
+.navBrand{
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  background: transparent;
+  flex: 0 0 auto;
+}
+
+.navLogo{
+  height: 22px;
+  width: auto;
+  display: block;
+}
+
+/* links: SEMPRE una riga, NO scroll, NO wrap */
+.navLinks{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+
+  flex-wrap: nowrap;
+  overflow: hidden;
+  justify-content: flex-end;
+}
+
+.navLink{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+
+  font-size: 13px;
+  letter-spacing: .01em;
+
+  color: var(--text);
+  border: 1px solid transparent;
+
+  white-space: nowrap;
+
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+.navLink:hover{
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+
+.navLink:active{ transform: scale(.98); }
+
+.navLink.isActive{
+  background: var(--brand-bg);
+  border-color: var(--brand-border);
+  color: var(--ink);
+}
+
+/* MOBILE: compressione FLUID (testo/padding) per far stare tutto senza scroll */
+@media (max-width: 720px){
+  .navBar{
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .navLogo{
+    height: 18px;
+    max-width: 108px;
+  }
+
+  .navLink{
+    height: 30px;
+    padding: 0 clamp(6px, 2.4vw, 10px);
+    font-size: clamp(11px, 2.8vw, 12px);
+  }
+
+  .navLink{
+    position: relative;
+  }
+  .navLink::after{
+    content:"";
+    position:absolute;
+    inset:-6px;
+  }
+
+  .navLinks{
+    gap: 2px;
+  }
+}

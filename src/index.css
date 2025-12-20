@@ -1,0 +1,38 @@
+/* reset minimale per evitare che Vite “rompa” layout/scroll */
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  display: block;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+    Helvetica, Arial;
+}
+
+#root {
+  min-height: 100%;
+  width: 100%;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+html {
+  scroll-padding-top: 110px;
+}
+
+/* su mobile la navbar è bottom: non serve padding-bottom per l'anchor,
+   ma aggiungiamo un po’ di safe area */
+@media (max-width: 720px) {
+  html {
+    scroll-padding-top: 80px;
+  }
+}
