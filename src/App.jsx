@@ -135,15 +135,9 @@ import Navbar from "./components/Navbar/Navbar";
 import Hero from "./components/Hero/Hero";
 import heroImg from "./assets/hero.jpg";
 
-gsap.registerPlugin(ScrollTrigger);
+import Siamo from "./components/Siamo/Siamo";
 
-function FullSection({ id, label, className = "" }) {
-  return (
-    <section className={`dbgSection ${className}`} id={id}>
-      <div className="dbgLabel">{label}</div>
-    </section>
-  );
-}
+gsap.registerPlugin(ScrollTrigger);
 
 function FacciamoDebug() {
   const rootRef = useRef(null);
@@ -242,17 +236,29 @@ function HumanDebug() {
   );
 }
 
+function FooterPlaceholder() {
+  return (
+    <section className="dbgSection dbgFooter" id="footer">
+      <div className="dbgLabel">FOOTER</div>
+    </section>
+  );
+}
+
 export default function App() {
+  const didFirstRefresh = useRef(false);
+
   useLayoutEffect(() => {
-    // ✅ UN SOLO refresh dopo che tutto è montato
+    // ✅ UN SOLO refresh “serio” dopo mount (Hero + Siamo + debug)
+    // doppio RAF = aspetta layout/stili/paint
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        ScrollTrigger.refresh();
+        ScrollTrigger.refresh(true);
+        didFirstRefresh.current = true;
       });
     });
 
     // ✅ refresh al resize
-    const onResize = () => ScrollTrigger.refresh();
+    const onResize = () => ScrollTrigger.refresh(true);
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
@@ -270,20 +276,22 @@ export default function App() {
           durationPx={900}
         />
 
-        <FullSection
+        {/* ✅ Siamo vero (pinnato + typewriting) */}
+        <Siamo
           id="siamo"
-          label="SIAMO"
-          className="dbgSiamo"
+          kicker="Siamo"
+          title="Visione e metodo, analisi e strategia."
+          paragraphs={[
+            "Spin Factor è una società attiva dal 2017 nel settore della comunicazione e della consulenza politica e istituzionale. Un team con competenze complementari per costruire identità, creare connessioni e sviluppare posizionamenti strategici.",
+            "Approccio integrato e metodo sartoriale: dall’analisi di scenario alla definizione strategica, fino all’esecuzione coerente e misurabile.",
+          ]}
+          durationPx={1000}
         />
 
         <FacciamoDebug />
         <HumanDebug />
 
-        <FullSection
-          id="footer"
-          label="FOOTER"
-          className="dbgFooter"
-        />
+        <FooterPlaceholder />
       </main>
     </div>
   );

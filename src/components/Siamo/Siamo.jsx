@@ -6,7 +6,6 @@ import "./Siamo.css";
 gsap.registerPlugin(ScrollTrigger);
 
 function splitChars(str) {
-  // preserva gli spazi: li rendiamo espliciti come token " "
   return Array.from(str).map((ch, i) => ({
     ch,
     key: `${i}-${ch === " " ? "space" : ch}`,
@@ -18,14 +17,13 @@ export default function Siamo({
   kicker = "Siamo",
   title,
   paragraphs = [],
-  durationPx = 900, // quanto “scrivere” (700–1200)
+  durationPx = 900,
 }) {
   const rootRef = useRef(null);
 
   const titleChars = useMemo(() => splitChars(title || ""), [title]);
 
   const bodyText = useMemo(() => {
-    // separo i paragrafi con doppio a-capo (gestito poi in CSS come blocchi)
     return paragraphs.join("\n\n");
   }, [paragraphs]);
 
@@ -36,14 +34,24 @@ export default function Siamo({
     if (!root) return;
 
     const ctx = gsap.context(() => {
-      // kill SOLO il nostro trigger se esiste già
       ScrollTrigger.getById(`siamo-${id}`)?.kill(true);
+
+      const kickerEl = root.querySelector("[data-kicker]");
+      const underlineEl = root.querySelector("[data-underline]");
+      const titleWrap = root.querySelector("[data-titlewrap]");
+      const bodyWrap = root.querySelector("[data-bodywrap]");
 
       const titleEls = root.querySelectorAll("[data-tch]");
       const bodyEls = root.querySelectorAll("[data-bch]");
 
-      gsap.set(titleEls, { opacity: 0, y: 6 });
-      gsap.set(bodyEls, { opacity: 0 });
+      // ✅ Stato iniziale (matcha CSS, ma qui lo ribadiamo per sicurezza)
+      gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], {
+        opacity: 0,
+        y: 10,
+      });
+
+      gsap.set(titleEls, { opacity: 0, y: 10 });
+      gsap.set(bodyEls, { opacity: 0, y: 6 });
 
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -56,35 +64,67 @@ export default function Siamo({
           pinSpacing: true,
           anticipatePin: 1,
           invalidateOnRefresh: true,
-
-          // evita micro-jump al confine del pin
-          onLeave: (self) => self.animation.progress(1),
-          onLeaveBack: (self) => self.animation.progress(0),
         },
       });
 
-      // NIENTE dead-zone: usa amount (più stabile di each)
+      // 1) Entra “cornice” (kicker + underline) insieme
+      tl.to(
+        [kickerEl, underlineEl],
+        {
+          opacity: 1,
+          y: 0,
+          ease: "none",
+          duration: 0.12,
+        },
+        0.02
+      );
+
+      // 2) Appare il blocco titolo (wrapper) e poi i chars
+      tl.to(
+        titleWrap,
+        {
+          opacity: 1,
+          y: 0,
+          ease: "none",
+          duration: 0.06,
+        },
+        0.06
+      );
+
       tl.to(
         titleEls,
         {
           opacity: 1,
           y: 0,
           ease: "none",
-          duration: 0.18,
-          stagger: { amount: 0.16, from: "start" },
+          duration: 0.22,
+          stagger: { amount: 0.22, from: "start" },
         },
-        0.02
+        0.08
+      );
+
+      // 3) Body wrapper e poi i chars del body
+      tl.to(
+        bodyWrap,
+        {
+          opacity: 1,
+          y: 0,
+          ease: "none",
+          duration: 0.06,
+        },
+        0.22
       );
 
       tl.to(
         bodyEls,
         {
           opacity: 1,
+          y: 0,
           ease: "none",
-          duration: 0.82,
-          stagger: { amount: 0.8, from: "start" },
+          duration: 0.78,
+          stagger: { amount: 0.85, from: "start" },
         },
-        0.16
+        0.24
       );
     }, root);
 
@@ -94,11 +134,11 @@ export default function Siamo({
   return (
     <section className="siamoSection" id={id} ref={rootRef}>
       <div className="siamoInner">
-        {/* Kicker */}
-        <div className="siamoKicker">{kicker}</div>
+        <div className="siamoKicker" data-kicker>
+          {kicker}
+        </div>
 
-        {/* Titolo (type feel ma subito leggibile) */}
-        <h2 className="siamoTitle" aria-label={title}>
+        <h2 className="siamoTitle" data-titlewrap aria-label={title}>
           {titleChars.map(({ ch, key }) => (
             <span
               key={key}
@@ -111,18 +151,11 @@ export default function Siamo({
           ))}
         </h2>
 
-        {/* Una sola underline (basta “doppie linee”) */}
-        <div className="siamoUnderline" aria-hidden="true" />
+        <div className="siamoUnderline" data-underline aria-hidden="true" />
 
-        {/* Body: scritto allo scroll */}
-        <div className="siamoBody" aria-label={bodyText}>
+        <div className="siamoBody" data-bodywrap aria-label={bodyText}>
           {bodyChars.map(({ ch, key }, idx) => {
-            // gestiamo i \n\n come “a capo doppio”
-            const isNewline = ch === "\n";
-            if (isNewline) {
-              // trasformiamo newline in <br/> (due newline = due br)
-              return <br key={`br-${key}-${idx}`} />;
-            }
+            if (ch === "\n") return <br key={`br-${key}-${idx}`} />;
 
             return (
               <span
@@ -136,8 +169,6 @@ export default function Siamo({
             );
           })}
         </div>
-
-        {/* <div className="siamoNote">Scorri per scrivere il testo</div> */}
       </div>
     </section>
   );

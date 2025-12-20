@@ -1,12 +1,11 @@
 .siamoSection{
   position: relative;
-  height: 100vh;            /* full viewport */
+  height: 100vh;
   width: 100%;
   overflow: hidden;
-  background: var(--bg);    /* RESTA DARK */
+  background: var(--bg);
 }
 
-/* leggero “wash” brand ma sempre scuro (niente sfondo chiaro) */
 .siamoSection::before{
   content:"";
   position:absolute;
@@ -27,11 +26,20 @@
   margin: 0 auto;
 
   display: grid;
-  place-content: center;   /* tutto al centro, stile “slide” */
+  place-content: center;
   gap: 14px;
 
   text-align: center;
-  padding-top: 90px; /* lascia aria sotto la navbar */
+  padding-top: 90px;
+}
+
+/* ✅ ANTI-FLASH: tutto parte nascosto (GSAP poi lo porta a 1) */
+.siamoKicker,
+.siamoUnderline,
+.siamoTitle,
+.siamoBody{
+  opacity: 0;
+  transform: translateY(10px);
 }
 
 .siamoKicker{
@@ -49,17 +57,15 @@
   color: var(--text-strong);
 }
 
-/* UNA sola underline */
 .siamoUnderline{
   width: 84px;
   height: 4px;
   border-radius: 99px;
   background: var(--brand);
   margin: 6px auto 10px;
-  opacity: .9;
+  opacity: .9; /* ok: GSAP gestisce opacity complessiva */
 }
 
-/* Body “scritto” */
 .siamoBody{
   margin: 0 auto;
   max-width: 76ch;
@@ -69,22 +75,11 @@
   white-space: normal;
 }
 
-/* caratteri */
 .siamoCh{
   display: inline-block;
   will-change: opacity, transform;
 }
 
-/* manteniamo lo spazio visivo */
 .siamoCh.isSpace{
   width: .28em;
-}
-
-/* la nota */
-.siamoNote{
-  margin-top: 12px;
-  font-size: 12px;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-  color: var(--muted);
 }
