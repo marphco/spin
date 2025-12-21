@@ -90,91 +90,141 @@ function IconX() {
 export default function Footer({
   company = "Spin Factor s.r.l.",
   email = "info@spinfactor.it",
-  sedePrincipale = ["Sede Principale", "via della Scrofa, 17 – 00186 Roma"],
-  sedeLegale = ["Sede Legale", "via Vittoria Colonna, 14 – 80121 Napoli"],
+  sedePrincipale = "via della Scrofa, 17 – 00186 Roma",
+  sedeLegale = "via Vittoria Colonna, 14 – 80121 Napoli",
   piva = "08521911217",
   privacyHref = "/privacy-policy",
   cookieHref = "/cookie-policy",
   facebookHref = "#",
   xHref = "#",
 }) {
+  const year = new Date().getFullYear();
+
   return (
     <footer className="ftSection" id="footer">
+      <span id="contatti" className="ftAnchor" aria-hidden="true" />
       <div className="ftInner">
-        <div className="ftGrid">
-          {/* COL 1 */}
-          <div className="ftCol">
-            <div className="ftBrand">{company}</div>
-            <p className="ftTagline">
-              Costruiamo posizionamenti che resistono al rumore.
-            </p>
-
-            <div className="ftMeta">
-              <span className="ftMetaLabel">© {new Date().getFullYear()}</span>
-              <span className="ftMetaSep">·</span>
-              <span className="ftMetaLabel">All rights reserved</span>
-            </div>
+        <div className="ftTop">
+          <div className="ftHead">
+            <div className="ftKicker">Contatti</div>
+            <div className="ftUnderline" aria-hidden="true" />
           </div>
+          <div className="ftContent">
+            {/* LEFT: contatti + dati */}
+            <div className="ftLeft">
+              <div className="ftBrand">{company}</div>
 
-          {/* COL 2 */}
-          <div className="ftCol">
-            <div className="ftTitle">Contatti</div>
-
-            <a className="ftRow" href={`mailto:${email}`}>
-              <span className="ftRowIcon">
-                <IconMail />
-              </span>
-              <span className="ftRowText">{email}</span>
-            </a>
-
-            <div className="ftRow ftRowStatic">
-              <span className="ftRowIcon">
-                <IconPin />
-              </span>
-              <span className="ftRowText">
-                <strong>{sedePrincipale[0]}</strong>
-                <span className="ftSub">{sedePrincipale[1]}</span>
-
-                <strong className="ftStrong2">{sedeLegale[0]}</strong>
-                <span className="ftSub">{sedeLegale[1]}</span>
-              </span>
-            </div>
-          </div>
-
-          {/* COL 3 */}
-          <div className="ftCol">
-            <div className="ftTitle">Legale</div>
-
-            <div className="ftRow ftRowStatic">
-              <span className="ftRowIcon">
-                <IconDoc />
-              </span>
-              <span className="ftRowText">
-                <strong>P. IVA</strong>
-                <span className="ftSub">{piva}</span>
-              </span>
-            </div>
-
-            <div className="ftSocial">
-              <a className="ftSocialBtn" href={facebookHref} aria-label="Facebook">
-                <IconFacebook />
+              <a className="ftRow" href={`mailto:${email}`}>
+                <span className="ftRowIcon">
+                  <IconMail />
+                </span>
+                <span className="ftRowText">{email}</span>
               </a>
-              <a className="ftSocialBtn" href={xHref} aria-label="X">
-                <IconX />
-              </a>
+
+              <div className="ftRow ftRowStatic">
+                <span className="ftRowIcon">
+                  <IconPin />
+                </span>
+                <span className="ftRowText">
+                  <span className="ftAddrTitle">Sede Principale</span>
+                  <span className="ftSub">{sedePrincipale}</span>
+
+                  <span className="ftAddrTitle ftAddrTitle2">Sede Legale</span>
+                  <span className="ftSub">{sedeLegale}</span>
+                </span>
+              </div>
+
+              <div className="ftRow ftRowStatic">
+                <span className="ftRowIcon">
+                  <IconDoc />
+                </span>
+                <span className="ftRowText">
+                  <span className="ftAddrTitle">P. IVA</span>
+                  <span className="ftSub">{piva}</span>
+                </span>
+              </div>
+
+              <div className="ftSocial ftSocialLeft">
+                <a
+                  className="ftSocialBtn"
+                  href={facebookHref}
+                  aria-label="Facebook"
+                >
+                  <IconFacebook />
+                </a>
+                <a className="ftSocialBtn" href={xHref} aria-label="X">
+                  <IconX />
+                </a>
+              </div>
+            </div>
+
+            {/* RIGHT: form */}
+            <div className="ftRight">
+              <div className="ftRightHead">
+                <div className="ftTitle">Scrivici</div>
+              </div>
+
+              <form className="ftFormGrid" onSubmit={(e) => e.preventDefault()}>
+                <label className="ftField">
+                  <span className="ftFieldLabel">Nome</span>
+                  <input
+                    className="ftInput"
+                    type="text"
+                    name="name"
+                    autoComplete="name"
+                  />
+                </label>
+
+                <label className="ftField">
+                  <span className="ftFieldLabel">Email</span>
+                  <input
+                    className="ftInput"
+                    type="email"
+                    name="email"
+                    autoComplete="email"
+                    required
+                  />
+                </label>
+
+                <label className="ftField ftFieldFull">
+                  <span className="ftFieldLabel">Messaggio</span>
+                  <textarea
+                    className="ftTextarea"
+                    name="message"
+                    rows={5}
+                    required
+                  />
+                </label>
+
+                <div className="ftConsent">
+                  Inviando accetti l’{" "}
+                  <a className="ftInlineLink" href={privacyHref}>
+                    Informativa Privacy
+                  </a>
+                  .
+                </div>
+
+                <button className="ftBtn" type="submit">
+                  Invia
+                </button>
+              </form>
             </div>
           </div>
         </div>
 
-        {/* bottom links (sotto a tutto) */}
         <div className="ftBottom">
-          <a className="ftLegalLink" href={privacyHref}>
-            Privacy Policy
-          </a>
-          <span className="ftBottomSep">·</span>
-          <a className="ftLegalLink" href={cookieHref}>
-            Cookie Policy
-          </a>
+          <div className="ftCopy">
+            © {year} {company}. All rights reserved.
+          </div>
+          <div className="ftPolicies">
+            <a className="ftLegalLink" href={privacyHref}>
+              Privacy Policy
+            </a>
+            <span className="ftSep">·</span>
+            <a className="ftLegalLink" href={cookieHref}>
+              Cookie Policy
+            </a>
+          </div>
         </div>
       </div>
     </footer>

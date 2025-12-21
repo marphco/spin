@@ -25,10 +25,6 @@ a {
   text-decoration: none;
 }
 
-html {
-  scroll-padding-top: 110px;
-}
-
 /* su mobile la navbar è bottom: non serve padding-bottom per l'anchor,
    ma aggiungiamo un po’ di safe area */
 @media (max-width: 720px) {
