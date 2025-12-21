@@ -1,88 +1,90 @@
 /* eslint-disable no-undef */
+/* eslint-env node */
 import nodemailer from "nodemailer";
 
-// Rate limit in-memory (best effort su serverless)
-const RATE_WINDOW_MS = 60_000; // 1 min
-const RATE_MAX = 5;            // 5 richieste/min per IP
-const bucket = new Map();
-
-function getIp(req) {
-  const xf = req.headers["x-forwarded-for"];
-  if (typeof xf === "string" && xf.length) return xf.split(",")[0].trim();
-  return req.socket?.remoteAddress || "unknown";
-}
-
-function isSpammyText(s) {
-  // blocca HTML e link eccessivi (tuning)
-  if (/<[a-z][\s\S]*>/i.test(s)) return true; // tag html
-  const links = (s.match(/https?:\/\//gi) || []).length;
-  if (links >= 3) return true;
-  return false;
-}
-
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
-
-  // parse body (Vercel lo parse-a come JSON automaticamente se Content-Type application/json)
-  const { name = "", email = "", message = "", company = "" } = req.body || {};
-
-  // honeypot: i bot lo compilano
-  if (company && String(company).trim().length) {
-    return res.status(200).json({ ok: true });
-  }
-
-  // rate limit
-  const ip = getIp(req);
-  const now = Date.now();
-  const item = bucket.get(ip) || { count: 0, start: now };
-  if (now - item.start > RATE_WINDOW_MS) {
-    bucket.set(ip, { count: 1, start: now });
-  } else {
-    item.count += 1;
-    bucket.set(ip, item);
-    if (item.count > RATE_MAX) {
-      return res.status(429).json({ error: "Too many requests" });
-    }
-  }
-
-  // validate
-  const cleanEmail = String(email).trim().toLowerCase();
-  const cleanName = String(name).trim();
-  const cleanMsg = String(message).trim();
-
-  if (!cleanEmail || !cleanMsg) return res.status(400).json({ error: "Missing fields" });
-  if (cleanEmail.length > 254 || cleanName.length > 120 || cleanMsg.length > 6000) {
-    return res.status(413).json({ error: "Payload too large" });
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-    return res.status(400).json({ error: "Invalid email" });
-  }
-  if (isSpammyText(cleanMsg)) {
-    return res.status(400).json({ error: "Message rejected" });
-  }
-
   try {
+    // Solo POST
+    if (req.method !== "POST") {
+      return res.status(405).json({ error: "Method not allowed" });
+    }
+
+    // BODY
+    const { name = "", email = "", message = "", company = "" } = req.body || {};
+
+    // Honeypot (anche se ora non lo usi, non dà fastidio)
+    if (company && String(company).trim().length > 0) {
+      return res.status(200).json({ ok: true }); // silent success
+    }
+
+    // Validazioni minime
+    const cleanName = String(name).trim().slice(0, 120);
+    const cleanEmail = String(email).trim().toLowerCase().slice(0, 180);
+    const cleanMessage = String(message).trim().slice(0, 5000);
+
+    if (!cleanEmail || !cleanMessage) {
+      return res.status(400).json({ error: "Missing fields" });
+    }
+
+    // ENV (se manca anche UNA, ti dico quale)
+    const SMTP_HOST = process.env.SMTP_HOST;
+    const SMTP_PORT = process.env.SMTP_PORT || "587";
+    const SMTP_USER = process.env.SMTP_USER;
+    const SMTP_PASS = process.env.SMTP_PASS;
+    const RECEIVER_EMAIL = process.env.RECEIVER_EMAIL || SMTP_USER;
+    const SENDER_EMAIL = process.env.SENDER_EMAIL || SMTP_USER;
+
+    const missing = [];
+    if (!SMTP_HOST) missing.push("SMTP_HOST");
+    if (!SMTP_USER) missing.push("SMTP_USER");
+    if (!SMTP_PASS) missing.push("SMTP_PASS");
+    if (missing.length) {
+      return res.status(500).json({
+        error: `Missing env: ${missing.join(", ")}`,
+      });
+    }
+
+    const portNum = parseInt(SMTP_PORT, 10);
+    const secure = portNum === 465;
+
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: 587,
-      secure: false,
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-      tls: { minVersion: "TLSv1.2" },
+      host: SMTP_HOST,
+      port: portNum,
+      secure,
+      auth: {
+        user: SMTP_USER,
+        pass: SMTP_PASS,
+      },
+      requireTLS: !secure, // STARTTLS su 587
+      tls: {
+        minVersion: "TLSv1.2",
+        servername: SMTP_HOST,
+      },
     });
 
+    // verifica connessione
     await transporter.verify();
 
+    const subject = "Nuovo messaggio dal sito Spin Factor";
+    const text =
+`Nome: ${cleanName || "-"}
+Email: ${cleanEmail}
+
+Messaggio:
+${cleanMessage}
+`;
+
     await transporter.sendMail({
-      from: `"Spin Factor" <${process.env.SMTP_USER}>`,
-      to: process.env.RECEIVER_EMAIL,
+      from: { name: "Spin Factor", address: SENDER_EMAIL },
+      to: RECEIVER_EMAIL,
       replyTo: cleanEmail,
-      subject: "Nuovo messaggio dal sito",
-      text: `Nome: ${cleanName || "-"}\nEmail: ${cleanEmail}\n\n${cleanMsg}`,
+      subject,
+      text,
     });
 
     return res.status(200).json({ ok: true });
   } catch (err) {
-    console.error("contact mail error:", err?.code, err?.message);
+    console.error("CONTACT API ERROR:", err);
     return res.status(500).json({ error: "Mail error" });
   }
 }
