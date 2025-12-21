@@ -140,55 +140,6 @@ import Facciamo from "./components/Facciamo/Facciamo";
 
 gsap.registerPlugin(ScrollTrigger);
 
-function FacciamoDebug() {
-  const rootRef = useRef(null);
-
-  useLayoutEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
-
-    const ctx = gsap.context(() => {
-      ScrollTrigger.getById("facciamo-pin")?.kill(true);
-
-      const track = root.querySelector(".hTrack");
-      const panels = gsap.utils.toArray(root.querySelectorAll(".hPanel"));
-
-      gsap.set(track, { width: `${panels.length * 100}vw` });
-
-      gsap.to(panels, {
-        xPercent: -100 * (panels.length - 1),
-        ease: "none",
-        scrollTrigger: {
-          id: "facciamo-pin",
-          trigger: root,
-          start: "top top",
-          end: () => `+=${window.innerWidth * (panels.length - 1)}`,
-          scrub: true,
-          pin: true,
-          pinSpacing: true,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-        },
-      });
-    }, root);
-
-    return () => ctx.revert();
-  }, []);
-
-  return (
-    <section className="dbgSection dbgFacciamo" id="facciamo" ref={rootRef}>
-      <div className="hViewport">
-        <div className="hTrack">
-          <div className="hPanel p0">FACCIAMO</div>
-          <div className="hPanel p1">Analisi scenario</div>
-          <div className="hPanel p2">Posizionamento strategico</div>
-          <div className="hPanel p3">Piani comunicazione integrata</div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function HumanDebug() {
   const rootRef = useRef(null);
 
@@ -249,8 +200,29 @@ export default function App() {
   const didFirstRefresh = useRef(false);
 
   useLayoutEffect(() => {
-    // ✅ UN SOLO refresh “serio” dopo mount (Hero + Siamo + debug)
-    // doppio RAF = aspetta layout/stili/paint
+    // ✅ BG scroll-driven (Siamo -> Facciamo)
+    const rootEl = document.documentElement;
+
+    // leggo il “nero” dal tuo token (se non c’è, fallback #000)
+    const siamoBg =
+      getComputedStyle(rootEl).getPropertyValue("--bg").trim() || "#000";
+    const facciamoBg = "#101327";
+
+    // variabile css globale
+    gsap.set(rootEl, { "--pageBg": siamoBg });
+
+    ScrollTrigger.getById("bg-siamo-to-facciamo")?.kill(true);
+
+    ScrollTrigger.create({
+      id: "bg-siamo-to-facciamo",
+      trigger: "#facciamo",
+      start: "top bottom", // inizia quando facciamo entra
+      end: "top top", // finisce quando facciamo arriva in alto
+      scrub: true,
+      animation: gsap.to(rootEl, { "--pageBg": facciamoBg, ease: "none" }),
+    });
+
+    // ✅ UN SOLO refresh “serio” dopo mount (doppio RAF)
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         ScrollTrigger.refresh(true);
@@ -261,7 +233,11 @@ export default function App() {
     // ✅ refresh al resize
     const onResize = () => ScrollTrigger.refresh(true);
     window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+
+    return () => {
+      window.removeEventListener("resize", onResize);
+      ScrollTrigger.getById("bg-siamo-to-facciamo")?.kill(true);
+    };
   }, []);
 
   return (
@@ -277,7 +253,6 @@ export default function App() {
           durationPx={900}
         />
 
-        {/* ✅ Siamo vero (pinnato + typewriting) */}
         <Siamo
           id="siamo"
           kicker="Siamo"
@@ -290,17 +265,16 @@ export default function App() {
         />
 
         <Facciamo
-  id="facciamo"
-  kicker="Facciamo"
-  title="FACCIAMO"
-  textPx={2000}
-  paragraphs={[
-    "Il nostro è un processo integrato e innovativo che attuiamo con cura sartoriale sui progetti che scegliamo di seguire.",
-    "Le nostre proposte strategiche partono dall’analisi dei dati reali, geolocalizzati e targettizzati. Grazie a Human, la nostra esclusiva piattaforma di web e social listening, otteniamo una fotografia della situazione attuale e sviluppiamo gli scenari a breve e lungo termine. Su questa base elaboriamo strategie di posizionamento mirate che vengono successivamente declinate in piani di comunicazione integrata. Monitoriamo costantemente la reputazione e gli stati di avanzamento dei progetti.",
-  ]}
-/>
-        <HumanDebug />
+          id="facciamo"
+          kicker="Facciamo"
+          title="FACCIAMO"
+          paragraphs={[
+            "Il nostro è un processo integrato e innovativo che attuiamo con cura sartoriale sui progetti che scegliamo di seguire.",
+            "Le nostre proposte strategiche partono dall’analisi dei dati reali, geolocalizzati e targettizzati. Grazie a Human, la nostra esclusiva piattaforma di web e social listening, otteniamo una fotografia della situazione attuale e sviluppiamo gli scenari a breve e lungo termine. Su questa base elaboriamo strategie di posizionamento mirate che vengono successivamente declinate in piani di comunicazione integrata. Monitoriamo costantemente la reputazione e gli stati di avanzamento dei progetti.",
+          ]}
+        />
 
+        <HumanDebug />
         <FooterPlaceholder />
       </main>
     </div>

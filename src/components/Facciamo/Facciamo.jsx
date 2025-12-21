@@ -5,11 +5,23 @@ import "./Facciamo.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
-function splitChars(str) {
-  return Array.from(str).map((ch, i) => ({
-    ch,
-    key: `${i}-${ch === " " ? "space" : ch}`,
-  }));
+function tokenize(str) {
+  return str.split(/(\n|[ \t]+)/g).filter((t) => t !== "");
+}
+
+function Word({ token, type }) {
+  const chars = Array.from(token);
+  const dataAttr = type === "t" ? "data-ftch" : "data-fbch";
+
+  return (
+    <span className="facWord" aria-hidden="true">
+      {chars.map((ch, i) => (
+        <span key={`${type}-${token}-${i}`} {...{ [dataAttr]: true }} className="facCh">
+          {ch}
+        </span>
+      ))}
+    </span>
+  );
 }
 
 export default function Facciamo({
@@ -17,14 +29,17 @@ export default function Facciamo({
   kicker = "Facciamo",
   title = "FACCIAMO",
   paragraphs = [],
-  // px dedicati SOLO alla fase testo
-  textPx = 900,
+  /**
+   * Se passi textPx lo rispettiamo.
+   * Se non lo passi (o passi null/undefined), facciamo auto.
+   */
+  textPx,
 }) {
   const rootRef = useRef(null);
 
   const bodyText = useMemo(() => paragraphs.join("\n\n"), [paragraphs]);
-  const titleChars = useMemo(() => splitChars(title), [title]);
-  const bodyChars = useMemo(() => splitChars(bodyText), [bodyText]);
+  const titleTokens = useMemo(() => tokenize(title), [title]);
+  const bodyTokens = useMemo(() => tokenize(bodyText), [bodyText]);
 
   useLayoutEffect(() => {
     const root = rootRef.current;
@@ -35,9 +50,6 @@ export default function Facciamo({
 
       const track = root.querySelector(".facTrack");
       const panels = gsap.utils.toArray(root.querySelectorAll(".facPanel"));
-
-      // panel 0 = intro testo, il resto sono pannelli orizzontali
-      // larghezza track = N * 100vw
       gsap.set(track, { width: `${panels.length * 100}vw` });
 
       const kickerEl = root.querySelector("[data-fkicker]");
@@ -48,17 +60,26 @@ export default function Facciamo({
       const titleEls = root.querySelectorAll("[data-ftch]");
       const bodyEls = root.querySelectorAll("[data-fbch]");
 
-      // ✅ Stato iniziale anti-flash
-      gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], {
-        opacity: 0,
-        y: 10,
-      });
+      // anti-flash (JS authoritative)
+      gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], { opacity: 0, y: 10 });
       gsap.set(titleEls, { opacity: 0, y: 10 });
       gsap.set(bodyEls, { opacity: 0, y: 6 });
 
-      // distanza orizzontale = (N-1) * vw (perché il primo pannello è l'intro)
+      // ✅ AUTO textPx se non fornito:
+      //  - numero caratteri reali (span animati)
+      //  - mobile -> un po’ più px perché le righe aumentano
+      const charsCount = titleEls.length + bodyEls.length;
+      const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+      const mobileBoost = vw < 640 ? 1.35 : vw < 900 ? 1.18 : 1;
+
+      const textPxAuto = Math.round(
+        Math.max(1000, Math.min(3200, charsCount * 3.8)) * mobileBoost
+      );
+
+      const textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
+
       const horizontalPx = window.innerWidth * (panels.length - 1);
-      const totalPx = textPx + horizontalPx;
+      const totalPx = textPxFinal + horizontalPx;
 
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -75,17 +96,17 @@ export default function Facciamo({
       });
 
       // -------------------------
-      // FASE A: TESTO (0 -> textPx)
+      // FASE A: TESTO (0 -> textPxFinal)
       // -------------------------
-      // 1) cornice
-      tl.to(
-        [kickerEl, underlineEl],
-        { opacity: 1, y: 0, ease: "none", duration: 0.12 },
-        0.02
-      );
+      const pad = 24;
+      const frame = Math.round(textPxFinal * 0.12);
+      const wrap = Math.round(textPxFinal * 0.06);
+      const titleDur = Math.round(textPxFinal * 0.22);
+      const bodyDur = Math.max(1, textPxFinal - (pad + frame + wrap + titleDur + wrap + 10));
 
-      // 2) wrapper titolo + chars
-      tl.to(titleWrap, { opacity: 1, y: 0, ease: "none", duration: 0.06 }, 0.06);
+      tl.to([kickerEl, underlineEl], { opacity: 1, y: 0, ease: "none", duration: frame }, pad);
+
+      tl.to(titleWrap, { opacity: 1, y: 0, ease: "none", duration: wrap }, pad + frame);
 
       tl.to(
         titleEls,
@@ -93,14 +114,15 @@ export default function Facciamo({
           opacity: 1,
           y: 0,
           ease: "none",
-          duration: 0.22,
-          stagger: { amount: 0.22, from: "start" },
+          duration: titleDur,
+          stagger: { amount: titleDur * 0.9, from: "start" },
         },
-        0.08
+        pad + frame + wrap
       );
 
-      // 3) body wrapper + chars
-      tl.to(bodyWrap, { opacity: 1, y: 0, ease: "none", duration: 0.06 }, 0.22);
+      const bodyStart = pad + frame + wrap + titleDur;
+
+      tl.to(bodyWrap, { opacity: 1, y: 0, ease: "none", duration: wrap }, bodyStart);
 
       tl.to(
         bodyEls,
@@ -108,36 +130,39 @@ export default function Facciamo({
           opacity: 1,
           y: 0,
           ease: "none",
-          duration: 0.78,
-          stagger: { amount: 0.85, from: "start" },
+          duration: bodyDur,
+          stagger: { amount: bodyDur * 0.95, from: "start" },
         },
-        0.24
+        bodyStart + wrap
       );
 
+      // ✅ GUARANTEED: al confine testo -> tutto visibile
+      tl.set([kickerEl, underlineEl, titleWrap, bodyWrap], { opacity: 1, y: 0 }, textPxFinal - 1);
+      tl.set(titleEls, { opacity: 1, y: 0 }, textPxFinal - 1);
+      tl.set(bodyEls, { opacity: 1, y: 0 }, textPxFinal - 1);
+
       // ---------------------------------
-      // FASE B: ORIZZONTALE (dopo testo)
+      // FASE B: ORIZZONTALE (textPxFinal -> totalPx)
       // ---------------------------------
-      // Mettiamo l'orizzontale quando la fase testo è finita.
-      // Con scrub è stabile: appena superi textPx parte il movimento.
       tl.to(
         panels,
         {
           xPercent: -100 * (panels.length - 1),
           ease: "none",
-          duration: 1, // questa "1" viene scalata sul tratto scroll dedicato
+          duration: horizontalPx,
         },
-        1 // inizio della fase orizzontale dopo che la fase testo è "completa"
+        textPxFinal
       );
     }, root);
 
     return () => ctx.revert();
-  }, [id, textPx, titleChars.length, bodyChars.length]);
+  }, [id, textPx, titleTokens.length, bodyTokens.length]);
 
   return (
     <section className="facSection" id={id} ref={rootRef}>
       <div className="facViewport">
         <div className="facTrack">
-          {/* PANEL 0 — INTRO (come Siamo) */}
+          {/* PANEL 0 — INTRO */}
           <div className="facPanel facIntro">
             <div className="facInner">
               <div className="facKicker" data-fkicker>
@@ -145,33 +170,20 @@ export default function Facciamo({
               </div>
 
               <h2 className="facTitle" data-ftitlewrap aria-label={title}>
-                {titleChars.map(({ ch, key }) => (
-                  <span
-                    key={key}
-                    data-ftch
-                    className={`facCh ${ch === " " ? "isSpace" : ""}`}
-                    aria-hidden="true"
-                  >
-                    {ch === " " ? "\u00A0" : ch}
-                  </span>
-                ))}
+                {titleTokens.map((tok, idx) => {
+                  if (tok === "\n") return <br key={`ftbr-${idx}`} />;
+                  if (/^[ \t]+$/.test(tok)) return <span key={`ftsp-${idx}`}>{" "}</span>;
+                  return <Word key={`ftw-${idx}`} token={tok} type="t" />;
+                })}
               </h2>
 
               <div className="facUnderline" data-funderline aria-hidden="true" />
 
               <div className="facBody" data-fbodywrap aria-label={bodyText}>
-                {bodyChars.map(({ ch, key }, idx) => {
-                  if (ch === "\n") return <br key={`br-${key}-${idx}`} />;
-                  return (
-                    <span
-                      key={key}
-                      data-fbch
-                      className={`facCh ${ch === " " ? "isSpace" : ""}`}
-                      aria-hidden="true"
-                    >
-                      {ch === " " ? "\u00A0" : ch}
-                    </span>
-                  );
+                {bodyTokens.map((tok, idx) => {
+                  if (tok === "\n") return <br key={`fbbr-${idx}`} />;
+                  if (/^[ \t]+$/.test(tok)) return <span key={`fbsp-${idx}`}>{" "}</span>;
+                  return <Word key={`fbw-${idx}`} token={tok} type="b" />;
                 })}
               </div>
             </div>
