@@ -324,12 +324,15 @@
 }
 
 .ftHp{
-  position:absolute;
-  left:-9999px;
-  width:1px;
-  height:1px;
-  overflow:hidden;
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
+
 
 .ftNotice{
   grid-column: 1 / -1;

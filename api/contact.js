@@ -1,36 +1,61 @@
 /* eslint-disable no-undef */
-/* eslint-env node */
 import nodemailer from "nodemailer";
 
-export default async function handler(req, res) {
+function sendJson(res, code, obj) {
+  res.statusCode = code;
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.end(JSON.stringify(obj));
+}
+
+async function readJsonBody(req) {
+  // Vercel Node functions: body non è garantito che sia già parsato
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  const raw = Buffer.concat(chunks).toString("utf8");
+  if (!raw) return {};
   try {
-    // Solo POST
-    if (req.method !== "POST") {
-      return res.status(405).json({ error: "Method not allowed" });
-    }
+    return JSON.parse(raw);
+  } catch {
+    return null; // JSON invalido
+  }
+}
 
-    // BODY
-    const { name = "", email = "", message = "", company = "" } = req.body || {};
+export default async function handler(req, res) {
+  // health check semplice (così da browser non crasha mai)
+  if (req.method === "GET") {
+    return sendJson(res, 200, { ok: true });
+  }
 
-    // Honeypot (anche se ora non lo usi, non dà fastidio)
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST, GET");
+    return sendJson(res, 405, { error: "Method not allowed" });
+  }
+
+  try {
+    const body = await readJsonBody(req);
+    if (body === null) return sendJson(res, 400, { error: "Invalid JSON" });
+
+    const { name = "", email = "", message = "", company = "" } = body || {};
+
+    // honeypot
     if (company && String(company).trim().length > 0) {
-      return res.status(200).json({ ok: true }); // silent success
+      return sendJson(res, 200, { ok: true }); // silent success
     }
 
-    // Validazioni minime
     const cleanName = String(name).trim().slice(0, 120);
     const cleanEmail = String(email).trim().toLowerCase().slice(0, 180);
     const cleanMessage = String(message).trim().slice(0, 5000);
 
     if (!cleanEmail || !cleanMessage) {
-      return res.status(400).json({ error: "Missing fields" });
+      return sendJson(res, 400, { error: "Missing fields" });
     }
 
-    // ENV (se manca anche UNA, ti dico quale)
-    const SMTP_HOST = process.env.SMTP_HOST;
-    const SMTP_PORT = process.env.SMTP_PORT || "587";
+    // ENV
+    const SMTP_HOST = process.env.SMTP_HOST;       // es: smtp.aruba.it
+    const SMTP_PORT = Number(process.env.SMTP_PORT || 587);
     const SMTP_USER = process.env.SMTP_USER;
     const SMTP_PASS = process.env.SMTP_PASS;
+
     const RECEIVER_EMAIL = process.env.RECEIVER_EMAIL || SMTP_USER;
     const SENDER_EMAIL = process.env.SENDER_EMAIL || SMTP_USER;
 
@@ -38,32 +63,24 @@ export default async function handler(req, res) {
     if (!SMTP_HOST) missing.push("SMTP_HOST");
     if (!SMTP_USER) missing.push("SMTP_USER");
     if (!SMTP_PASS) missing.push("SMTP_PASS");
-    if (missing.length) {
-      return res.status(500).json({
-        error: `Missing env: ${missing.join(", ")}`,
-      });
-    }
+    if (missing.length) return sendJson(res, 500, { error: `Missing env: ${missing.join(", ")}` });
 
-    const portNum = parseInt(SMTP_PORT, 10);
-    const secure = portNum === 465;
+    // Aruba: regola pratica
+    // - 587 => STARTTLS => host "smtp.aruba.it" (NON "smtps.aruba.it")
+    // - 465 => SSL => host "smtps.aruba.it"
+    const secure = SMTP_PORT === 465;
 
     const transporter = nodemailer.createTransport({
       host: SMTP_HOST,
-      port: portNum,
+      port: SMTP_PORT,
       secure,
-      auth: {
-        user: SMTP_USER,
-        pass: SMTP_PASS,
-      },
-      requireTLS: !secure, // STARTTLS su 587
-      tls: {
-        minVersion: "TLSv1.2",
-        servername: SMTP_HOST,
-      },
+      auth: { user: SMTP_USER, pass: SMTP_PASS },
+      requireTLS: !secure,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 20000,
+      tls: { minVersion: "TLSv1.2", servername: SMTP_HOST },
     });
-
-    // verifica connessione
-    await transporter.verify();
 
     const subject = "Nuovo messaggio dal sito Spin Factor";
     const text =
@@ -74,17 +91,19 @@ Messaggio:
 ${cleanMessage}
 `;
 
+    // (evitiamo verify: spesso fa perdere tempo/timeout su serverless)
     await transporter.sendMail({
       from: { name: "Spin Factor", address: SENDER_EMAIL },
       to: RECEIVER_EMAIL,
       replyTo: cleanEmail,
       subject,
       text,
+      envelope: { from: SENDER_EMAIL, to: RECEIVER_EMAIL },
     });
 
-    return res.status(200).json({ ok: true });
+    return sendJson(res, 200, { ok: true });
   } catch (err) {
     console.error("CONTACT API ERROR:", err);
-    return res.status(500).json({ error: "Mail error" });
+    return sendJson(res, 500, { error: "Mail error" });
   }
 }
