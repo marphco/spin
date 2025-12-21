@@ -24,13 +24,13 @@ export default function HumanServizi({ items }) {
     () =>
       items ?? [
        {
-  title: "SENTIMENT ANALYSIS",
+  title: "Sentiment Analysis",
   text:
     "Analizziamo il parlato del web per capire come viene percepito un brand, un tema o una persona.\n\nCommenti, post, articoli, recensioni e reaction vengono interpretati per individuare emozioni, orientamenti e dinamiche che guidano le conversazioni.\n\nIl sentiment rivela fiducia, credibilità, interesse e reputazione, mostrando non solo cosa si dice, ma come e perché lo si dice.",
   icon: <IconPulse />,
 },
 {
-  title: "REPORT",
+  title: "Report",
   text:
     "I report trasformano i dati in una visione chiara e utilizzabile.\n\nMostrano l’evoluzione delle conversazioni, le performance dei canali analizzati e la struttura emotiva del dibattito online.\n\nGrazie a modelli di Intelligenza Artificiale, l’analisi può concentrarsi su temi o hashtag specifici, restituendo insight quantitativi e qualitativi sulla reale percezione della rete.",
   icon: <IconDoc />,
