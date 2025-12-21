@@ -85,3 +85,29 @@
 
 .humWord{ display: inline-block; white-space: nowrap; }
 .humCh{ display: inline-block; will-change: opacity, transform; }
+
+.humViewport{
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.humTrack{
+  height: 100%;
+  display: flex;
+  width: 200vw;
+  will-change: transform;
+}
+
+.humPanel{
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  flex: 0 0 100vw;
+}
+
+.humServicesLayer{
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}

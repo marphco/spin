@@ -2,6 +2,7 @@ import React, { useLayoutEffect, useMemo, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./Human.css";
+import HumanServizi from "./HumanServizi";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -16,11 +17,7 @@ function Word({ token, type }) {
   return (
     <span className="humWord" aria-hidden="true">
       {chars.map((ch, i) => (
-        <span
-          key={`${type}-${token}-${i}`}
-          {...{ [dataAttr]: true }}
-          className="humCh"
-        >
+        <span key={`${type}-${token}-${i}`} {...{ [dataAttr]: true }} className="humCh">
           {ch}
         </span>
       ))}
@@ -48,6 +45,7 @@ export default function Human({
     const ctx = gsap.context(() => {
       ScrollTrigger.getById(`human-${id}`)?.kill(true);
 
+      // ---- Intro refs
       const kickerEl = root.querySelector("[data-hkicker]");
       const underlineEl = root.querySelector("[data-hunderline]");
       const titleWrap = root.querySelector("[data-htitlewrap]");
@@ -56,24 +54,49 @@ export default function Human({
       const titleEls = Array.from(root.querySelectorAll("[data-htch]"));
       const bodyEls = Array.from(root.querySelectorAll("[data-hbch]"));
 
-      gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], {
-        autoAlpha: 0,
-        y: 10,
-      });
+      // ---- Track + services refs
+      const rootEl = document.documentElement;
+      const track = root.querySelector("[data-htrack]");
+
+      const servicesPanel = root.querySelector("[data-hservicespanel]");
+      const servicesWrap = root.querySelector("[data-hserviceswrap]");
+      const serviceItems = gsap.utils.toArray(root.querySelectorAll("[data-hservice]"));
+
+      // ✅ guard
+      if (!track || !servicesPanel || !servicesWrap) return;
+
+      // -------------------------
+      // INITIAL STATE
+      // -------------------------
+      gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], { autoAlpha: 0, y: 10 });
       gsap.set(titleEls, { autoAlpha: 0, y: 10 });
       gsap.set(bodyEls, { autoAlpha: 0, y: 6 });
 
+      gsap.set(track, { x: 0 });
+
+      // panel servizi esiste ma lo reveal lo fai su wrap/items
+      gsap.set(servicesPanel, { autoAlpha: 1 });
+      gsap.set(servicesWrap, { autoAlpha: 0 });
+      gsap.set(serviceItems, { autoAlpha: 0, y: 18 });
+
+      // -------------------------
+      // DURATIONS
+      // -------------------------
       const charsCount = titleEls.length + bodyEls.length;
-      const vw = Math.max(
-        document.documentElement.clientWidth,
-        window.innerWidth || 0
-      );
+      const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
       const mobileBoost = vw < 640 ? 1.35 : vw < 900 ? 1.18 : 1;
 
-      const textPxAuto = Math.round(
-        Math.max(950, Math.min(2800, charsCount * 3.6)) * mobileBoost
-      );
+      const textPxAuto = Math.round(Math.max(950, Math.min(2800, charsCount * 3.6)) * mobileBoost);
       const textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
+
+      // come Facciamo (snello)
+      const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75));
+      const servicesPx = Math.round(Math.max(720, window.innerHeight * 1.05));
+      const totalPx = textPxFinal + horizPx + servicesPx;
+
+      // colori
+      const verde = "#02291fff";
+      const nero = "#010101";
 
       const tl = gsap.timeline({ defaults: { ease: "none" } });
 
@@ -81,7 +104,7 @@ export default function Human({
         id: `human-${id}`,
         trigger: root,
         start: "top top",
-        end: () => `+=${textPxFinal}`,
+        end: () => `+=${totalPx}`,
         scrub: true,
         pin: true,
         pinSpacing: true,
@@ -90,6 +113,9 @@ export default function Human({
         animation: tl,
       });
 
+      // -------------------------
+      // A) TESTO (0 -> textPxFinal)
+      // -------------------------
       const pad = 12;
       const frame = Math.round(textPxFinal * 0.12);
       const wrap = Math.round(textPxFinal * 0.06);
@@ -116,16 +142,8 @@ export default function Human({
         return Math.max(0, (segmentDur - perCharDur) / (n - 1));
       };
 
-      tl.to(
-        [kickerEl, underlineEl],
-        { autoAlpha: 1, y: 0, duration: frame },
-        t_frameStart
-      );
-      tl.to(
-        titleWrap,
-        { autoAlpha: 1, y: 0, duration: wrap },
-        t_titleWrapStart
-      );
+      tl.to([kickerEl, underlineEl], { autoAlpha: 1, y: 0, duration: frame }, t_frameStart);
+      tl.to(titleWrap, { autoAlpha: 1, y: 0, duration: wrap }, t_titleWrapStart);
 
       tl.to(
         titleEls,
@@ -133,10 +151,7 @@ export default function Human({
           autoAlpha: 1,
           y: 0,
           duration: 1,
-          stagger: {
-            each: staggerEachFit(titleSeg, titleEls.length),
-            from: "start",
-          },
+          stagger: { each: staggerEachFit(titleSeg, titleEls.length), from: "start" },
         },
         t_titleStart
       );
@@ -149,21 +164,46 @@ export default function Human({
           autoAlpha: 1,
           y: 0,
           duration: 1,
-          stagger: {
-            each: staggerEachFit(bodySeg, bodyEls.length),
-            from: "start",
-          },
+          stagger: { each: staggerEachFit(bodySeg, bodyEls.length), from: "start" },
         },
         t_bodyStart
       );
 
-      tl.set(
-        [kickerEl, underlineEl, titleWrap, bodyWrap],
-        { autoAlpha: 1, y: 0 },
-        textPxFinal
-      );
+      // lock
+      tl.set([kickerEl, underlineEl, titleWrap, bodyWrap], { autoAlpha: 1, y: 0 }, textPxFinal);
       tl.set(titleEls, { autoAlpha: 1, y: 0 }, textPxFinal);
       tl.set(bodyEls, { autoAlpha: 1, y: 0 }, textPxFinal);
+
+      // -------------------------
+      // B) ORIZZONTALE + BG (verde -> nero)
+      // -------------------------
+      const hStart = textPxFinal + 1;
+
+      // assicura che parta da verde (se arrivi qui, Human è verde per App.jsx)
+      tl.set(rootEl, { "--pageBg": verde }, hStart);
+
+      // slide orizzontale (intro -> servizi)
+      tl.to(track, { x: () => -window.innerWidth, duration: horizPx }, hStart);
+
+      // cambio bg DURANTE lo slide (verde -> nero)
+      tl.fromTo(
+        rootEl,
+        { "--pageBg": verde },
+        { "--pageBg": nero, ease: "none", duration: horizPx, immediateRender: false },
+        hStart
+      );
+
+      // -------------------------
+      // C) REVEAL SERVIZI
+      // -------------------------
+      const sStart = hStart + horizPx + 1;
+
+      tl.to(servicesWrap, { autoAlpha: 1, duration: 120 }, sStart);
+
+      const step = Math.round(servicesPx / (serviceItems.length + 1));
+      serviceItems.forEach((el, i) => {
+        tl.to(el, { autoAlpha: 1, y: 0, duration: Math.round(step * 0.7) }, sStart + 80 + step * i);
+      });
     }, root);
 
     return () => ctx.revert();
@@ -171,27 +211,41 @@ export default function Human({
 
   return (
     <section className="humSection" id={id} ref={rootRef}>
-      <div className="humInner">
-        <div className="humKicker" data-hkicker>
-          {kicker}
-        </div>
+      <div className="humViewport">
+        <div className="humTrack" data-htrack>
+          {/* PANEL 1: INTRO */}
+          <div className="humPanel" data-hpanel="intro">
+            <div className="humInner">
+              <div className="humKicker" data-hkicker>
+                {kicker}
+              </div>
 
-        <h2 className="humTitle" data-htitlewrap aria-label={title}>
-          {titleTokens.map((tok, idx) => {
-            if (tok === "\n") return <br key={`htbr-${idx}`} />;
-            if (/^[ \t]+$/.test(tok)) return <span key={`htsp-${idx}`}> </span>;
-            return <Word key={`htw-${idx}`} token={tok} type="t" />;
-          })}
-        </h2>
+              <h2 className="humTitle" data-htitlewrap aria-label={title}>
+                {titleTokens.map((tok, idx) => {
+                  if (tok === "\n") return <br key={`htbr-${idx}`} />;
+                  if (/^[ \t]+$/.test(tok)) return <span key={`htsp-${idx}`}> </span>;
+                  return <Word key={`htw-${idx}`} token={tok} type="t" />;
+                })}
+              </h2>
 
-        <div className="humUnderline" data-hunderline aria-hidden="true" />
+              <div className="humUnderline" data-hunderline aria-hidden="true" />
 
-        <div className="humBody" data-hbodywrap aria-label={bodyText}>
-          {bodyTokens.map((tok, idx) => {
-            if (tok === "\n") return <br key={`hbbr-${idx}`} />;
-            if (/^[ \t]+$/.test(tok)) return <span key={`hbsp-${idx}`}> </span>;
-            return <Word key={`hbw-${idx}`} token={tok} type="b" />;
-          })}
+              <div className="humBody" data-hbodywrap aria-label={bodyText}>
+                {bodyTokens.map((tok, idx) => {
+                  if (tok === "\n") return <br key={`hbbr-${idx}`} />;
+                  if (/^[ \t]+$/.test(tok)) return <span key={`hbsp-${idx}`}> </span>;
+                  return <Word key={`hbw-${idx}`} token={tok} type="b" />;
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* PANEL 2: SERVIZI */}
+          <div className="humPanel" data-hpanel="services">
+            <div className="humServicesLayer" data-hservicespanel>
+              <HumanServizi />
+            </div>
+          </div>
         </div>
       </div>
     </section>
