@@ -1,4 +1,4 @@
-.facSection{
+.humSection{
   position: relative;
   height: 100vh;
   width: 100%;
@@ -6,37 +6,40 @@
   background: transparent;
 }
 
-.facViewport{
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-
-/* stesso sfondo “premium” dell’intro, valido per entrambe le fasi */
-.facViewport::before{
+/* Overlay A = IDENTICO a Facciamo (serve per la giunzione, NO STACCO) */
+.humSection::before{
   content:"";
   position:absolute;
   inset:-20%;
+  pointer-events:none;
   background:
     radial-gradient(60% 40% at 50% 55%, rgba(0,159,183,.14), transparent 60%),
     radial-gradient(40% 30% at 25% 30%, rgba(0,159,183,.08), transparent 55%);
   filter: blur(16px);
-  opacity: .9;
-  pointer-events:none;
+  opacity: .9;                 /* parte visibile */
   transform: translateZ(0);
 }
 
-/* layers sovrapposti */
-.facIntroLayer,
-.facServicesLayer{
-  position: absolute;
-  inset: 0;
-  z-index: 2;
+/* Overlay B = quello vero di Human (verde vibe) — lo crossfadi dopo */
+.humSection::after{
+  content:"";
+  position:absolute;
+  inset:-20%;
+  pointer-events:none;
+  background:
+    radial-gradient(60% 45% at 50% 45%, rgba(0,159,183,.16), transparent 62%),
+    radial-gradient(44% 34% at 22% 28%, rgba(0,159,183,.10), transparent 58%),
+    radial-gradient(50% 40% at 78% 76%, rgba(0,159,183,.08), transparent 60%);
+  filter: blur(16px);
+  opacity: 0;                  /* parte invisibile */
+  transform: translateZ(0);
 }
 
-/* INTRO */
-.facInner{
+
+/* contenuto sopra overlay */
+.humInner{
   position: relative;
+  z-index: 2;
   height: 100%;
   width: min(980px, calc(100% - 48px));
   margin: 0 auto;
@@ -49,25 +52,22 @@
   padding-top: 90px;
 }
 
-.facKicker{
+.humKicker{
   font-size: 12px;
   letter-spacing: .18em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
-.facTitle{
+.humTitle{
   margin: 0;
   font-size: clamp(28px, 4vw, 52px);
   letter-spacing: -0.01em;
   line-height: 1.15;
   color: var(--text-strong);
-  hyphens: none;
-  word-break: normal;
-  overflow-wrap: normal;
 }
 
-.facUnderline{
+.humUnderline{
   width: 92px;
   height: 4px;
   border-radius: 99px;
@@ -75,46 +75,13 @@
   margin: 6px auto 10px;
 }
 
-.facBody{
+.humBody{
   margin: 0 auto;
   max-width: 86ch;
   font-size: 16px;
   line-height: 1.9;
   color: var(--text);
-  hyphens: none;
-  word-break: normal;
-  overflow-wrap: normal;
 }
 
-/* token wrappers */
-.facWord{
-  display: inline-block;
-  white-space: nowrap;
-}
-
-.facCh{
-  display: inline-block;
-  will-change: opacity, transform;
-}
-
-
-.facViewport{
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-
-/* track orizzontale */
-.facTrack{
-  height: 100%;
-  display: flex;
-  width: 200vw; /* 2 pannelli */
-  will-change: transform;
-}
-
-.facPanel{
-  width: 100vw;
-  height: 100vh;
-  position: relative;
-  flex: 0 0 100vw;
-}
+.humWord{ display: inline-block; white-space: nowrap; }
+.humCh{ display: inline-block; will-change: opacity, transform; }

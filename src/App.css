@@ -1,6 +1,12 @@
 :root {
   --pageBg: var(--bg);
 
+  /* wipe orizzontale (blu->nero) */
+  --wipeOn: 0; /* 0/1 */
+  --wipeX: 100%; /* 100% = tutto colore A, 0% = tutto colore B */
+  --wipeA: #0b1320; /* blu */
+  --wipeB: #010101; /* nero */
+
   /* Brand */
   --brand: #009fb7;
 
@@ -64,7 +70,7 @@ body {
   margin: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
     Helvetica, Arial;
-  background: var(--bg);
+  background: var(--pageBg);
   color: var(--ink);
 }
 
@@ -451,4 +457,36 @@ textarea:focus {
 }
 .w.isBrand {
   color: rgba(0, 159, 183, 0.95);
+}
+
+.bgLayer {
+  position: fixed;
+  inset: 0;
+  background: var(--pageBg);
+  z-index: 0; /* ✅ non negativo */
+  pointer-events: none;
+  will-change: background;
+}
+
+.bgLayer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--wipeOn);
+  /* “taglio” verticale che scorre da destra a sinistra */
+  background: linear-gradient(
+    90deg,
+    var(--wipeA) 0%,
+    var(--wipeA) var(--wipeX),
+    var(--wipeB) var(--wipeX),
+    var(--wipeB) 100%
+  );
+  will-change: opacity, background;
+}
+
+.appShell {
+  position: relative;
+  z-index: 1; /* ✅ sopra al bgLayer */
+  min-height: 100vh;
 }

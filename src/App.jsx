@@ -1,131 +1,3 @@
-// import Navbar from "./components/Navbar/Navbar";
-// // import Hero from "./components/Hero/Hero";
-// import Hero from "./components/Hero/Hero";
-// import heroImg from "./assets/hero.jpg";
-// // import PinReadSection from "./components/PinReadSection/PinReadSection";
-// import Siamo from "./components/Siamo/Siamo";
-// import HorizontalCardsSection from "./components/HorizontalCardsSection/HorizontalCardsSection";
-// import Footer from "./components/Footer/Footer";
-// import { useEffect } from "react";
-// import gsap from "gsap";
-// import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-// gsap.registerPlugin(ScrollTrigger);
-
-// function useHashSafeLoad() {
-//   useEffect(() => {
-//     const hash = window.location.hash;
-
-//     // Se arrivi con #qualcosa: evita che il browser scrolli prima del pin
-//     if (hash) {
-//       // togli hash senza ricaricare
-//       history.replaceState(
-//         null,
-//         "",
-//         window.location.pathname + window.location.search
-//       );
-//       window.scrollTo(0, 0);
-
-//       // se vuoi comunque andare alla sezione dopo init:
-//       requestAnimationFrame(() => {
-//         requestAnimationFrame(() => {
-//           const el = document.getElementById(hash.replace("#", ""));
-//           if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-//         });
-//       });
-//     }
-//   }, []);
-// }
-
-// export default function App() {
-//   useEffect(() => {
-//     requestAnimationFrame(() => ScrollTrigger.refresh());
-//   }, []);
-
-//   useHashSafeLoad();
-//   return (
-//     <div className="app">
-//       <Navbar />
-
-//       <main>
-//         {/* <Hero /> */}
-//         <Hero
-//           src={heroImg}
-//           alt="Hero"
-//           title="comunicare è un gioco di parole"
-//           durationPx={900} // prova 750, 900, 1100
-//         />
-
-//         <Siamo
-//   id="siamo"
-//   kicker="Siamo"
-//   title="Visione e metodo, analisi e strategia."
-//   paragraphs={[
-//     "Spin Factor è una società attiva dal 2017 nel settore della comunicazione e della consulenza politica e istituzionale. Un team con competenze complementari per costruire identità, creare connessioni e sviluppare posizionamenti strategici.",
-//     "Approccio integrato e metodo sartoriale: dall’analisi di scenario alla definizione strategica, fino all’esecuzione coerente e misurabile.",
-//   ]}
-//   durationPx={1000}
-// />
-
-//         <HorizontalCardsSection
-//           id="facciamo"
-//           kicker="Facciamo"
-//           title="Dall’analisi alla strategia, fino all’esecuzione."
-//           introParagraphs={[
-//             "Sviluppiamo analisi di contesto personalizzate per fotografare il percepito attuale, identificare l’evoluzione dello scenario e definire la strategia più adatta per raggiungere gli obiettivi condivisi.",
-//           ]}
-//           cards={[
-//             {
-//               eyebrow: "01",
-//               title: "Analisi scenario",
-//               text: "Mappatura attenta e targetizzata delle discussioni online, comprensiva di sentiment analysis e analisi semantica.",
-//             },
-//             {
-//               eyebrow: "02",
-//               title: "Posizionamento strategico",
-//               text: "Analisi di contesto e definizione della strategia più adatta per raggiungere gli obiettivi condivisi.",
-//             },
-//             {
-//               eyebrow: "03",
-//               title: "Piani di comunicazione integrata",
-//               text: "Piani digitali integrati, relazioni media, creatività e declinazioni coerenti con il posizionamento.",
-//             },
-//           ]}
-//         />
-
-//         <HorizontalCardsSection
-//           id="human"
-//           kicker="Human"
-//           title="Ascolto, monitoraggio, sintesi: dati che diventano decisioni."
-//           introParagraphs={[
-//             "Con la piattaforma Human® otteniamo una mappatura delle discussioni online con sentiment analysis e analisi semantica.",
-//             "Forniamo report e sintesi delle analisi con elaborazione dei dati e spunti strategici curati da professionisti.",
-//           ]}
-//           cards={[
-//             {
-//               eyebrow: "A",
-//               title: "Web & Social Listening",
-//               text: "Mappatura targetizzata delle discussioni online con sentiment e semantica.",
-//             },
-//             {
-//               eyebrow: "B",
-//               title: "Monitoraggio digitale",
-//               text: "Report, sintesi e insight strategici a partire dai dati raccolti.",
-//             },
-//             {
-//               eyebrow: "C",
-//               title: "Monitoraggio stampa",
-//               text: "Analisi qualitativa e quantitativa della rassegna, integrata ai dati digitali.",
-//             },
-//           ]}
-//         />
-
-//         <Footer id="contatti" />
-//       </main>
-//     </div>
-//   );
-// }
-
 import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -137,6 +9,7 @@ import heroImg from "./assets/hero.jpg";
 
 import Siamo from "./components/Siamo/Siamo";
 import Facciamo from "./components/Facciamo/Facciamo";
+import Human from "./components/Human/Human";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -197,51 +70,71 @@ function FooterPlaceholder() {
 }
 
 export default function App() {
-  const didFirstRefresh = useRef(false);
-
   useLayoutEffect(() => {
-    // ✅ BG scroll-driven (Siamo -> Facciamo)
     const rootEl = document.documentElement;
 
-    // leggo il “nero” dal tuo token (se non c’è, fallback #000)
-    const siamoBg =
-      getComputedStyle(rootEl).getPropertyValue("--bg").trim() || "#000";
-    const facciamoBg = "#101327";
+    const nero =
+      getComputedStyle(rootEl).getPropertyValue("--bg").trim() || "#010101";
 
-    // variabile css globale
-    gsap.set(rootEl, { "--pageBg": siamoBg });
+    const blu = "#0b1320"; // Facciamo
+    const verde = "#02291fff"; // Human
+
+    gsap.set(rootEl, { "--pageBg": nero });
 
     ScrollTrigger.getById("bg-siamo-to-facciamo")?.kill(true);
+    ScrollTrigger.getById("bg-facciamo-to-human")?.kill(true);
+
+    // 1) Siamo -> Facciamo (nero -> blu)
+    const animSiamoFacciamo = gsap.fromTo(
+      rootEl,
+      { "--pageBg": nero },
+      { "--pageBg": blu, ease: "none", immediateRender: false }
+    );
 
     ScrollTrigger.create({
       id: "bg-siamo-to-facciamo",
       trigger: "#facciamo",
-      start: "top bottom", // inizia quando facciamo entra
-      end: "top top", // finisce quando facciamo arriva in alto
+      start: "top bottom",
+      end: "top top",
       scrub: true,
-      animation: gsap.to(rootEl, { "--pageBg": facciamoBg, ease: "none" }),
+      animation: animSiamoFacciamo,
+      invalidateOnRefresh: true,
     });
 
-    // ✅ UN SOLO refresh “serio” dopo mount (doppio RAF)
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        ScrollTrigger.refresh(true);
-        didFirstRefresh.current = true;
-      });
+    // 2) Facciamo -> Human (blu -> verde)  ✅ IDENTICO identico
+    const animFacciamoHuman = gsap.fromTo(
+      rootEl,
+      { "--pageBg": nero },
+      { "--pageBg": verde, ease: "none", immediateRender: false }
+    );
+
+    ScrollTrigger.create({
+      id: "bg-facciamo-to-human",
+      trigger: "#human",
+      start: "top bottom",
+      end: "top top",
+      scrub: true,
+      animation: animFacciamoHuman,
+      invalidateOnRefresh: true,
     });
 
-    // ✅ refresh al resize
-    const onResize = () => ScrollTrigger.refresh(true);
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => ScrollTrigger.refresh())
+    );
+
+    const onResize = () => ScrollTrigger.refresh();
     window.addEventListener("resize", onResize);
 
     return () => {
       window.removeEventListener("resize", onResize);
       ScrollTrigger.getById("bg-siamo-to-facciamo")?.kill(true);
+      ScrollTrigger.getById("bg-facciamo-to-human")?.kill(true);
     };
   }, []);
 
   return (
     <div className="appShell">
+      <div className="bgLayer" aria-hidden="true" />
       <Navbar />
 
       <main>
@@ -274,7 +167,15 @@ export default function App() {
           ]}
         />
 
-        <HumanDebug />
+        <Human
+          paragraphs={[
+            "Human è la nostra piattaforma esclusiva di web e social listening, sviluppata con Osservatorio Social.",
+            "Monitora performance, trend e topic, misurando sentiment e reputation per individuare insight utili e tempestivi.",
+            "Gli indicatori sono segmentati per area geografica, demografia e interessi. I nostri Data Analyst interpretano i risultati e li trasformano in decisioni di posizionamento.",
+            "Un servizio di analisi e monitoraggio su misura, costruito sulle tue priorità.",
+          ]}
+        />
+
         <FooterPlaceholder />
       </main>
     </div>
