@@ -1,0 +1,74 @@
+/* layer panel: centratura vera */
+.facSvcPanel{
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding-top: 90px; /* spazio navbar */
+}
+
+.facSvcWrap{
+  width: min(980px, calc(100% - 48px));
+  display: grid;
+  gap: 26px; /* meno “vuoto” */
+}
+
+/* blocco pulito, niente card */
+.facSvcItem{
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.facSvcIcon{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: var(--brand);
+  background: rgba(0,159,183,0.08);
+  border: 1px solid rgba(0,159,183,0.16);
+}
+
+.facSvcIconSvg{
+  width: 22px;
+  height: 22px;
+}
+
+.facSvcBody{
+  display: grid;
+  gap: 6px;
+}
+
+.facSvcTitle{
+  margin: 0;
+  font-size: clamp(20px, 2.2vw, 26px);
+  letter-spacing: -0.01em;
+  color: var(--text-strong);
+}
+
+.facSvcText{
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--text);
+  max-width: 74ch;
+}
+
+/* mobile */
+@media (max-width: 640px){
+  .facSvcItem{
+    grid-template-columns: 40px 1fr;
+    gap: 12px;
+  }
+  .facSvcIcon{
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+  .facSvcWrap{
+    gap: 20px;
+  }
+}
