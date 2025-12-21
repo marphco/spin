@@ -39,6 +39,7 @@
 .siamoTitle,
 .siamoBody{
   opacity: 0;
+  visibility: hidden;
   transform: translateY(10px);
 }
 
@@ -63,7 +64,6 @@
   border-radius: 99px;
   background: var(--brand);
   margin: 6px auto 10px;
-  opacity: .9; /* ok: GSAP gestisce opacity complessiva */
 }
 
 .siamoBody{
@@ -73,6 +73,17 @@
   line-height: 1.9;
   color: var(--text);
   white-space: normal;
+}
+
+/* ✅ wrapper parola: impedisce di spezzare la parola a metà */
+.siamoWord{
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* ✅ spazi preservati */
+.siamoSpace{
+  white-space: pre;
 }
 
 .siamoCh{

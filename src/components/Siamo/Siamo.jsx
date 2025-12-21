@@ -5,11 +5,51 @@ import "./Siamo.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
-function splitChars(str) {
-  return Array.from(str).map((ch, i) => ({
-    ch,
-    key: `${i}-${ch === " " ? "space" : ch}`,
-  }));
+// Tokenizza in: WORD | SPACE | BR (newline)
+function tokenizeText(str) {
+  const s = String(str || "");
+  const out = [];
+  let i = 0;
+
+  while (i < s.length) {
+    const ch = s[i];
+
+    // newline => BR
+    if (ch === "\n") {
+      out.push({ type: "br", key: `br-${i}` });
+      i += 1;
+      continue;
+    }
+
+    // whitespace (spazi/tabs) => SPACE (preserviamo la run)
+    if (/\s/.test(ch)) {
+      let j = i;
+      while (j < s.length && /\s/.test(s[j]) && s[j] !== "\n") j++;
+      const text = s.slice(i, j);
+      out.push({ type: "space", text, key: `sp-${i}-${j}` });
+      i = j;
+      continue;
+    }
+
+    // word run => WORD (poi splittiamo in chars)
+    let j = i;
+    while (j < s.length && !/\s/.test(s[j]) && s[j] !== "\n") j++;
+    const word = s.slice(i, j);
+
+    out.push({
+      type: "word",
+      word,
+      chars: Array.from(word).map((c, k) => ({
+        ch: c,
+        key: `c-${i}-${k}-${c}`,
+      })),
+      key: `w-${i}-${j}`,
+    });
+
+    i = j;
+  }
+
+  return out;
 }
 
 export default function Siamo({
@@ -21,13 +61,10 @@ export default function Siamo({
 }) {
   const rootRef = useRef(null);
 
-  const titleChars = useMemo(() => splitChars(title || ""), [title]);
+  const titleTokens = useMemo(() => tokenizeText(title || ""), [title]);
 
-  const bodyText = useMemo(() => {
-    return paragraphs.join("\n\n");
-  }, [paragraphs]);
-
-  const bodyChars = useMemo(() => splitChars(bodyText), [bodyText]);
+  const bodyText = useMemo(() => paragraphs.join("\n\n"), [paragraphs]);
+  const bodyTokens = useMemo(() => tokenizeText(bodyText), [bodyText]);
 
   useLayoutEffect(() => {
     const root = rootRef.current;
@@ -44,9 +81,9 @@ export default function Siamo({
       const titleEls = root.querySelectorAll("[data-tch]");
       const bodyEls = root.querySelectorAll("[data-bch]");
 
-      // ✅ Stato iniziale (matcha CSS, ma qui lo ribadiamo per sicurezza)
+      // ✅ Anti-flash robusto: autoAlpha = opacity + visibility
       gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], {
-        opacity: 0,
+        autoAlpha: 0,
         y: 10,
       });
 
@@ -67,29 +104,15 @@ export default function Siamo({
         },
       });
 
-      // 1) Entra “cornice” (kicker + underline) insieme
+      // 1) Cornice (kicker + underline) insieme
       tl.to(
         [kickerEl, underlineEl],
-        {
-          opacity: 1,
-          y: 0,
-          ease: "none",
-          duration: 0.12,
-        },
+        { autoAlpha: 1, y: 0, ease: "none", duration: 0.12 },
         0.02
       );
 
-      // 2) Appare il blocco titolo (wrapper) e poi i chars
-      tl.to(
-        titleWrap,
-        {
-          opacity: 1,
-          y: 0,
-          ease: "none",
-          duration: 0.06,
-        },
-        0.06
-      );
+      // 2) Wrapper titolo + chars
+      tl.to(titleWrap, { autoAlpha: 1, y: 0, ease: "none", duration: 0.06 }, 0.06);
 
       tl.to(
         titleEls,
@@ -103,17 +126,8 @@ export default function Siamo({
         0.08
       );
 
-      // 3) Body wrapper e poi i chars del body
-      tl.to(
-        bodyWrap,
-        {
-          opacity: 1,
-          y: 0,
-          ease: "none",
-          duration: 0.06,
-        },
-        0.22
-      );
+      // 3) Wrapper body + chars
+      tl.to(bodyWrap, { autoAlpha: 1, y: 0, ease: "none", duration: 0.06 }, 0.22);
 
       tl.to(
         bodyEls,
@@ -129,7 +143,7 @@ export default function Siamo({
     }, root);
 
     return () => ctx.revert();
-  }, [id, durationPx, titleChars.length, bodyChars.length]);
+  }, [id, durationPx, titleTokens.length, bodyTokens.length]);
 
   return (
     <section className="siamoSection" id={id} ref={rootRef}>
@@ -138,33 +152,49 @@ export default function Siamo({
           {kicker}
         </div>
 
+        {/* ✅ Word-wrapping: ogni parola è un blocco nowrap, ma dentro animiamo i chars */}
         <h2 className="siamoTitle" data-titlewrap aria-label={title}>
-          {titleChars.map(({ ch, key }) => (
-            <span
-              key={key}
-              data-tch
-              className={`siamoCh ${ch === " " ? "isSpace" : ""}`}
-              aria-hidden="true"
-            >
-              {ch === " " ? "\u00A0" : ch}
-            </span>
-          ))}
+          {titleTokens.map((t) => {
+            if (t.type === "br") return <br key={t.key} />;
+            if (t.type === "space")
+              return (
+                <span key={t.key} className="siamoSpace" aria-hidden="true">
+                  {t.text.replace(/ /g, "\u00A0")}
+                </span>
+              );
+
+            // word
+            return (
+              <span key={t.key} className="siamoWord" aria-hidden="true">
+                {t.chars.map(({ ch, key }) => (
+                  <span key={key} data-tch className="siamoCh">
+                    {ch}
+                  </span>
+                ))}
+              </span>
+            );
+          })}
         </h2>
 
         <div className="siamoUnderline" data-underline aria-hidden="true" />
 
         <div className="siamoBody" data-bodywrap aria-label={bodyText}>
-          {bodyChars.map(({ ch, key }, idx) => {
-            if (ch === "\n") return <br key={`br-${key}-${idx}`} />;
+          {bodyTokens.map((t) => {
+            if (t.type === "br") return <br key={t.key} />;
+            if (t.type === "space")
+              return (
+                <span key={t.key} className="siamoSpace" aria-hidden="true">
+                  {t.text.replace(/ /g, "\u00A0")}
+                </span>
+              );
 
             return (
-              <span
-                key={key}
-                data-bch
-                className={`siamoCh ${ch === " " ? "isSpace" : ""}`}
-                aria-hidden="true"
-              >
-                {ch === " " ? "\u00A0" : ch}
+              <span key={t.key} className="siamoWord" aria-hidden="true">
+                {t.chars.map(({ ch, key }) => (
+                  <span key={key} data-bch className="siamoCh">
+                    {ch}
+                  </span>
+                ))}
               </span>
             );
           })}
