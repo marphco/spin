@@ -1,0 +1,215 @@
+.ftSection{
+  position: relative;
+  width: 100%;
+  padding: 72px 0 28px;
+  overflow: hidden;
+
+  /* ✅ stacco dal nero senza “cambiare colore” */
+  background: #0e1318;
+  color: var(--text);
+}
+
+/* micro-luce sopra, quasi invisibile ma “premium” */
+.ftSection::before{
+  content:"";
+  position:absolute;
+  left:0; right:0; top:0;
+  height: 120px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.05), transparent 70%);
+  pointer-events:none;
+}
+
+/* hairline top divider */
+.ftSection::after{
+  content:"";
+  position:absolute;
+  left: 0; right: 0; top: 0;
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+  pointer-events:none;
+}
+
+.ftInner{
+  position: relative;
+  width: min(1100px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.ftGrid{
+  display: grid;
+  grid-template-columns: 1.1fr 1.2fr 0.8fr;
+  gap: 44px;
+  align-items: start;
+}
+
+.ftCol{
+  display: grid;
+  gap: 14px;
+}
+
+.ftBrand{
+  font-size: 16px;
+  letter-spacing: .02em;
+  color: var(--text-strong);
+}
+
+.ftTagline{
+  margin: 0;
+  max-width: 46ch;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.72);
+  font-size: 14px;
+}
+
+.ftMeta{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.45);
+  margin-top: 6px;
+}
+
+.ftMetaSep{
+  opacity: .6;
+}
+
+.ftTitle{
+  font-size: 12px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.52);
+  margin-bottom: 2px;
+}
+
+.ftRow{
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 12px;
+  align-items: start;
+  text-decoration: none;
+  color: rgba(255,255,255,0.78);
+}
+
+.ftRow:hover{
+  color: rgba(255,255,255,0.92);
+}
+
+.ftRowStatic{
+  cursor: default;
+}
+
+.ftRowIcon{
+  width: 28px;
+  height: 28px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: rgba(0,159,183,0.92);
+  background: rgba(0,159,183,0.08);
+  border: 1px solid rgba(0,159,183,0.14);
+}
+
+.ftIcon{
+  width: 16px;
+  height: 16px;
+}
+
+.ftRowText{
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.ftSub{
+  display: block;
+  color: rgba(255,255,255,0.62);
+  max-width: 52ch;
+}
+
+.ftStrong2{
+  margin-top: 10px;
+}
+
+.ftSocial{
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.ftSocialBtn{
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+
+  color: rgba(255,255,255,0.72);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+
+  transition: transform .15s ease, background .15s ease, color .15s ease;
+  text-decoration: none;
+}
+
+.ftSocialBtn:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.92);
+}
+
+.ftSocialIcon{
+  width: 18px;
+  height: 18px;
+}
+
+.ftBottom{
+  margin-top: 42px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  font-size: 12px;
+  color: rgba(255,255,255,0.52);
+}
+
+.ftLegalLink{
+  color: rgba(255,255,255,0.62);
+  text-decoration: none;
+}
+
+.ftLegalLink:hover{
+  color: rgba(255,255,255,0.86);
+}
+
+.ftBottomSep{
+  opacity: .6;
+}
+
+/* responsive */
+@media (max-width: 980px){
+  .ftGrid{
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .ftTagline{
+    max-width: 60ch;
+  }
+  .ftBottom{
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 640px){
+  .ftSection{
+    padding: 56px 0 22px;
+  }
+  .ftInner{
+    width: min(1100px, calc(100% - 36px));
+  }
+}

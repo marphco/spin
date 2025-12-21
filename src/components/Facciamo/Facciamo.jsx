@@ -47,157 +47,175 @@ export default function Facciamo({
   const bodyTokens = useMemo(() => tokenize(bodyText), [bodyText]);
 
   useLayoutEffect(() => {
-  const root = rootRef.current;
-  if (!root) return;
+    const root = rootRef.current;
+    if (!root) return;
 
-  const ctx = gsap.context(() => {
-    ScrollTrigger.getById(`facciamo-${id}`)?.kill(true);
+    const ctx = gsap.context(() => {
+      ScrollTrigger.getById(`facciamo-${id}`)?.kill(true);
 
-    const rootEl = document.documentElement;
+    //   const rootEl = document.documentElement;
 
-    const track = root.querySelector("[data-ftrack]");
+      const track = root.querySelector("[data-ftrack]");
 
-    // ---- Intro refs
-    const kickerEl = root.querySelector("[data-fkicker]");
-    const underlineEl = root.querySelector("[data-funderline]");
-    const titleWrap = root.querySelector("[data-ftitlewrap]");
-    const bodyWrap = root.querySelector("[data-fbodywrap]");
+      // ---- Intro refs
+      const kickerEl = root.querySelector("[data-fkicker]");
+      const underlineEl = root.querySelector("[data-funderline]");
+      const titleWrap = root.querySelector("[data-ftitlewrap]");
+      const bodyWrap = root.querySelector("[data-fbodywrap]");
 
-    const titleEls = Array.from(root.querySelectorAll("[data-ftch]"));
-    const bodyEls = Array.from(root.querySelectorAll("[data-fbch]"));
+      const titleEls = Array.from(root.querySelectorAll("[data-ftch]"));
+      const bodyEls = Array.from(root.querySelectorAll("[data-fbch]"));
 
-    // ---- Services refs
-    const servicesPanel = root.querySelector("[data-fservicespanel]");
-    const servicesWrap = root.querySelector("[data-serviceswrap]");
-    const serviceItems = gsap.utils.toArray(root.querySelectorAll("[data-service]"));
+      // ---- Services refs
+      const servicesPanel = root.querySelector("[data-fservicespanel]");
+      const servicesWrap = root.querySelector("[data-serviceswrap]");
+      const serviceItems = gsap.utils.toArray(
+        root.querySelectorAll("[data-service]")
+      );
 
-    // stato iniziale
-    gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], { autoAlpha: 0, y: 10 });
-    gsap.set(titleEls, { autoAlpha: 0, y: 10 });
-    gsap.set(bodyEls, { autoAlpha: 0, y: 6 });
+      // stato iniziale
+      gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], {
+        autoAlpha: 0,
+        y: 10,
+      });
+      gsap.set(titleEls, { autoAlpha: 0, y: 10 });
+      gsap.set(bodyEls, { autoAlpha: 0, y: 6 });
 
-    gsap.set(track, { x: 0 });
+      gsap.set(track, { x: 0 });
 
-    gsap.set(servicesPanel, { autoAlpha: 1 }); // il panel esiste, ma lo reveal lo fai sugli items
-    gsap.set(servicesWrap, { autoAlpha: 0 });
-    gsap.set(serviceItems, { autoAlpha: 0, y: 18 });
+      gsap.set(servicesPanel, { autoAlpha: 1 }); // il panel esiste, ma lo reveal lo fai sugli items
+      gsap.set(servicesWrap, { autoAlpha: 0 });
+      gsap.set(serviceItems, { autoAlpha: 0, y: 18 });
 
-    // durata testo (come tua)
-    const charsCount = titleEls.length + bodyEls.length;
-    const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-    const mobileBoost = vw < 640 ? 1.35 : vw < 900 ? 1.18 : 1;
+      // durata testo (come tua)
+      const charsCount = titleEls.length + bodyEls.length;
+      const vw = Math.max(
+        document.documentElement.clientWidth,
+        window.innerWidth || 0
+      );
+      const mobileBoost = vw < 640 ? 1.35 : vw < 900 ? 1.18 : 1;
 
-    const textPxAuto = Math.round(Math.max(1000, Math.min(3200, charsCount * 3.8)) * mobileBoost);
-    const textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
+      const textPxAuto = Math.round(
+        Math.max(1000, Math.min(3200, charsCount * 3.8)) * mobileBoost
+      );
+      const textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
 
-   const blu = "#0b1320";
-const nero = "#010101";
+    //   const blu = "#0b1320";
+    //   const nero = "#010101";
 
-const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75));      // slide orizzontale
-const servicesPx = Math.round(Math.max(720, window.innerHeight * 1.05));  // reveal
+      const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75)); // slide orizzontale
+      const servicesPx = Math.round(Math.max(720, window.innerHeight * 1.05)); // reveal
 
-const totalPx = textPxFinal + horizPx + servicesPx;
+      const totalPx = textPxFinal + horizPx + servicesPx;
 
+      const tl = gsap.timeline({ defaults: { ease: "none" } });
 
-    const tl = gsap.timeline({ defaults: { ease: "none" } });
+      ScrollTrigger.create({
+        id: `facciamo-${id}`,
+        trigger: root,
+        start: "top top",
+        end: () => `+=${totalPx}`,
+        scrub: true,
+        pin: true,
+        pinSpacing: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        animation: tl,
+      });
 
-    ScrollTrigger.create({
-      id: `facciamo-${id}`,
-      trigger: root,
-      start: "top top",
-      end: () => `+=${totalPx}`,
-      scrub: true,
-      pin: true,
-      pinSpacing: true,
-      anticipatePin: 1,
-      invalidateOnRefresh: true,
-      animation: tl,
-    });
+      // -------------------------
+      // A) TESTO (0 -> textPxFinal)  [uguale a prima]
+      // -------------------------
+      const pad = 12;
+      const frame = Math.round(textPxFinal * 0.12);
+      const wrap = Math.round(textPxFinal * 0.06);
+      const titleSeg = Math.round(textPxFinal * 0.22);
 
-    // -------------------------
-    // A) TESTO (0 -> textPxFinal)  [uguale a prima]
-    // -------------------------
-    const pad = 12;
-    const frame = Math.round(textPxFinal * 0.12);
-    const wrap = Math.round(textPxFinal * 0.06);
-    const titleSeg = Math.round(textPxFinal * 0.22);
+      const t_frameStart = pad;
+      const t_frameEnd = t_frameStart + frame;
 
-    const t_frameStart = pad;
-    const t_frameEnd = t_frameStart + frame;
+      const t_titleWrapStart = t_frameEnd;
+      const t_titleWrapEnd = t_titleWrapStart + wrap;
 
-    const t_titleWrapStart = t_frameEnd;
-    const t_titleWrapEnd = t_titleWrapStart + wrap;
+      const t_titleStart = t_titleWrapEnd;
+      const t_titleEnd = t_titleStart + titleSeg;
 
-    const t_titleStart = t_titleWrapEnd;
-    const t_titleEnd = t_titleStart + titleSeg;
+      const t_bodyWrapStart = t_titleEnd;
+      const t_bodyWrapEnd = t_bodyWrapStart + wrap;
 
-    const t_bodyWrapStart = t_titleEnd;
-    const t_bodyWrapEnd = t_bodyWrapStart + wrap;
+      const bodySeg = Math.max(1, textPxFinal - t_bodyWrapEnd);
+      const t_bodyStart = t_bodyWrapEnd;
 
-    const bodySeg = Math.max(1, textPxFinal - t_bodyWrapEnd);
-    const t_bodyStart = t_bodyWrapEnd;
+      const staggerEachFit = (segmentDur, n) => {
+        if (n <= 1) return 0;
+        const perCharDur = 1;
+        return Math.max(0, (segmentDur - perCharDur) / (n - 1));
+      };
 
-    const staggerEachFit = (segmentDur, n) => {
-      if (n <= 1) return 0;
-      const perCharDur = 1;
-      return Math.max(0, (segmentDur - perCharDur) / (n - 1));
-    };
+      tl.to(
+        [kickerEl, underlineEl],
+        { autoAlpha: 1, y: 0, duration: frame },
+        t_frameStart
+      );
+      tl.to(
+        titleWrap,
+        { autoAlpha: 1, y: 0, duration: wrap },
+        t_titleWrapStart
+      );
 
-    tl.to([kickerEl, underlineEl], { autoAlpha: 1, y: 0, duration: frame }, t_frameStart);
-    tl.to(titleWrap, { autoAlpha: 1, y: 0, duration: wrap }, t_titleWrapStart);
+      tl.to(
+        titleEls,
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: 1,
+          stagger: {
+            each: staggerEachFit(titleSeg, titleEls.length),
+            from: "start",
+          },
+        },
+        t_titleStart
+      );
 
-    tl.to(
-      titleEls,
-      { autoAlpha: 1, y: 0, duration: 1, stagger: { each: staggerEachFit(titleSeg, titleEls.length), from: "start" } },
-      t_titleStart
-    );
+      tl.to(bodyWrap, { autoAlpha: 1, y: 0, duration: wrap }, t_bodyWrapStart);
 
-    tl.to(bodyWrap, { autoAlpha: 1, y: 0, duration: wrap }, t_bodyWrapStart);
+      tl.to(
+        bodyEls,
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: 1,
+          stagger: {
+            each: staggerEachFit(bodySeg, bodyEls.length),
+            from: "start",
+          },
+        },
+        t_bodyStart
+      );
 
-    tl.to(
-      bodyEls,
-      { autoAlpha: 1, y: 0, duration: 1, stagger: { each: staggerEachFit(bodySeg, bodyEls.length), from: "start" } },
-      t_bodyStart
-    );
+      // B) ORIZZONTALE (text -> services)
+      const hStart = textPxFinal + 1;
+      tl.to(track, { x: () => -window.innerWidth, duration: horizPx }, hStart);
 
-   const hStart = textPxFinal + 1;
+      // -------------------------
+      // C) REVEAL SERVIZI (dopo lo slide)
+      // -------------------------
+      const sStart = hStart + horizPx + 1;
 
-// 1) durante lo slide: background blu -> nero (smooth)
-tl.fromTo(
-  rootEl,
-  { "--pageBg": blu },
-  { "--pageBg": nero, ease: "none", duration: horizPx, immediateRender: false },
-  hStart
-);
+      tl.to(servicesWrap, { autoAlpha: 1, duration: 120 }, sStart);
 
-// 2) slide orizzontale (stessa durata)
-tl.to(
-  track,
-  { x: () => -window.innerWidth, ease: "none", duration: horizPx },
-  hStart
-);
+      const step = Math.round(servicesPx / (serviceItems.length + 1));
+      serviceItems.forEach((el, i) => {
+        tl.to(
+          el,
+          { autoAlpha: 1, y: 0, duration: Math.round(step * 0.7) },
+          sStart + 80 + step * i
+        );
+      });
+    }, root);
 
-// 3) sicurezza: quando finisce lo slide, sei NERO
-tl.set(rootEl, { "--pageBg": nero }, hStart + horizPx);
-
-
-    // -------------------------
-    // C) REVEAL SERVIZI (dopo lo slide)
-    // -------------------------
-    const sStart = hStart + horizPx + 1;
-
-    tl.to(servicesWrap, { autoAlpha: 1, duration: 120 }, sStart);
-
-    const step = Math.round(servicesPx / (serviceItems.length + 1));
-    serviceItems.forEach((el, i) => {
-      tl.to(el, { autoAlpha: 1, y: 0, duration: Math.round(step * 0.7) }, sStart + 80 + step * i);
-    });
-
-  }, root);
-
-  return () => ctx.revert();
-}, [id, textPx, titleTokens.length, bodyTokens.length]);
-
+    return () => ctx.revert();
+  }, [id, textPx, titleTokens.length, bodyTokens.length]);
 
   return (
     <section className="facSection" id={id} ref={rootRef}>

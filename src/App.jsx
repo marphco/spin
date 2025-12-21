@@ -10,6 +10,7 @@ import heroImg from "./assets/hero.jpg";
 import Siamo from "./components/Siamo/Siamo";
 import Facciamo from "./components/Facciamo/Facciamo";
 import Human from "./components/Human/Human";
+import Footer from "./components/Footer/Footer";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -71,66 +72,83 @@ function FooterPlaceholder() {
 
 export default function App() {
   useLayoutEffect(() => {
-    const rootEl = document.documentElement;
+  const rootEl = document.documentElement;
 
-    const nero =
-      getComputedStyle(rootEl).getPropertyValue("--bg").trim() || "#010101";
+  const nero =
+    getComputedStyle(rootEl).getPropertyValue("--bg").trim() || "#010101";
 
-    const blu = "#0b1320"; // Facciamo
-    const verde = "#02291fff"; // Human
+  const blu = "#0b1320";   // Facciamo (macro + micro)
+  const verde = "#02291f"; // Human (macro + micro)
 
-    gsap.set(rootEl, { "--pageBg": nero });
+  gsap.set(rootEl, { "--pageBg": nero });
 
-    ScrollTrigger.getById("bg-siamo-to-facciamo")?.kill(true);
-    ScrollTrigger.getById("bg-facciamo-to-human")?.kill(true);
+  // kill vecchi trigger
+  ScrollTrigger.getById("bg-siamo-to-facciamo")?.kill(true);
+  ScrollTrigger.getById("bg-facciamo-horizontal")?.kill(true); // 👈 se esisteva
+  ScrollTrigger.getById("bg-facciamo-to-human")?.kill(true);
+  ScrollTrigger.getById("bg-human-to-footer")?.kill(true);
 
-    // 1) Siamo -> Facciamo (nero -> blu)
-    const animSiamoFacciamo = gsap.fromTo(
+  // 1) Siamo -> Facciamo (nero -> blu)
+  ScrollTrigger.create({
+    id: "bg-siamo-to-facciamo",
+    trigger: "#facciamo",
+    start: "top bottom",
+    end: "top top",
+    scrub: true,
+    animation: gsap.fromTo(
       rootEl,
       { "--pageBg": nero },
       { "--pageBg": blu, ease: "none", immediateRender: false }
-    );
+    ),
+    invalidateOnRefresh: true,
+  });
 
-    ScrollTrigger.create({
-      id: "bg-siamo-to-facciamo",
-      trigger: "#facciamo",
-      start: "top bottom",
-      end: "top top",
-      scrub: true,
-      animation: animSiamoFacciamo,
-      invalidateOnRefresh: true,
-    });
-
-    // 2) Facciamo -> Human (blu -> verde)  ✅ IDENTICO identico
-    const animFacciamoHuman = gsap.fromTo(
+  // 2) Facciamo -> Human (blu -> verde)
+  ScrollTrigger.create({
+    id: "bg-facciamo-to-human",
+    trigger: "#human",
+    start: "top bottom",
+    end: "top top",
+    scrub: true,
+    animation: gsap.fromTo(
       rootEl,
-      { "--pageBg": nero },
+      { "--pageBg": blu },
       { "--pageBg": verde, ease: "none", immediateRender: false }
-    );
+    ),
+    invalidateOnRefresh: true,
+  });
 
-    ScrollTrigger.create({
-      id: "bg-facciamo-to-human",
-      trigger: "#human",
-      start: "top bottom",
-      end: "top top",
-      scrub: true,
-      animation: animFacciamoHuman,
-      invalidateOnRefresh: true,
-    });
+  // 3) Human -> Footer (verde -> nero)
+  ScrollTrigger.create({
+    id: "bg-human-to-footer",
+    trigger: "#footer",
+    start: "top bottom",
+    end: "top top",
+    scrub: true,
+    animation: gsap.fromTo(
+      rootEl,
+      { "--pageBg": verde },
+      { "--pageBg": nero, ease: "none", immediateRender: false }
+    ),
+    invalidateOnRefresh: true,
+  });
 
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => ScrollTrigger.refresh())
-    );
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => ScrollTrigger.refresh())
+  );
 
-    const onResize = () => ScrollTrigger.refresh();
-    window.addEventListener("resize", onResize);
+  const onResize = () => ScrollTrigger.refresh();
+  window.addEventListener("resize", onResize);
 
-    return () => {
-      window.removeEventListener("resize", onResize);
-      ScrollTrigger.getById("bg-siamo-to-facciamo")?.kill(true);
-      ScrollTrigger.getById("bg-facciamo-to-human")?.kill(true);
-    };
-  }, []);
+  return () => {
+    window.removeEventListener("resize", onResize);
+    ScrollTrigger.getById("bg-siamo-to-facciamo")?.kill(true);
+    ScrollTrigger.getById("bg-facciamo-to-human")?.kill(true);
+    ScrollTrigger.getById("bg-human-to-footer")?.kill(true);
+  };
+}, []);
+
+
 
   return (
     <div className="appShell">
@@ -176,7 +194,12 @@ export default function App() {
           ]}
         />
 
-        <FooterPlaceholder />
+        <Footer
+          facebookHref="#"
+          xHref="#"
+          privacyHref="/privacy-policy"
+          cookieHref="/cookie-policy"
+        />
       </main>
     </div>
   );

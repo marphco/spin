@@ -17,7 +17,11 @@ function Word({ token, type }) {
   return (
     <span className="humWord" aria-hidden="true">
       {chars.map((ch, i) => (
-        <span key={`${type}-${token}-${i}`} {...{ [dataAttr]: true }} className="humCh">
+        <span
+          key={`${type}-${token}-${i}`}
+          {...{ [dataAttr]: true }}
+          className="humCh"
+        >
           {ch}
         </span>
       ))}
@@ -55,20 +59,23 @@ export default function Human({
       const bodyEls = Array.from(root.querySelectorAll("[data-hbch]"));
 
       // ---- Track + services refs
-      const rootEl = document.documentElement;
       const track = root.querySelector("[data-htrack]");
-
       const servicesPanel = root.querySelector("[data-hservicespanel]");
       const servicesWrap = root.querySelector("[data-hserviceswrap]");
-      const serviceItems = gsap.utils.toArray(root.querySelectorAll("[data-hservice]"));
+      const serviceItems = gsap.utils.toArray(
+        root.querySelectorAll("[data-hservice]")
+      );
 
-      // ✅ guard
+      // guard
       if (!track || !servicesPanel || !servicesWrap) return;
 
       // -------------------------
       // INITIAL STATE
       // -------------------------
-      gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], { autoAlpha: 0, y: 10 });
+      gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], {
+        autoAlpha: 0,
+        y: 10,
+      });
       gsap.set(titleEls, { autoAlpha: 0, y: 10 });
       gsap.set(bodyEls, { autoAlpha: 0, y: 6 });
 
@@ -83,20 +90,21 @@ export default function Human({
       // DURATIONS
       // -------------------------
       const charsCount = titleEls.length + bodyEls.length;
-      const vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+      const vw = Math.max(
+        document.documentElement.clientWidth,
+        window.innerWidth || 0
+      );
       const mobileBoost = vw < 640 ? 1.35 : vw < 900 ? 1.18 : 1;
 
-      const textPxAuto = Math.round(Math.max(950, Math.min(2800, charsCount * 3.6)) * mobileBoost);
+      const textPxAuto = Math.round(
+        Math.max(950, Math.min(2800, charsCount * 3.6)) * mobileBoost
+      );
       const textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
 
       // come Facciamo (snello)
       const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75));
       const servicesPx = Math.round(Math.max(720, window.innerHeight * 1.05));
       const totalPx = textPxFinal + horizPx + servicesPx;
-
-      // colori
-      const verde = "#02291fff";
-      const nero = "#010101";
 
       const tl = gsap.timeline({ defaults: { ease: "none" } });
 
@@ -175,23 +183,12 @@ export default function Human({
       tl.set(bodyEls, { autoAlpha: 1, y: 0 }, textPxFinal);
 
       // -------------------------
-      // B) ORIZZONTALE + BG (verde -> nero)
+      // B) ORIZZONTALE (intro -> servizi)
+      // NB: qui NON si tocca il background: lo gestisce App.jsx
       // -------------------------
       const hStart = textPxFinal + 1;
 
-      // assicura che parta da verde (se arrivi qui, Human è verde per App.jsx)
-      tl.set(rootEl, { "--pageBg": verde }, hStart);
-
-      // slide orizzontale (intro -> servizi)
       tl.to(track, { x: () => -window.innerWidth, duration: horizPx }, hStart);
-
-      // cambio bg DURANTE lo slide (verde -> nero)
-      tl.fromTo(
-        rootEl,
-        { "--pageBg": verde },
-        { "--pageBg": nero, ease: "none", duration: horizPx, immediateRender: false },
-        hStart
-      );
 
       // -------------------------
       // C) REVEAL SERVIZI
@@ -202,7 +199,11 @@ export default function Human({
 
       const step = Math.round(servicesPx / (serviceItems.length + 1));
       serviceItems.forEach((el, i) => {
-        tl.to(el, { autoAlpha: 1, y: 0, duration: Math.round(step * 0.7) }, sStart + 80 + step * i);
+        tl.to(
+          el,
+          { autoAlpha: 1, y: 0, duration: Math.round(step * 0.7) },
+          sStart + 80 + step * i
+        );
       });
     }, root);
 
