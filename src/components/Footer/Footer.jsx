@@ -1,5 +1,6 @@
-import React from "react";
+import { useState } from "react";
 import "./Footer.css";
+
 
 function IconMail() {
   return (
@@ -100,6 +101,53 @@ export default function Footer({
 }) {
   const year = new Date().getFullYear();
 
+    const [name, setName] = useState("");
+  const [emailField, setEmailField] = useState("");
+  const [message, setMessage] = useState("");
+  const [hp, setHp] = useState(""); // honeypot
+
+  const [status, setStatus] = useState("idle"); // idle | sending | ok | error
+  const [errorMsg, setErrorMsg] = useState("");
+
+    const onSubmit = async (e) => {
+    e.preventDefault();
+    setStatus("sending");
+    setErrorMsg("");
+
+    try {
+      const r = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email: emailField,
+          message,
+          company: hp, // honeypot
+        }),
+      });
+
+      const data = await r.json().catch(() => ({}));
+
+      if (!r.ok) {
+        setStatus("error");
+        setErrorMsg(data?.error || "Errore invio. Riprova.");
+        return;
+      }
+
+      setStatus("ok");
+      setName("");
+      setEmailField("");
+      setMessage("");
+      setHp("");
+    // eslint-disable-next-line no-unused-vars
+    } catch (err) {
+      setStatus("error");
+      setErrorMsg("Errore di rete. Riprova.");
+    }
+  };
+
+
+
   return (
     <footer className="ftSection" id="footer">
       <span id="contatti" className="ftAnchor" aria-hidden="true" />
@@ -164,50 +212,72 @@ export default function Footer({
                 <div className="ftTitle">Scrivici</div>
               </div>
 
-              <form className="ftFormGrid" onSubmit={(e) => e.preventDefault()}>
-                <label className="ftField">
-                  <span className="ftFieldLabel">Nome</span>
-                  <input
-                    className="ftInput"
-                    type="text"
-                    name="name"
-                    autoComplete="name"
-                  />
-                </label>
+              <form className="ftFormGrid" onSubmit={onSubmit}>
+  {/* honeypot (invisibile) */}
+  <label className="ftHp" aria-hidden="true">
+    <span>Company</span>
+    <input
+      tabIndex={-1}
+      autoComplete="off"
+      value={hp}
+      onChange={(e) => setHp(e.target.value)}
+    />
+  </label>
 
-                <label className="ftField">
-                  <span className="ftFieldLabel">Email</span>
-                  <input
-                    className="ftInput"
-                    type="email"
-                    name="email"
-                    autoComplete="email"
-                    required
-                  />
-                </label>
+  <label className="ftField">
+    <span className="ftFieldLabel">Nome</span>
+    <input
+      className="ftInput"
+      type="text"
+      name="name"
+      autoComplete="name"
+      value={name}
+      onChange={(e) => setName(e.target.value)}
+    />
+  </label>
 
-                <label className="ftField ftFieldFull">
-                  <span className="ftFieldLabel">Messaggio</span>
-                  <textarea
-                    className="ftTextarea"
-                    name="message"
-                    rows={5}
-                    required
-                  />
-                </label>
+  <label className="ftField">
+    <span className="ftFieldLabel">Email</span>
+    <input
+      className="ftInput"
+      type="email"
+      name="email"
+      autoComplete="email"
+      required
+      value={emailField}
+      onChange={(e) => setEmailField(e.target.value)}
+    />
+  </label>
 
-                <div className="ftConsent">
-                  Inviando accetti l’{" "}
-                  <a className="ftInlineLink" href={privacyHref}>
-                    Informativa Privacy
-                  </a>
-                  .
-                </div>
+  <label className="ftField ftFieldFull">
+    <span className="ftFieldLabel">Messaggio</span>
+    <textarea
+      className="ftTextarea"
+      name="message"
+      rows={5}
+      required
+      value={message}
+      onChange={(e) => setMessage(e.target.value)}
+    />
+  </label>
 
-                <button className="ftBtn" type="submit">
-                  Invia
-                </button>
-              </form>
+  <div className="ftConsent">
+    Inviando accetti l’{" "}
+    <a className="ftInlineLink" href={privacyHref}>
+      Informativa Privacy
+    </a>
+    .
+  </div>
+
+  <button className="ftBtn" type="submit" disabled={status === "sending"}>
+    {status === "sending" ? "Invio..." : "Invia"}
+  </button>
+
+  {/* feedback elegante */}
+  {status === "ok" && <div className="ftNotice ftOk">Messaggio inviato.</div>}
+  {status === "error" && <div className="ftNotice ftErr">{errorMsg}</div>}
+</form>
+
             </div>
           </div>
         </div>

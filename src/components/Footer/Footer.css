@@ -322,3 +322,22 @@
   background: var(--brand); /* o una variabile footer */
   opacity: .9;
 }
+
+.ftHp{
+  position:absolute;
+  left:-9999px;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+}
+
+.ftNotice{
+  grid-column: 1 / -1;
+  font-size: 12px;
+  margin-top: 6px;
+  line-height: 1.5;
+  opacity: .9;
+}
+
+.ftOk{ color: rgba(255,255,255,0.78); }
+.ftErr{ color: rgba(255,120,120,0.9); }
