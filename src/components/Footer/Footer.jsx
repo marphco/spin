@@ -284,7 +284,7 @@ export default function Footer({
 
         <div className="ftBottom">
           <div className="ftCopy">
-            © {year} {company}. All rights reserved.
+            © {year} {company} • Tutti i diritti riservati.
           </div>
           <div className="ftPolicies">
             <a className="ftLegalLink" href={privacyHref}>
