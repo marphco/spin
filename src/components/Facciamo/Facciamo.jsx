@@ -219,6 +219,7 @@ export default function Facciamo({
 
   return (
     <section className="facSection" id={id} ref={rootRef}>
+        <div id="facciamo__nav" className="navAnchor" aria-hidden="true" />
       <div className="facViewport">
         <div className="facTrack" data-ftrack>
           {/* PANEL 1: INTRO */}

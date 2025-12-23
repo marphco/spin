@@ -103,6 +103,7 @@ export default function Siamo({
 
   return (
     <section className="siamoSection" id={id} ref={rootRef}>
+        <div id="siamo__nav" className="navAnchor" aria-hidden="true" />
       <div className="siamoInner">
         <div className="siamoKicker" data-kicker>
           {kicker}

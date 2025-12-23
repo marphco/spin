@@ -212,6 +212,7 @@ export default function Human({
 
   return (
     <section className="humSection" id={id} ref={rootRef}>
+        <div id="human__nav" className="navAnchor" aria-hidden="true" />
       <div className="humViewport">
         <div className="humTrack" data-htrack>
           {/* PANEL 1: INTRO */}

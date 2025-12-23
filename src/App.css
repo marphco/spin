@@ -490,3 +490,10 @@ textarea:focus {
   z-index: 1; /* ✅ sopra al bgLayer */
   min-height: 100vh;
 }
+
+/* anchor invisibile che definisce DOVE atterrare */
+.navAnchor{
+  position: relative;
+  height: 0;
+}
+
