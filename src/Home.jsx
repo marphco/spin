@@ -105,7 +105,11 @@ export default function Home() {
             id="top"
             src={heroImg}
             alt="Hero"
-            title="comunicare è un gioco di parole"
+            title={
+              <>
+                comunicare<br />è un gioco di parole
+              </>
+            }
             durationPx={900}
           />
 
