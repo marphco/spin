@@ -50,10 +50,12 @@ export default function Facciamo({
     const root = rootRef.current;
     if (!root) return;
 
+    const isMobile = window.matchMedia("(max-width: 720px)").matches;
+
     const ctx = gsap.context(() => {
       ScrollTrigger.getById(`facciamo-${id}`)?.kill(true);
 
-    //   const rootEl = document.documentElement;
+      //   const rootEl = document.documentElement;
 
       const track = root.querySelector("[data-ftrack]");
 
@@ -65,6 +67,9 @@ export default function Facciamo({
 
       const titleEls = Array.from(root.querySelectorAll("[data-ftch]"));
       const bodyEls = Array.from(root.querySelectorAll("[data-fbch]"));
+
+      const titleTargets = isMobile ? [titleWrap] : titleEls;
+      const bodyTargets = isMobile ? [bodyWrap] : bodyEls;
 
       // ---- Services refs
       const servicesPanel = root.querySelector("[data-fservicespanel]");
@@ -78,8 +83,8 @@ export default function Facciamo({
         autoAlpha: 0,
         y: 10,
       });
-      gsap.set(titleEls, { autoAlpha: 0, y: 10 });
-      gsap.set(bodyEls, { autoAlpha: 0, y: 6 });
+      gsap.set(titleTargets, { autoAlpha: 0, y: 10 });
+      gsap.set(bodyTargets, { autoAlpha: 0, y: 6 });
 
       gsap.set(track, { x: 0 });
 
@@ -100,8 +105,8 @@ export default function Facciamo({
       );
       const textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
 
-    //   const blu = "#0b1320";
-    //   const nero = "#010101";
+      //   const blu = "#0b1320";
+      //   const nero = "#010101";
 
       const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75)); // slide orizzontale
       const servicesPx = Math.round(Math.max(720, window.innerHeight * 1.05)); // reveal
@@ -115,10 +120,10 @@ export default function Facciamo({
         trigger: root,
         start: "top top",
         end: () => `+=${totalPx}`,
-        scrub: true,
+        scrub: isMobile ? 0.6 : true,
         pin: true,
         pinSpacing: true,
-        anticipatePin: 1,
+        anticipatePin: isMobile ? 2 : 1,
         invalidateOnRefresh: true,
         animation: tl,
       });
@@ -164,32 +169,36 @@ export default function Facciamo({
       );
 
       tl.to(
-        titleEls,
-        {
-          autoAlpha: 1,
-          y: 0,
-          duration: 1,
-          stagger: {
-            each: staggerEachFit(titleSeg, titleEls.length),
-            from: "start",
-          },
-        },
+        titleTargets,
+        isMobile
+          ? { autoAlpha: 1, y: 0, duration: titleSeg }
+          : {
+              autoAlpha: 1,
+              y: 0,
+              duration: 1,
+              stagger: {
+                each: staggerEachFit(titleSeg, titleEls.length),
+                from: "start",
+              },
+            },
         t_titleStart
       );
 
       tl.to(bodyWrap, { autoAlpha: 1, y: 0, duration: wrap }, t_bodyWrapStart);
 
       tl.to(
-        bodyEls,
-        {
-          autoAlpha: 1,
-          y: 0,
-          duration: 1,
-          stagger: {
-            each: staggerEachFit(bodySeg, bodyEls.length),
-            from: "start",
-          },
-        },
+        bodyTargets,
+        isMobile
+          ? { autoAlpha: 1, y: 0, duration: bodySeg }
+          : {
+              autoAlpha: 1,
+              y: 0,
+              duration: 1,
+              stagger: {
+                each: staggerEachFit(bodySeg, bodyEls.length),
+                from: "start",
+              },
+            },
         t_bodyStart
       );
 
@@ -219,7 +228,7 @@ export default function Facciamo({
 
   return (
     <section className="facSection" id={id} ref={rootRef}>
-        <div id="facciamo__nav" className="navAnchor" aria-hidden="true" />
+      <div id="facciamo__nav" className="navAnchor" aria-hidden="true" />
       <div className="facViewport">
         <div className="facTrack" data-ftrack>
           {/* PANEL 1: INTRO */}

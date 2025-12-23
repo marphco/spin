@@ -24,6 +24,8 @@ export default function Hero({
     const grain = grainRef.current;
     if (!shell || !img || !titleEl || !grain) return;
 
+    const isMobile = window.matchMedia("(max-width: 720px)").matches;
+
     const ctx = gsap.context(() => {
       // kill SOLO il nostro trigger se esiste già
       ScrollTrigger.getById("heroFX")?.kill(true);
@@ -50,10 +52,10 @@ export default function Hero({
           trigger: shell,
           start: "top top",
           end: `+=${durationPx}`,
-          scrub: true,
+          scrub: isMobile ? 0.6 : true,
           pin: true,
           pinSpacing: true,
-          anticipatePin: 1,
+          anticipatePin: isMobile ? 2 : 1,
           invalidateOnRefresh: true,
         },
       });
@@ -70,7 +72,7 @@ export default function Hero({
       tl.to(
         img,
         {
-          filter: "blur(10px) brightness(0.85) contrast(1.05)",
+          filter: `blur(${isMobile ? 6 : 10}px) brightness(0.85) contrast(1.05)`,
           scale: 1.04,
           ease: "none",
         },

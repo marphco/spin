@@ -59,16 +59,26 @@
 
 /* mobile */
 @media (max-width: 640px){
-  .facSvcItem{
-    grid-template-columns: 40px 1fr;
-    gap: 12px;
+  .facSvcPanel{
+    padding-top: calc(18px + var(--safeT));
+    padding-bottom: calc(var(--navH) + var(--safeB) + 18px);
+
+    /* se il contenuto è tanto, almeno non viene “tagliato” */
+    place-items: center;
   }
-  .facSvcIcon{
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-  }
+
   .facSvcWrap{
-    gap: 20px;
+    width: min(980px, calc(100% - 32px));
+    gap: 18px;
+  }
+
+  .facSvcTitle{
+    font-size: clamp(18px, 6vw, 22px);
+  }
+
+  .facSvcText{
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 46ch;
   }
 }

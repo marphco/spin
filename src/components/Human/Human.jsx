@@ -46,6 +46,8 @@ export default function Human({
     const root = rootRef.current;
     if (!root) return;
 
+    const isMobile = window.matchMedia("(max-width: 720px)").matches;
+
     const ctx = gsap.context(() => {
       ScrollTrigger.getById(`human-${id}`)?.kill(true);
 
@@ -57,6 +59,9 @@ export default function Human({
 
       const titleEls = Array.from(root.querySelectorAll("[data-htch]"));
       const bodyEls = Array.from(root.querySelectorAll("[data-hbch]"));
+
+      const titleTargets = isMobile ? [titleWrap] : titleEls;
+      const bodyTargets = isMobile ? [bodyWrap] : bodyEls;
 
       // ---- Track + services refs
       const track = root.querySelector("[data-htrack]");
@@ -76,8 +81,8 @@ export default function Human({
         autoAlpha: 0,
         y: 10,
       });
-      gsap.set(titleEls, { autoAlpha: 0, y: 10 });
-      gsap.set(bodyEls, { autoAlpha: 0, y: 6 });
+      gsap.set(titleTargets, { autoAlpha: 0, y: 10 });
+      gsap.set(bodyTargets, { autoAlpha: 0, y: 6 });
 
       gsap.set(track, { x: 0 });
 
@@ -113,10 +118,10 @@ export default function Human({
         trigger: root,
         start: "top top",
         end: () => `+=${totalPx}`,
-        scrub: true,
+        scrub: isMobile ? 0.6 : true,
         pin: true,
         pinSpacing: true,
-        anticipatePin: 1,
+        anticipatePin: isMobile ? 2 : 1,
         invalidateOnRefresh: true,
         animation: tl,
       });
@@ -150,35 +155,57 @@ export default function Human({
         return Math.max(0, (segmentDur - perCharDur) / (n - 1));
       };
 
-      tl.to([kickerEl, underlineEl], { autoAlpha: 1, y: 0, duration: frame }, t_frameStart);
-      tl.to(titleWrap, { autoAlpha: 1, y: 0, duration: wrap }, t_titleWrapStart);
+      tl.to(
+        [kickerEl, underlineEl],
+        { autoAlpha: 1, y: 0, duration: frame },
+        t_frameStart
+      );
+      tl.to(
+        titleWrap,
+        { autoAlpha: 1, y: 0, duration: wrap },
+        t_titleWrapStart
+      );
 
       tl.to(
-        titleEls,
-        {
-          autoAlpha: 1,
-          y: 0,
-          duration: 1,
-          stagger: { each: staggerEachFit(titleSeg, titleEls.length), from: "start" },
-        },
+        titleTargets,
+        isMobile
+          ? { autoAlpha: 1, y: 0, duration: titleSeg }
+          : {
+              autoAlpha: 1,
+              y: 0,
+              duration: 1,
+              stagger: {
+                each: staggerEachFit(titleSeg, titleEls.length),
+                from: "start",
+              },
+            },
         t_titleStart
       );
 
       tl.to(bodyWrap, { autoAlpha: 1, y: 0, duration: wrap }, t_bodyWrapStart);
 
       tl.to(
-        bodyEls,
-        {
-          autoAlpha: 1,
-          y: 0,
-          duration: 1,
-          stagger: { each: staggerEachFit(bodySeg, bodyEls.length), from: "start" },
-        },
+        bodyTargets,
+        isMobile
+          ? { autoAlpha: 1, y: 0, duration: bodySeg }
+          : {
+              autoAlpha: 1,
+              y: 0,
+              duration: 1,
+              stagger: {
+                each: staggerEachFit(bodySeg, bodyEls.length),
+                from: "start",
+              },
+            },
         t_bodyStart
       );
 
       // lock
-      tl.set([kickerEl, underlineEl, titleWrap, bodyWrap], { autoAlpha: 1, y: 0 }, textPxFinal);
+      tl.set(
+        [kickerEl, underlineEl, titleWrap, bodyWrap],
+        { autoAlpha: 1, y: 0 },
+        textPxFinal
+      );
       tl.set(titleEls, { autoAlpha: 1, y: 0 }, textPxFinal);
       tl.set(bodyEls, { autoAlpha: 1, y: 0 }, textPxFinal);
 
@@ -212,7 +239,7 @@ export default function Human({
 
   return (
     <section className="humSection" id={id} ref={rootRef}>
-        <div id="human__nav" className="navAnchor" aria-hidden="true" />
+      <div id="human__nav" className="navAnchor" aria-hidden="true" />
       <div className="humViewport">
         <div className="humTrack" data-htrack>
           {/* PANEL 1: INTRO */}
@@ -225,17 +252,23 @@ export default function Human({
               <h2 className="humTitle" data-htitlewrap aria-label={title}>
                 {titleTokens.map((tok, idx) => {
                   if (tok === "\n") return <br key={`htbr-${idx}`} />;
-                  if (/^[ \t]+$/.test(tok)) return <span key={`htsp-${idx}`}> </span>;
+                  if (/^[ \t]+$/.test(tok))
+                    return <span key={`htsp-${idx}`}> </span>;
                   return <Word key={`htw-${idx}`} token={tok} type="t" />;
                 })}
               </h2>
 
-              <div className="humUnderline" data-hunderline aria-hidden="true" />
+              <div
+                className="humUnderline"
+                data-hunderline
+                aria-hidden="true"
+              />
 
               <div className="humBody" data-hbodywrap aria-label={bodyText}>
                 {bodyTokens.map((tok, idx) => {
                   if (tok === "\n") return <br key={`hbbr-${idx}`} />;
-                  if (/^[ \t]+$/.test(tok)) return <span key={`hbsp-${idx}`}> </span>;
+                  if (/^[ \t]+$/.test(tok))
+                    return <span key={`hbsp-${idx}`}> </span>;
                   return <Word key={`hbw-${idx}`} token={tok} type="b" />;
                 })}
               </div>

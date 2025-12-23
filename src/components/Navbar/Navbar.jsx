@@ -27,8 +27,8 @@ export default function Navbar() {
 
   const OFFSETS_MOBILE = {
     siamo: 280,
-    facciamo: 1300,
-    human: 1000,
+    facciamo: 1100,
+    human: 800,
     contatti: 50,
   };
 

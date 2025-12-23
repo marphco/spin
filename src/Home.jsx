@@ -20,6 +20,17 @@ export default function Home() {
   useLayoutEffect(() => {
     const rootEl = document.documentElement;
 
+    const isMobile = window.matchMedia("(max-width: 720px)").matches;
+
+    // ✅ GSAP: meno rogne su mobile resize / orientation
+    ScrollTrigger.config({
+      ignoreMobileResize: true,
+      autoRefreshEvents: "visibilitychange,DOMContentLoaded,load",
+    });
+
+    // ✅ migliora lo scroll touch (se noti “stranezze” lo togliamo)
+    // ScrollTrigger.normalizeScroll(true);
+
     const nero =
       getComputedStyle(rootEl).getPropertyValue("--bg").trim() || "#010101";
 
@@ -40,7 +51,9 @@ export default function Home() {
       trigger: "#facciamo",
       start: "top bottom",
       end: "top top",
-      scrub: true,
+      scrub: isMobile ? 1 : true,
+      fastScrollEnd: true,
+      preventOverlaps: true,
       animation: gsap.fromTo(
         rootEl,
         { "--pageBg": nero },
@@ -55,7 +68,9 @@ export default function Home() {
       trigger: "#human",
       start: "top bottom",
       end: "top top",
-      scrub: true,
+      scrub: isMobile ? 1 : true,
+      fastScrollEnd: true,
+      preventOverlaps: true,
       animation: gsap.fromTo(
         rootEl,
         { "--pageBg": blu },
@@ -70,7 +85,9 @@ export default function Home() {
       trigger: "#footer",
       start: "top bottom",
       end: "top top",
-      scrub: true,
+      scrub: isMobile ? 1 : true,
+      fastScrollEnd: true,
+      preventOverlaps: true,
       animation: gsap.fromTo(
         rootEl,
         { "--pageBg": verde },
@@ -83,11 +100,16 @@ export default function Home() {
       requestAnimationFrame(() => ScrollTrigger.refresh())
     );
 
-    const onResize = () => ScrollTrigger.refresh();
-    window.addEventListener("resize", onResize);
+    let resizeRaf = 0;
+    const onResize = () => {
+      cancelAnimationFrame(resizeRaf);
+      resizeRaf = requestAnimationFrame(() => ScrollTrigger.refresh());
+    };
+    window.addEventListener("resize", onResize, { passive: true });
 
     return () => {
       window.removeEventListener("resize", onResize);
+      cancelAnimationFrame(resizeRaf);
       ScrollTrigger.getById("bg-siamo-to-facciamo")?.kill(true);
       ScrollTrigger.getById("bg-facciamo-to-human")?.kill(true);
       ScrollTrigger.getById("bg-human-to-footer")?.kill(true);
@@ -107,7 +129,8 @@ export default function Home() {
             alt="Hero"
             title={
               <>
-                comunicare<br />è un gioco di parole
+                comunicare
+                <br />è un gioco di parole
               </>
             }
             durationPx={900}

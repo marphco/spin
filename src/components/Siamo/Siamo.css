@@ -83,3 +83,38 @@
   display: inline-block;
   will-change: opacity, transform;
 }
+
+.siamoP{
+  margin: 0 0 14px;
+}
+
+@media (max-width: 720px){
+  .siamoSection{
+    height: 100svh;            /* iOS friendly */
+    min-height: 100svh;
+  }
+
+  .siamoInner{
+    width: min(900px, calc(100% - 32px));
+    padding-top: calc(env(safe-area-inset-top) + var(--pad-top));
+    padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + var(--pad-bottom));
+
+    /* ✅ centro vero in verticale, ma rispettando top/bottom */
+    align-content: center;
+    place-content: center;
+    gap: 12px;
+  }
+
+  .siamoTitle{
+    font-size: clamp(22px, 7.2vw, 30px);
+    line-height: 1.15;
+  }
+
+  .siamoBody{
+    font-size: clamp(14px, 4vw, 16px);
+    line-height: 1.65;
+    max-width: 34ch; /* stringe un po’ per non “sbordare” */
+  }
+
+  .siamoP{ margin: 0 0 12px; }
+}

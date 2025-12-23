@@ -118,3 +118,30 @@
   position: relative;
   flex: 0 0 100vw;
 }
+
+@media (max-width: 720px){
+  .facSection{
+    height: 100svh;
+    min-height: 100svh;
+  }
+
+  .facInner{
+    width: min(980px, calc(100% - 32px));
+    padding-top: calc(env(safe-area-inset-top) + var(--pad-top));
+    padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + var(--pad-bottom));
+    align-content: center;
+    place-content: center;
+    gap: 12px;
+  }
+
+  .facTitle{
+    font-size: clamp(22px, 7.5vw, 32px);
+    line-height: 1.12;
+  }
+
+  .facBody{
+    font-size: clamp(14px, 4vw, 16px);
+    line-height: 1.65;
+    max-width: 34ch;
+  }
+}
