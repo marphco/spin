@@ -26,7 +26,9 @@ export default function Home() {
     ScrollTrigger.config({
       ignoreMobileResize: true,
       autoRefreshEvents: "visibilitychange,DOMContentLoaded,load",
+      limitCallbacks: true, // ✅ aggiungi
     });
+
 
     // ✅ migliora lo scroll touch (se noti “stranezze” lo togliamo)
     // ScrollTrigger.normalizeScroll(true);
@@ -45,71 +47,93 @@ export default function Home() {
     ScrollTrigger.getById("bg-facciamo-to-human")?.kill(true);
     ScrollTrigger.getById("bg-human-to-footer")?.kill(true);
 
-    // 1) Siamo -> Facciamo (nero -> blu)
+    // ✅ helper: setta bg in modo pulito e coerente
+    const setBg = (color) => {
+      gsap.to(rootEl, {
+        "--pageBg": color,
+        duration: 0.15, // micro fade, impercettibile
+        ease: "none",
+        overwrite: "auto",
+      });
+    };
+
+    // stato iniziale
+    setBg(nero);
+
+    // kill vecchi range trigger (hot reload safe)
+    ScrollTrigger.getById("bg-range-facciamo")?.kill(true);
+    ScrollTrigger.getById("bg-range-human")?.kill(true);
+    ScrollTrigger.getById("bg-range-footer")?.kill(true);
+
+
+    // ✅ FACCIAMO: blu da quando entri in facciamo fino a quando inizia human
     ScrollTrigger.create({
-      id: "bg-siamo-to-facciamo",
+      id: "bg-range-facciamo",
       trigger: "#facciamo",
-      start: "top bottom",
+      start: "top top",
+      endTrigger: "#human",
       end: "top top",
-      scrub: isMobile ? 1 : true,
-      fastScrollEnd: true,
-      preventOverlaps: true,
-      animation: gsap.fromTo(
-        rootEl,
-        { "--pageBg": nero },
-        { "--pageBg": blu, ease: "none", immediateRender: false }
-      ),
+      onEnter: () => setBg(blu),
+      onEnterBack: () => setBg(blu),
+      onLeaveBack: () => setBg(nero),
       invalidateOnRefresh: true,
     });
 
-    // 2) Facciamo -> Human (blu -> verde)
+    // ✅ HUMAN: verde da quando entri in human fino a footer
     ScrollTrigger.create({
-      id: "bg-facciamo-to-human",
+      id: "bg-range-human",
       trigger: "#human",
-      start: "top bottom",
+      start: "top top",
+      endTrigger: "#footer",
       end: "top top",
-      scrub: isMobile ? 1 : true,
-      fastScrollEnd: true,
-      preventOverlaps: true,
-      animation: gsap.fromTo(
-        rootEl,
-        { "--pageBg": blu },
-        { "--pageBg": verde, ease: "none", immediateRender: false }
-      ),
+      onEnter: () => setBg(verde),
+      onEnterBack: () => setBg(verde),
+      onLeaveBack: () => setBg(blu),
       invalidateOnRefresh: true,
     });
 
-    // 3) Human -> Footer (verde -> nero)
+    // ✅ FOOTER: nero
     ScrollTrigger.create({
-      id: "bg-human-to-footer",
+      id: "bg-range-footer",
       trigger: "#footer",
-      start: "top bottom",
-      end: "top top",
-      scrub: isMobile ? 1 : true,
-      fastScrollEnd: true,
-      preventOverlaps: true,
-      animation: gsap.fromTo(
-        rootEl,
-        { "--pageBg": verde },
-        { "--pageBg": nero, ease: "none", immediateRender: false }
-      ),
+      start: "top top",
+      onEnter: () => setBg(nero),
+      onEnterBack: () => setBg(nero),
       invalidateOnRefresh: true,
     });
+
 
     requestAnimationFrame(() =>
       requestAnimationFrame(() => ScrollTrigger.refresh())
     );
 
     let resizeRaf = 0;
-    const onResize = () => {
+
+    const safeRefresh = () => {
       cancelAnimationFrame(resizeRaf);
       resizeRaf = requestAnimationFrame(() => ScrollTrigger.refresh());
     };
-    window.addEventListener("resize", onResize, { passive: true });
+
+    // ricalcolo qui (dentro l'effect) così è coerente con i trigger
+    const isMobileNow = window.matchMedia("(max-width: 720px)").matches;
+
+    if (!isMobileNow) {
+      // ✅ Desktop: ok refresh su resize
+      window.addEventListener("resize", safeRefresh, { passive: true });
+    } else {
+      // ✅ Mobile: NO resize (iOS/Android lo triggerano anche mentre scrolli)
+      window.addEventListener("orientationchange", safeRefresh, { passive: true });
+    }
 
     return () => {
-      window.removeEventListener("resize", onResize);
+      if (!isMobileNow) {
+        window.removeEventListener("resize", safeRefresh);
+      } else {
+        window.removeEventListener("orientationchange", safeRefresh);
+      }
+
       cancelAnimationFrame(resizeRaf);
+
       ScrollTrigger.getById("bg-siamo-to-facciamo")?.kill(true);
       ScrollTrigger.getById("bg-facciamo-to-human")?.kill(true);
       ScrollTrigger.getById("bg-human-to-footer")?.kill(true);

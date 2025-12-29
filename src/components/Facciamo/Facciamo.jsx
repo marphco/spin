@@ -128,6 +128,7 @@ export default function Facciamo({
         animation: tl,
       });
 
+
       // -------------------------
       // A) TESTO (0 -> textPxFinal)  [uguale a prima]
       // -------------------------
@@ -173,14 +174,14 @@ export default function Facciamo({
         isMobile
           ? { autoAlpha: 1, y: 0, duration: titleSeg }
           : {
-              autoAlpha: 1,
-              y: 0,
-              duration: 1,
-              stagger: {
-                each: staggerEachFit(titleSeg, titleEls.length),
-                from: "start",
-              },
+            autoAlpha: 1,
+            y: 0,
+            duration: 1,
+            stagger: {
+              each: staggerEachFit(titleSeg, titleEls.length),
+              from: "start",
             },
+          },
         t_titleStart
       );
 
@@ -191,14 +192,14 @@ export default function Facciamo({
         isMobile
           ? { autoAlpha: 1, y: 0, duration: bodySeg }
           : {
-              autoAlpha: 1,
-              y: 0,
-              duration: 1,
-              stagger: {
-                each: staggerEachFit(bodySeg, bodyEls.length),
-                from: "start",
-              },
+            autoAlpha: 1,
+            y: 0,
+            duration: 1,
+            stagger: {
+              each: staggerEachFit(bodySeg, bodyEls.length),
+              from: "start",
             },
+          },
         t_bodyStart
       );
 

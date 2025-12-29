@@ -15,7 +15,7 @@ const LINKS = [
 ];
 
 export default function Navbar() {
-  const [active, setActive] = useState(null); // ✅ niente selezione all’avvio
+  const [active, setActive] = useState(null);
   const ids = useMemo(() => LINKS.map((l) => l.id), []);
 
   const OFFSETS_DESKTOP = {
@@ -37,12 +37,12 @@ export default function Navbar() {
     return (isMobile ? OFFSETS_MOBILE : OFFSETS_DESKTOP)[id] ?? 0;
   };
 
-  // i tuoi id ScrollTrigger sono: "siamo-siamo", "facciamo-facciamo", "human-human"
   const getPinnedTriggerId = (id) => `${id}-${id}`;
 
   useEffect(() => {
-    // cleanup di eventuali trigger precedenti (hot reload)
+    // kill eventuali trigger precedenti
     ids.forEach((id) => ScrollTrigger.getById(`nav-${id}`)?.kill());
+    ScrollTrigger.getById("nav-top")?.kill();
 
     const triggers = ids
       .map((id) => document.getElementById(id))
@@ -51,7 +51,6 @@ export default function Navbar() {
         ScrollTrigger.create({
           id: `nav-${el.id}`,
           trigger: el,
-          // “attivo” quando la sezione passa nella zona centrale dello schermo
           start: "top 55%",
           end: "bottom 55%",
           onEnter: () => setActive(el.id),
@@ -59,7 +58,6 @@ export default function Navbar() {
         })
       );
 
-    // quando sei in hero/top: nessun active
     const topTrigger = ScrollTrigger.create({
       id: "nav-top",
       trigger: document.body,
@@ -69,15 +67,9 @@ export default function Navbar() {
       onEnterBack: () => setActive(null),
     });
 
-    // importante con layout/refresh GSAP
-    ScrollTrigger.refresh(true);
-    requestAnimationFrame(() => ScrollTrigger.refresh(true));
-
     return () => {
       triggers.forEach((t) => t.kill());
       topTrigger.kill();
-      ids.forEach((id) => ScrollTrigger.getById(`nav-${id}`)?.kill());
-      ScrollTrigger.getById("nav-top")?.kill();
     };
   }, [ids]);
 
@@ -86,9 +78,6 @@ export default function Navbar() {
 
     // stoppa eventuali scroll in corso
     gsap.killTweensOf(window);
-
-    // assesta i pin/spacer prima di leggere start/end
-    ScrollTrigger.refresh(true);
 
     requestAnimationFrame(() => {
       const offset = getOffset(id);
@@ -101,12 +90,13 @@ export default function Navbar() {
           ease: "power2.out",
           overwrite: "auto",
           onUpdate: ScrollTrigger.update,
+          onComplete: () => ScrollTrigger.update(),
         });
         setActive(null);
         return;
       }
 
-      // Sezione pinnata? usa START del trigger (stabile ovunque ti trovi)
+      // Sezione pinnata? usa START del trigger
       const st = ScrollTrigger.getById(getPinnedTriggerId(id));
       if (st) {
         const y = st.start + offset;
@@ -117,14 +107,14 @@ export default function Navbar() {
           ease: "power2.out",
           overwrite: "auto",
           onUpdate: ScrollTrigger.update,
-          onComplete: () => ScrollTrigger.refresh(true),
+          onComplete: () => ScrollTrigger.update(),
         });
 
         setActive(id);
         return;
       }
 
-      // Fallback (es. contatti se non è pinnata)
+      // Fallback (contatti)
       const anchor =
         document.getElementById(`${id}__nav`) || document.getElementById(id);
       if (!anchor) return;
@@ -137,7 +127,7 @@ export default function Navbar() {
         ease: "power2.out",
         overwrite: "auto",
         onUpdate: ScrollTrigger.update,
-        onComplete: () => ScrollTrigger.refresh(true),
+        onComplete: () => ScrollTrigger.update(),
       });
 
       setActive(id);

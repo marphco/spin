@@ -54,10 +54,11 @@ export default function Hero({
           end: `+=${durationPx}`,
           scrub: isMobile ? 0.6 : true,
           pin: true,
-          pinSpacing: true,
+          pinSpacing: false,
           anticipatePin: isMobile ? 2 : 1,
           invalidateOnRefresh: true,
         },
+
       });
 
       // Titolo: micro move + fade

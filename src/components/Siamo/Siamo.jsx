@@ -34,7 +34,7 @@ function Word({ token, type }) {
   );
 }
 
-export default function Siamo({ id="siamo", kicker="Siamo", title, paragraphs=[], durationPx=900 }) {
+export default function Siamo({ id = "siamo", kicker = "Siamo", title, paragraphs = [], durationPx = 900 }) {
   const rootRef = useRef(null);
 
   // ✅ disponibili nel render
@@ -43,7 +43,7 @@ export default function Siamo({ id="siamo", kicker="Siamo", title, paragraphs=[]
 
   const bodyText = useMemo(() => paragraphs.join("\n\n"), [paragraphs]);
   const titleTokens = useMemo(() => tokenize(title || ""), [title]);
-  const bodyTokens  = useMemo(() => tokenize(bodyText), [bodyText]);
+  const bodyTokens = useMemo(() => tokenize(bodyText), [bodyText]);
 
   useLayoutEffect(() => {
     const root = rootRef.current;
@@ -58,15 +58,17 @@ export default function Siamo({ id="siamo", kicker="Siamo", title, paragraphs=[]
       const bodyWrap = root.querySelector("[data-bodywrap]");
 
       const titleEls = root.querySelectorAll("[data-tch]");
-      const bodyEls  = root.querySelectorAll("[data-bch]");
+      const bodyEls = root.querySelectorAll("[data-bch]");
 
       // ✅ mobile: animiamo wrapper, non i char
       const titleTargets = reduceChars ? [titleWrap] : titleEls;
-      const bodyTargets  = reduceChars ? [bodyWrap]  : bodyEls;
+      const bodyTargets = reduceChars ? [bodyWrap] : bodyEls;
 
       gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], { autoAlpha: 0, y: 10 });
       gsap.set(titleTargets, { autoAlpha: 0, y: 10 });
-      gsap.set(bodyTargets,  { autoAlpha: 0, y: 6 });
+      gsap.set(bodyTargets, { autoAlpha: 0, y: 6 });
+
+      const isMobile = window.matchMedia("(max-width: 720px)").matches;
 
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -81,6 +83,7 @@ export default function Siamo({ id="siamo", kicker="Siamo", title, paragraphs=[]
           invalidateOnRefresh: true,
         },
       });
+
 
       tl.to([kickerEl, underlineEl], { autoAlpha: 1, y: 0, ease: "none", duration: 0.12 }, 0.02);
       tl.to(titleWrap, { autoAlpha: 1, y: 0, ease: "none", duration: 0.06 }, 0.06);
@@ -117,10 +120,10 @@ export default function Siamo({ id="siamo", kicker="Siamo", title, paragraphs=[]
           {reduceChars
             ? title
             : titleTokens.map((tok, idx) => {
-                if (tok === "\n") return <br key={`tbr-${idx}`} />;
-                if (/^[ \t]+$/.test(tok)) return <span key={`tsp-${idx}`}> </span>;
-                return <Word key={`tw-${idx}`} token={tok} type="t" />;
-              })}
+              if (tok === "\n") return <br key={`tbr-${idx}`} />;
+              if (/^[ \t]+$/.test(tok)) return <span key={`tsp-${idx}`}> </span>;
+              return <Word key={`tw-${idx}`} token={tok} type="t" />;
+            })}
         </h2>
 
         <div className="siamoUnderline" data-underline aria-hidden="true" />
@@ -128,13 +131,13 @@ export default function Siamo({ id="siamo", kicker="Siamo", title, paragraphs=[]
         <div className="siamoBody" data-bodywrap aria-label={bodyText}>
           {reduceChars
             ? paragraphs.map((p, i) => (
-                <p key={i} className="siamoP">{p}</p>
-              ))
+              <p key={i} className="siamoP">{p}</p>
+            ))
             : bodyTokens.map((tok, idx) => {
-                if (tok === "\n") return <br key={`bbr-${idx}`} />;
-                if (/^[ \t]+$/.test(tok)) return <span key={`bsp-${idx}`}> </span>;
-                return <Word key={`bw-${idx}`} token={tok} type="b" />;
-              })}
+              if (tok === "\n") return <br key={`bbr-${idx}`} />;
+              if (/^[ \t]+$/.test(tok)) return <span key={`bsp-${idx}`}> </span>;
+              return <Word key={`bw-${idx}`} token={tok} type="b" />;
+            })}
         </div>
       </div>
     </section>
