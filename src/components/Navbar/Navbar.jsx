@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./Navbar.css";
 import logo from "../../assets/logo.svg";
 
@@ -17,6 +17,9 @@ const LINKS = [
 export default function Navbar() {
   const [active, setActive] = useState(null);
   const ids = useMemo(() => LINKS.map((l) => l.id), []);
+
+  // ✅ lock per evitare che i trigger sovrascrivano active mentre scrolliamo via click
+  const navLock = useRef(false);
 
   const OFFSETS_DESKTOP = {
     siamo: 300,
@@ -40,7 +43,6 @@ export default function Navbar() {
   const getPinnedTriggerId = (id) => `${id}-${id}`;
 
   useEffect(() => {
-    // kill eventuali trigger precedenti
     ids.forEach((id) => ScrollTrigger.getById(`nav-${id}`)?.kill());
     ScrollTrigger.getById("nav-top")?.kill();
 
@@ -53,8 +55,14 @@ export default function Navbar() {
           trigger: el,
           start: "top 55%",
           end: "bottom 55%",
-          onEnter: () => setActive(el.id),
-          onEnterBack: () => setActive(el.id),
+          onEnter: () => {
+            if (navLock.current) return; // ✅ non sovrascrivere durante nav via click
+            setActive(el.id);
+          },
+          onEnterBack: () => {
+            if (navLock.current) return;
+            setActive(el.id);
+          },
         })
       );
 
@@ -63,8 +71,14 @@ export default function Navbar() {
       trigger: document.body,
       start: "top top",
       end: "top+=10 top",
-      onEnter: () => setActive(null),
-      onEnterBack: () => setActive(null),
+      onEnter: () => {
+        if (navLock.current) return;
+        setActive(null);
+      },
+      onEnterBack: () => {
+        if (navLock.current) return;
+        setActive(null);
+      },
     });
 
     return () => {
@@ -73,10 +87,46 @@ export default function Navbar() {
     };
   }, [ids]);
 
+  // ✅ helper: rilascia lock DOPO che ScrollTrigger ha aggiornato e poi forza active
+  const finalizeNav = (id) => {
+    requestAnimationFrame(() => {
+      ScrollTrigger.update();
+
+      requestAnimationFrame(() => {
+        ScrollTrigger.update();
+
+        // ✅ ora che la posizione è stabile, forziamo active
+        setActive(id === "top" ? null : id);
+
+        // ✅ sblocchiamo (da questo momento i trigger possono aggiornare di nuovo)
+        navLock.current = false;
+
+        // ✅ refresh leggero per evitare micro mismatch su iOS
+        // ✅ refresh leggero per evitare micro mismatch su iOS
+        ScrollTrigger.refresh(true);
+
+        // ✅ FIX: salto Footer (nero) -> Human (verde)
+        // su iOS a volte il trigger del footer riscrive il nero dopo lo scroll.
+        // Qui forziamo l'update dei range-trigger di Home.jsx.
+        if (id === "human") {
+          requestAnimationFrame(() => {
+            ScrollTrigger.getById("bg-range-human")?.refresh();
+            ScrollTrigger.update();
+            requestAnimationFrame(() => ScrollTrigger.update());
+          });
+        }
+
+      });
+    });
+  };
+
   const onNav = (e, id) => {
     e.preventDefault();
 
-    // stoppa eventuali scroll in corso
+    // ✅ attiva lock
+    navLock.current = true;
+
+    // stoppa scroll in corso
     gsap.killTweensOf(window);
 
     requestAnimationFrame(() => {
@@ -90,9 +140,8 @@ export default function Navbar() {
           ease: "power2.out",
           overwrite: "auto",
           onUpdate: ScrollTrigger.update,
-          onComplete: () => ScrollTrigger.update(),
+          onComplete: () => finalizeNav("top"),
         });
-        setActive(null);
         return;
       }
 
@@ -107,17 +156,19 @@ export default function Navbar() {
           ease: "power2.out",
           overwrite: "auto",
           onUpdate: ScrollTrigger.update,
-          onComplete: () => ScrollTrigger.update(),
+          onComplete: () => finalizeNav(id),
         });
 
-        setActive(id);
         return;
       }
 
-      // Fallback (contatti)
+      // Fallback (contatti / altre non pinnate)
       const anchor =
         document.getElementById(`${id}__nav`) || document.getElementById(id);
-      if (!anchor) return;
+      if (!anchor) {
+        navLock.current = false;
+        return;
+      }
 
       const y = anchor.getBoundingClientRect().top + window.scrollY + offset;
 
@@ -127,10 +178,8 @@ export default function Navbar() {
         ease: "power2.out",
         overwrite: "auto",
         onUpdate: ScrollTrigger.update,
-        onComplete: () => ScrollTrigger.update(),
+        onComplete: () => finalizeNav(id),
       });
-
-      setActive(id);
     });
   };
 

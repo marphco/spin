@@ -99,6 +99,10 @@ export default function Home() {
       start: "top top",
       onEnter: () => setBg(nero),
       onEnterBack: () => setBg(nero),
+
+      // ✅ FIX: quando risali dal footer verso Human, rimetti verde
+      onLeaveBack: () => setBg(verde),
+
       invalidateOnRefresh: true,
     });
 
