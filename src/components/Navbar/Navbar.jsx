@@ -24,7 +24,7 @@ export default function Navbar() {
   const OFFSETS_DESKTOP = {
     siamo: 300,
     facciamo: 950,
-    human: 800,
+    human: 760,
     contatti: 200,
   };
 
@@ -42,50 +42,85 @@ export default function Navbar() {
 
   const getPinnedTriggerId = (id) => `${id}-${id}`;
 
+  const elsRef = useRef([]);
+
   useEffect(() => {
+    // kill vecchi trigger
     ids.forEach((id) => ScrollTrigger.getById(`nav-${id}`)?.kill());
     ScrollTrigger.getById("nav-top")?.kill();
+    ScrollTrigger.getById("nav-smart")?.kill();
 
-    const triggers = ids
-      .map((id) => document.getElementById(id))
-      .filter(Boolean)
-      .map((el) =>
-        ScrollTrigger.create({
-          id: `nav-${el.id}`,
-          trigger: el,
-          start: "top 55%",
-          end: "bottom 55%",
-          onEnter: () => {
-            if (navLock.current) return; // ✅ non sovrascrivere durante nav via click
-            setActive(el.id);
-          },
-          onEnterBack: () => {
-            if (navLock.current) return;
-            setActive(el.id);
-          },
-        })
-      );
+    const getNavEl = (id) => {
+      if (id === "contatti") return document.getElementById("footer");
+      return document.getElementById(id);
+    };
 
-    const topTrigger = ScrollTrigger.create({
-      id: "nav-top",
-      trigger: document.body,
-      start: "top top",
-      end: "top+=10 top",
-      onEnter: () => {
-        if (navLock.current) return;
+    const els = ids
+      .map((id) => ({ id, el: getNavEl(id) }))
+      .filter((x) => x.el);
+
+    elsRef.current = els;
+
+    const setActiveSmart = () => {
+      if (navLock.current) return;
+
+      const center = window.innerHeight * 0.5;
+
+      // ✅ Hero dominante SOLO se il centro è ancora dentro Hero
+      const stSiamo = ScrollTrigger.getById("siamo-siamo");
+      if (stSiamo && window.scrollY < stSiamo.start + 1) {
         setActive(null);
-      },
-      onEnterBack: () => {
-        if (navLock.current) return;
-        setActive(null);
-      },
+        return;
+      }
+
+      const els = elsRef.current;
+
+      let best = null;
+      let bestDist = Infinity;
+
+      for (const { id, el } of els) {
+        const rect = el.getBoundingClientRect();
+        const elCenter = rect.top + rect.height / 2;
+        const dist = Math.abs(elCenter - center);
+
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = id;
+        }
+      }
+
+      setActive(best);
+    };
+
+
+    // trigger “globale” che aggiorna in modo fluido
+    const smart = ScrollTrigger.create({
+      id: "nav-smart",
+      start: 0,
+      end: () => ScrollTrigger.maxScroll(window),
+      onUpdate: setActiveSmart,
+      onRefresh: setActiveSmart,
     });
 
+    // trigger top per il reset sicuro (come “guardrail”)
+    const topTrigger = ScrollTrigger.create({
+      id: "nav-top",
+      trigger: "#top",
+      start: "top top",
+      end: "bottom top",
+      onEnter: () => { if (!navLock.current) setActive(null); },
+      onEnterBack: () => { if (!navLock.current) setActive(null); },
+    });
+
+    // prima valutazione
+    setActiveSmart();
+
     return () => {
-      triggers.forEach((t) => t.kill());
+      smart.kill();
       topTrigger.kill();
     };
   }, [ids]);
+
 
   // ✅ helper: rilascia lock DOPO che ScrollTrigger ha aggiornato e poi forza active
   const finalizeNav = (id) => {
