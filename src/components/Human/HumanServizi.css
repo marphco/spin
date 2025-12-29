@@ -3,7 +3,7 @@
   inset: 0;
   display: grid;
   place-items: center;
-  padding-top: 90px;
+  /* padding-top: 90px; */
 }
 
 .humSvcWrap{
@@ -80,8 +80,8 @@
 
 @media (max-width: 640px){
   .humSvcPanel{
-    padding-top: calc(18px + var(--safeT));
-    padding-bottom: calc(var(--navH) + var(--safeB) + 18px);
+    /* padding-top: calc(18px + var(--safeT)); */
+    padding-bottom: 50px;
     place-items: center;
   }
 

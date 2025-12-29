@@ -4,7 +4,7 @@
   inset: 0;
   display: grid;
   place-items: center;
-  padding-top: 90px; /* spazio navbar */
+  /* padding-top: 90px; */
 }
 
 .facSvcWrap{
@@ -60,8 +60,8 @@
 /* mobile */
 @media (max-width: 640px){
   .facSvcPanel{
-    padding-top: calc(18px + var(--safeT));
-    padding-bottom: calc(var(--navH) + var(--safeB) + 18px);
+    /* padding-top: calc(18px + var(--safeT)); */
+    padding-bottom: 50px;
 
     /* se il contenuto è tanto, almeno non viene “tagliato” */
     place-items: center;

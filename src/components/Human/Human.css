@@ -49,7 +49,7 @@
   gap: 14px;
 
   text-align: center;
-  padding-top: 90px;
+  /* padding-top: 90px; */
 }
 
 .humKicker{
@@ -120,8 +120,8 @@
 
   .humInner{
     width: min(980px, calc(100% - 32px));
-    padding-top: calc(env(safe-area-inset-top) + var(--pad-top));
-    padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + var(--pad-bottom));
+    /* padding-top: calc(env(safe-area-inset-top) + var(--pad-top)); */
+    padding-bottom: 50px;
     align-content: center;
     place-content: center;
     gap: 12px;
