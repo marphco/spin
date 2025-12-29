@@ -47,26 +47,26 @@ export default function Home() {
     ScrollTrigger.getById("bg-facciamo-to-human")?.kill(true);
     ScrollTrigger.getById("bg-human-to-footer")?.kill(true);
 
-    // ✅ helper: setta bg in modo pulito e coerente (usato solo per HUMAN/FOOTER)
-    const setBg = (color) => {
-      gsap.to(rootEl, {
-        "--pageBg": color,
-        duration: 0.15,
-        ease: "none",
-        overwrite: "auto",
-      });
-    };
+    // ✅ helper: scrub background
+    const scrubBg = (from, to) =>
+      gsap.fromTo(
+        rootEl,
+        { "--pageBg": from },
+        { "--pageBg": to, ease: "none", immediateRender: false }
+      );
 
     // stato iniziale
     gsap.set(rootEl, { "--pageBg": nero });
 
-    // kill vecchi trigger (hot reload safe)
-    ScrollTrigger.getById("bg-scrub-siamo-facciamo")?.kill(true);
-    ScrollTrigger.getById("bg-range-human")?.kill(true);
-    ScrollTrigger.getById("bg-range-footer")?.kill(true);
+    // kill vecchi trigger
+    [
+      "bg-scrub-siamo-facciamo",
+      "bg-scrub-facciamo-human",
+      "bg-scrub-human-footer",
+    ].forEach((id) => ScrollTrigger.getById(id)?.kill(true));
 
     /* ---------------------------------------------------
-       ✅ 1) SCRUB: SIAMO <-> FACCIAMO (smooth)
+       ✅ 1) SIAMO -> FACCIAMO (nero -> blu)
     --------------------------------------------------- */
     ScrollTrigger.create({
       id: "bg-scrub-siamo-facciamo",
@@ -74,43 +74,38 @@ export default function Home() {
       start: "top bottom",
       end: "top top",
       scrub: true,
-      fastScrollEnd: true,
-      preventOverlaps: true,
+      animation: scrubBg(nero, blu),
       invalidateOnRefresh: true,
-      animation: gsap.fromTo(
-        rootEl,
-        { "--pageBg": nero },
-        { "--pageBg": blu, ease: "none", immediateRender: false }
-      ),
     });
 
     /* ---------------------------------------------------
-       ✅ 2) HUMAN: verde fino al footer
+       ✅ 2) FACCIAMO -> HUMAN (blu -> verde)
+       Trigger su #human (entra dal basso)
     --------------------------------------------------- */
     ScrollTrigger.create({
-      id: "bg-range-human",
+      id: "bg-scrub-facciamo-human",
       trigger: "#human",
-      start: "top top",
-      endTrigger: "#footer",
+      start: "top bottom",
       end: "top top",
-      onEnter: () => setBg(verde),
-      onEnterBack: () => setBg(verde),
-      onLeaveBack: () => setBg(blu),
+      scrub: true,
+      animation: scrubBg(blu, verde),
       invalidateOnRefresh: true,
     });
 
     /* ---------------------------------------------------
-       ✅ 3) FOOTER: nero (e quando risali torna verde)
+       ✅ 3) HUMAN -> FOOTER (verde -> nero)
+       Trigger su #footer
     --------------------------------------------------- */
     ScrollTrigger.create({
-      id: "bg-range-footer",
+      id: "bg-scrub-human-footer",
       trigger: "#footer",
-      start: "top 70%",
-      onEnter: () => setBg(nero),
-      onEnterBack: () => setBg(nero),
-      onLeaveBack: () => setBg(verde),
+      start: "top bottom",
+      end: "top top",
+      scrub: true,
+      animation: scrubBg(verde, nero),
       invalidateOnRefresh: true,
     });
+
 
 
     requestAnimationFrame(() =>
@@ -150,6 +145,10 @@ export default function Home() {
       ScrollTrigger.getById("bg-scrub-siamo-facciamo")?.kill(true);
       ScrollTrigger.getById("bg-range-human")?.kill(true);
       ScrollTrigger.getById("bg-range-footer")?.kill(true);
+      ScrollTrigger.getById("bg-scrub-siamo-facciamo")?.kill(true);
+      ScrollTrigger.getById("bg-scrub-facciamo-human")?.kill(true);
+      ScrollTrigger.getById("bg-scrub-human-footer")?.kill(true);
+
     };
   }, []);
 
