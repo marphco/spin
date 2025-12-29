@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./Footer.css";
+import { FaInstagram, FaTiktok, FaXTwitter, FaLinkedinIn } from "react-icons/fa6";
 
 
 function IconMail() {
@@ -66,28 +67,6 @@ function IconDoc() {
   );
 }
 
-function IconFacebook() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="ftSocialIcon">
-      <path
-        d="M14 8.5h2V6h-2c-2 0-3.5 1.5-3.5 3.5V12H8v2.5h2.5V20H13v-5.5h2.5L16 12h-3V9.8c0-.7.3-1.3 1-1.3Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function IconX() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="ftSocialIcon">
-      <path
-        d="M18.7 4H15.8l-4 5.1L8.5 4H4.2l5.6 8.2L4 20h2.9l4.3-5.6L15.1 20h4.3l-6-8.7L18.7 4Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
 export default function Footer({
   company = "Spin Factor s.r.l.",
   email = "info@spinfactor.it",
@@ -96,12 +75,16 @@ export default function Footer({
   piva = "08521911217",
   privacyHref = "/privacy-policy",
   cookieHref = "/cookie-policy",
-  facebookHref = "#",
-  xHref = "#",
+
+  // ✅ nuovi social
+  instagramHref = "https://www.instagram.com/spin.factor?igsh=MWs3azVwd2dodHFlbw==",
+  tiktokHref = "https://www.tiktok.com/@spin.factor?_r=1&_t=ZP-92dbyl6XukZ",
+  xHref = "https://x.com/SpinFactorIT",
+  linkedinHref = "https://www.linkedin.com/company/spinfactor/",
 }) {
   const year = new Date().getFullYear();
 
-    const [name, setName] = useState("");
+  const [name, setName] = useState("");
   const [emailField, setEmailField] = useState("");
   const [message, setMessage] = useState("");
   const [hp, setHp] = useState(""); // honeypot
@@ -109,7 +92,7 @@ export default function Footer({
   const [status, setStatus] = useState("idle"); // idle | sending | ok | error
   const [errorMsg, setErrorMsg] = useState("");
 
-    const onSubmit = async (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     setStatus("sending");
     setErrorMsg("");
@@ -139,14 +122,11 @@ export default function Footer({
       setEmailField("");
       setMessage("");
       setHp("");
-    // eslint-disable-next-line no-unused-vars
     } catch (err) {
       setStatus("error");
       setErrorMsg("Errore di rete. Riprova.");
     }
   };
-
-
 
   return (
     <footer className="ftSection" id="footer">
@@ -162,12 +142,19 @@ export default function Footer({
             <div className="ftLeft">
               <div className="ftBrand">{company}</div>
 
-              <a className="ftRow" href={`mailto:${email}`}>
-                <span className="ftRowIcon">
+              <div className="ftRow ftRowStatic">
+                <span className="ftRowIcon" aria-hidden="true">
                   <IconMail />
                 </span>
-                <span className="ftRowText">{email}</span>
-              </a>
+
+                <span className="ftRowText">
+                  <a className="ftMailLink" href={`mailto:${email}`}>
+                    {email}
+                  </a>
+                </span>
+              </div>
+
+
 
               <div className="ftRow ftRowStatic">
                 <span className="ftRowIcon">
@@ -192,16 +179,51 @@ export default function Footer({
                 </span>
               </div>
 
+              {/* ✅ SOCIAL UPDATE */}
               <div className="ftSocial ftSocialLeft">
                 <a
                   className="ftSocialBtn"
-                  href={facebookHref}
-                  aria-label="Facebook"
+                  href={instagramHref}
+                  aria-label="Instagram"
+                  target="_blank"
+                  rel="noreferrer"
                 >
-                  <IconFacebook />
+                  <FaInstagram />
                 </a>
-                <a className="ftSocialBtn" href={xHref} aria-label="X">
-                  <IconX />
+
+                <a
+                  className="ftSocialBtn"
+                  href={tiktokHref}
+                  aria-label="TikTok"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <FaTiktok />
+                </a>
+
+                <a
+                  className="ftSocialBtn"
+                  href={xHref}
+                  aria-label="X"
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.open(xHref, "_blank", "noopener,noreferrer");
+                  }}
+                >
+                  <FaXTwitter />
+                </a>
+
+                <a
+                  className="ftSocialBtn"
+                  href={linkedinHref}
+                  aria-label="LinkedIn"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <FaLinkedinIn />
                 </a>
               </div>
             </div>
@@ -213,71 +235,78 @@ export default function Footer({
               </div>
 
               <form className="ftFormGrid" onSubmit={onSubmit}>
-  {/* honeypot (invisibile) */}
-  <label className="ftHp" aria-hidden="true">
-    <span>Company</span>
-    <input
-      tabIndex={-1}
-      autoComplete="off"
-      value={hp}
-      onChange={(e) => setHp(e.target.value)}
-    />
-  </label>
+                {/* honeypot (invisibile) */}
+                <label className="ftHp" aria-hidden="true">
+                  <span>Company</span>
+                  <input
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={hp}
+                    onChange={(e) => setHp(e.target.value)}
+                  />
+                </label>
 
-  <label className="ftField">
-    <span className="ftFieldLabel">Nome</span>
-    <input
-      className="ftInput"
-      type="text"
-      name="name"
-      autoComplete="name"
-      value={name}
-      onChange={(e) => setName(e.target.value)}
-    />
-  </label>
+                <label className="ftField">
+                  <span className="ftFieldLabel">Nome</span>
+                  <input
+                    className="ftInput"
+                    type="text"
+                    name="name"
+                    autoComplete="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </label>
 
-  <label className="ftField">
-    <span className="ftFieldLabel">Email</span>
-    <input
-      className="ftInput"
-      type="email"
-      name="email"
-      autoComplete="email"
-      required
-      value={emailField}
-      onChange={(e) => setEmailField(e.target.value)}
-    />
-  </label>
+                <label className="ftField">
+                  <span className="ftFieldLabel">Email</span>
+                  <input
+                    className="ftInput"
+                    type="email"
+                    name="email"
+                    autoComplete="email"
+                    required
+                    value={emailField}
+                    onChange={(e) => setEmailField(e.target.value)}
+                  />
+                </label>
 
-  <label className="ftField ftFieldFull">
-    <span className="ftFieldLabel">Messaggio</span>
-    <textarea
-      className="ftTextarea"
-      name="message"
-      rows={5}
-      required
-      value={message}
-      onChange={(e) => setMessage(e.target.value)}
-    />
-  </label>
+                <label className="ftField ftFieldFull">
+                  <span className="ftFieldLabel">Messaggio</span>
+                  <textarea
+                    className="ftTextarea"
+                    name="message"
+                    rows={5}
+                    required
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                  />
+                </label>
 
-  <div className="ftConsent">
-    Inviando accetti l’{" "}
-    <a className="ftInlineLink" href={privacyHref}>
-      Informativa Privacy
-    </a>
-    .
-  </div>
+                <div className="ftConsent">
+                  Inviando accetti l’{" "}
+                  <a className="ftInlineLink" href={privacyHref}>
+                    Informativa Privacy
+                  </a>
+                  .
+                </div>
 
-  <button className="ftBtn" type="submit" disabled={status === "sending"}>
-    {status === "sending" ? "Invio..." : "Invia"}
-  </button>
+                <button
+                  className="ftBtn"
+                  type="submit"
+                  disabled={status === "sending"}
+                >
+                  {status === "sending" ? "Invio..." : "Invia"}
+                </button>
 
-  {/* feedback elegante */}
-  {status === "ok" && <div className="ftNotice ftOk">Messaggio inviato.</div>}
-  {status === "error" && <div className="ftNotice ftErr">{errorMsg}</div>}
-</form>
-
+                {/* feedback elegante */}
+                {status === "ok" && (
+                  <div className="ftNotice ftOk">Messaggio inviato.</div>
+                )}
+                {status === "error" && (
+                  <div className="ftNotice ftErr">{errorMsg}</div>
+                )}
+              </form>
             </div>
           </div>
         </div>

@@ -349,3 +349,42 @@
 
 .ftOk{ color: rgba(255,255,255,0.78); }
 .ftErr{ color: rgba(255,120,120,0.9); }
+
+.ftSocialBtn {
+  font-size: 12px; /* o 20px */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brand);
+}
+
+.ftMailLink{
+  position: relative;
+  color: rgba(255,255,255,0.78);
+  text-decoration: none;
+  width: fit-content;
+  transition: color .15s ease;
+}
+
+.ftMailLink::after{
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  height: 1px;
+  width: 100%;
+  background: rgba(0,159,183,0.55); /* brand soft */
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .18s ease, opacity .18s ease;
+  opacity: .75;
+}
+
+.ftMailLink:hover{
+  color: rgba(255,255,255,0.92);
+}
+
+.ftMailLink:hover::after{
+  transform: scaleX(1);
+  opacity: 1;
+}
