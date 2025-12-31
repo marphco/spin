@@ -69,7 +69,7 @@ function IconDoc() {
 
 export default function Footer({
   company = "Spin Factor s.r.l.",
-  email = "info@spinfactor.it",
+  email = "segreteria@spinfactor.it",
   sedePrincipale = "via della Scrofa, 17 – 00186 Roma",
   sedeLegale = "via Vittoria Colonna, 14 – 80121 Napoli",
   piva = "08521911217",
@@ -123,6 +123,7 @@ export default function Footer({
       setMessage("");
       setHp("");
     } catch (err) {
+      console.error("Contact form error:", err);
       setStatus("error");
       setErrorMsg("Errore di rete. Riprova.");
     }

@@ -23,7 +23,7 @@ export default function PrivacyPolicy() {
           <p>
             <strong>Spin Factor s.r.l.</strong>
             <br />
-            Email: <a href="mailto:info@spinfactor.it">info@spinfactor.it</a>
+            Email: <a href="mailto:segreteria@spinfactor.it">segreteria@spinfactor.it</a>
           </p>
 
           <h2>Dati trattati</h2>
@@ -54,7 +54,7 @@ export default function PrivacyPolicy() {
           <p>
             L’utente può esercitare i diritti previsti dagli articoli 15–22 del
             GDPR contattando{" "}
-            <a href="mailto:info@spinfactor.it">info@spinfactor.it</a>.
+            <a href="mailto:segreteria@spinfactor.it">segreteria@spinfactor.it</a>.
           </p>
         </div>
 

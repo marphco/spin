@@ -20,8 +20,6 @@ export default function Home() {
   useLayoutEffect(() => {
     const rootEl = document.documentElement;
 
-    const isMobile = window.matchMedia("(max-width: 720px)").matches;
-
     // ✅ GSAP: meno rogne su mobile resize / orientation
     ScrollTrigger.config({
       ignoreMobileResize: true,
