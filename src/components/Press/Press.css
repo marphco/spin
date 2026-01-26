@@ -1,0 +1,353 @@
+/* Press.css */
+
+/* ---------------------------------------------------
+   BASE
+--------------------------------------------------- */
+
+.pressSection{
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background: transparent;
+  color: #121212;
+}
+
+.pressInner{
+  position: relative;
+  width: min(1120px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 110px 0 90px;
+
+  display: grid;
+  gap: 22px;
+
+  min-height: 100vh;
+  align-content: center;
+  text-align: center;
+}
+
+/* header */
+.pressKicker{
+  font-size: 12px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.42);
+}
+
+.pressUnderline{
+  width: 92px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--brand);
+  opacity: .9;
+  margin: 0 auto 14px;
+}
+
+/* ---------------------------------------------------
+   GRID + CARD
+--------------------------------------------------- */
+
+.pressGrid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(26px, 3.6vw, 44px);
+  margin-top: 10px;
+  padding: 10px 0;
+}
+
+.pressCard{
+  position: relative;
+  display: grid;
+  gap: 14px;
+
+  text-decoration: none;
+  color: inherit;
+
+  padding: 8px 6px 16px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+
+  transition: transform .18s ease, filter .18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pressCard::after{
+  content:"";
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--brand);
+  opacity: .95;
+  transition: width .18s ease;
+}
+
+@media (hover:hover){
+  .pressCard:hover{
+    transform: translateY(-2px);
+  }
+  .pressCard:hover::after{
+    width: min(140px, 42%);
+  }
+  .pressCard:hover .pressCardTitle{
+    color: #0e0e0e;
+  }
+  .pressCard:hover .pressLogo{
+    opacity: 1;
+  }
+}
+
+.pressCard:active{
+  transform: translateY(-1px);
+}
+
+/* logo */
+.pressCardTop{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 34px;
+}
+
+.pressLogo{
+  height: 28px;
+  width: auto;
+  max-width: 180px;
+  opacity: .92;
+  transition: opacity .18s ease, filter .18s ease;
+  filter: saturate(.95);
+}
+
+.pressLogoFallback{
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: .02em;
+  color: rgba(0,0,0,0.55);
+}
+
+/* testo */
+.pressCardTitle{
+  font-size: clamp(16px, 1.55vw, 20px);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: #141414;
+  margin: 0 auto;
+  max-width: 44ch;
+}
+
+.pressCardMeta{
+  font-size: 12px;
+  color: rgba(0,0,0,0.45);
+}
+
+/* ---------------------------------------------------
+   MOBILE: STACK + DIVIDER
+--------------------------------------------------- */
+
+@media (max-width: 860px){
+  .pressInner{ padding: 96px 0 80px; }
+
+  .pressGrid{
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 6px 0;
+  }
+
+  .pressCard{ padding: 20px 4px 22px; }
+
+  .pressCard + .pressCard{ position: relative; }
+
+  .pressCard + .pressCard::before{
+    content:"";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    width: min(520px, 86%);
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+  }
+
+  .pressCard:active::after{
+    width: min(150px, 46%);
+  }
+
+  .pressCardTitle{ max-width: 34ch; }
+
+  .pressLogo{
+    height: 26px;
+    max-width: 165px;
+  }
+}
+
+/* ---------------------------------------------------
+   RAIL
+--------------------------------------------------- */
+
+.pressRail{
+  position: relative;
+  overflow: visible;
+}
+
+/* ---------------------------------------------------
+   DESKTOP CAROUSEL + ARROWS
+--------------------------------------------------- */
+
+@media (min-width: 861px){
+  .pressRail.isCarousel{
+    padding-inline: 84px; /* spazio frecce in gutter */
+  }
+
+  .pressGrid.isCarousel{
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - clamp(26px, 3.6vw, 44px)) / 2);
+    grid-template-columns: unset;
+  }
+
+  .pressGrid.isCarousel::-webkit-scrollbar{ display:none; }
+
+  .pressGrid.isCarousel > .pressCard{
+    scroll-snap-align: start;
+  }
+
+  .pressArrow{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+
+    width: 64px;
+    height: 64px;
+    border-radius: 999px;
+
+    background: transparent;
+    border: 1px solid rgba(0,0,0,0.10);
+
+    display: grid;
+    place-items: center;
+
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+
+    transition: transform .18s ease, border-color .18s ease, opacity .18s ease;
+  }
+
+  .pressArrowIcon{
+    width: 22px;
+    height: 22px;
+    color: color-mix(in srgb, var(--brand) 85%, #0e0e0e 15%);
+    opacity: .95;
+    transition: transform .18s ease, opacity .18s ease;
+  }
+
+  .pressArrowLeft{ left: 16px; }
+  .pressArrowRight{ right: 16px; }
+
+  .pressArrow:hover{
+    transform: translateY(-50%) scale(1.05);
+    border-color: color-mix(in srgb, var(--brand) 50%, rgba(0,0,0,0.20));
+  }
+
+  .pressArrow:hover .pressArrowIcon{
+    transform: scale(1.08);
+    opacity: 1;
+  }
+
+  .pressArrow:active{
+    transform: translateY(-50%) scale(.98);
+  }
+}
+
+@media (max-width: 860px){
+  .pressArrow{ display:none; }
+}
+
+/* ---------------------------------------------------
+   MOBILE CAROUSEL (2 articoli per pagina) + HINT SOTTO
+--------------------------------------------------- */
+
+@media (max-width: 860px){
+  .pressMobileWrap{
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+    margin-top: 10px;
+  }
+
+  .pressMobileScroller{
+    width: 100%;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 100%;
+    gap: 18px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    padding: 0; /* no aloni */
+  }
+
+  .pressMobileScroller::-webkit-scrollbar{ display:none; }
+
+  .pressPage{
+    scroll-snap-align: center;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0; /* divider già gestito */
+  }
+
+  .pressSwipeHint{
+    position: relative;
+    z-index: 2;
+    pointer-events: none;
+
+    padding-bottom: 10px;
+    opacity: .7;
+    animation: pressHintFade 2.6s ease-in-out infinite;
+  }
+
+  .pressSwipeImg{
+    width: 46px;
+    height: 46px;
+    display: block;
+
+    animation: pressHintNudge 1.2s ease-in-out infinite;
+    transform-origin: 50% 50%;
+
+    /* ✅ fix “visivamente non centrato” (SVG sbilanciato) */
+    transform: translateX(-6px);
+  }
+
+  @keyframes pressHintNudge{
+    0%   { transform: translateX(-6px) translateX(-6px); }
+    50%  { transform: translateX(-6px) translateX(7px); }
+    100% { transform: translateX(-6px) translateX(-6px); }
+  }
+
+  @keyframes pressHintFade{
+    0%,100% { opacity: .35; }
+    50%     { opacity: .75; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .pressSwipeHint,
+  .pressSwipeImg{
+    animation: none !important;
+  }
+}
+

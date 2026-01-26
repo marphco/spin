@@ -9,43 +9,35 @@ import heroImg from "./assets/hero.jpg";
 import Siamo from "./components/Siamo/Siamo";
 import Facciamo from "./components/Facciamo/Facciamo";
 import Human from "./components/Human/Human";
+import Press from "./components/Press/Press";
 import Footer from "./components/Footer/Footer";
+
 import CookieNotice from "./components/Policies/CookieNotice.jsx";
 import { useCookieNotice } from "./components/Policies/useCookieNotice.js";
+
+import { PRESS_ITEMS } from "./data/pressData";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
   const { open, accept } = useCookieNotice();
+
   useLayoutEffect(() => {
     const rootEl = document.documentElement;
 
-    // ✅ GSAP: meno rogne su mobile resize / orientation
     ScrollTrigger.config({
       ignoreMobileResize: true,
       autoRefreshEvents: "visibilitychange,DOMContentLoaded,load",
-      limitCallbacks: true, // ✅ aggiungi
+      limitCallbacks: true,
     });
-
-
-    // ✅ migliora lo scroll touch (se noti “stranezze” lo togliamo)
-    // ScrollTrigger.normalizeScroll(true);
 
     const nero =
       getComputedStyle(rootEl).getPropertyValue("--bg").trim() || "#010101";
 
-    const blu = "#0b1320"; // Facciamo (macro + micro)
-    const verde = "#02291f"; // Human (macro + micro)
+    const blu = "#0b1320";
+    const verde = "#02291f";
+    const offwhite = "#f3f2ee";
 
-    gsap.set(rootEl, { "--pageBg": nero });
-
-    // kill vecchi trigger
-    ScrollTrigger.getById("bg-siamo-to-facciamo")?.kill(true);
-    ScrollTrigger.getById("bg-facciamo-horizontal")?.kill(true); // 👈 se esisteva
-    ScrollTrigger.getById("bg-facciamo-to-human")?.kill(true);
-    ScrollTrigger.getById("bg-human-to-footer")?.kill(true);
-
-    // ✅ helper: scrub background
     const scrubBg = (from, to) =>
       gsap.fromTo(
         rootEl,
@@ -56,16 +48,17 @@ export default function Home() {
     // stato iniziale
     gsap.set(rootEl, { "--pageBg": nero });
 
-    // kill vecchi trigger
+    // kill trigger precedenti (solo quelli che usiamo davvero)
     [
       "bg-scrub-siamo-facciamo",
       "bg-scrub-facciamo-human",
-      "bg-scrub-human-footer",
+      "bg-scrub-human-press",
+      "bg-scrub-press-footer",
+      "bg-range-human",
+      "bg-range-footer",
     ].forEach((id) => ScrollTrigger.getById(id)?.kill(true));
 
-    /* ---------------------------------------------------
-       ✅ 1) SIAMO -> FACCIAMO (nero -> blu)
-    --------------------------------------------------- */
+    // 1) SIAMO -> FACCIAMO (nero -> blu)
     ScrollTrigger.create({
       id: "bg-scrub-siamo-facciamo",
       trigger: "#facciamo",
@@ -76,10 +69,7 @@ export default function Home() {
       invalidateOnRefresh: true,
     });
 
-    /* ---------------------------------------------------
-       ✅ 2) FACCIAMO -> HUMAN (blu -> verde)
-       Trigger su #human (entra dal basso)
-    --------------------------------------------------- */
+    // 2) FACCIAMO -> HUMAN (blu -> verde)
     ScrollTrigger.create({
       id: "bg-scrub-facciamo-human",
       trigger: "#human",
@@ -90,41 +80,42 @@ export default function Home() {
       invalidateOnRefresh: true,
     });
 
-    /* ---------------------------------------------------
-       ✅ 3) HUMAN -> FOOTER (verde -> nero)
-       Trigger su #footer
-    --------------------------------------------------- */
+    // 3) HUMAN -> PRESS (verde -> offwhite)
     ScrollTrigger.create({
-      id: "bg-scrub-human-footer",
+      id: "bg-scrub-human-press",
+      trigger: "#press",
+      start: "top bottom",
+      end: "top top",
+      scrub: true,
+      animation: scrubBg(verde, offwhite),
+      invalidateOnRefresh: true,
+    });
+
+    // 4) PRESS -> FOOTER (offwhite -> nero)
+    ScrollTrigger.create({
+      id: "bg-scrub-press-footer",
       trigger: "#footer",
       start: "top bottom",
       end: "top top",
       scrub: true,
-      animation: scrubBg(verde, nero),
+      animation: scrubBg(offwhite, nero),
       invalidateOnRefresh: true,
     });
-
-
 
     requestAnimationFrame(() =>
       requestAnimationFrame(() => ScrollTrigger.refresh())
     );
 
     let resizeRaf = 0;
-
     const safeRefresh = () => {
       cancelAnimationFrame(resizeRaf);
       resizeRaf = requestAnimationFrame(() => ScrollTrigger.refresh());
     };
 
-    // ricalcolo qui (dentro l'effect) così è coerente con i trigger
     const isMobileNow = window.matchMedia("(max-width: 720px)").matches;
-
     if (!isMobileNow) {
-      // ✅ Desktop: ok refresh su resize
       window.addEventListener("resize", safeRefresh, { passive: true });
     } else {
-      // ✅ Mobile: NO resize (iOS/Android lo triggerano anche mentre scrolli)
       window.addEventListener("orientationchange", safeRefresh, { passive: true });
     }
 
@@ -134,19 +125,16 @@ export default function Home() {
       } else {
         window.removeEventListener("orientationchange", safeRefresh);
       }
-
       cancelAnimationFrame(resizeRaf);
 
-      ScrollTrigger.getById("bg-siamo-to-facciamo")?.kill(true);
-      ScrollTrigger.getById("bg-facciamo-to-human")?.kill(true);
-      ScrollTrigger.getById("bg-human-to-footer")?.kill(true);
-      ScrollTrigger.getById("bg-scrub-siamo-facciamo")?.kill(true);
-      ScrollTrigger.getById("bg-range-human")?.kill(true);
-      ScrollTrigger.getById("bg-range-footer")?.kill(true);
-      ScrollTrigger.getById("bg-scrub-siamo-facciamo")?.kill(true);
-      ScrollTrigger.getById("bg-scrub-facciamo-human")?.kill(true);
-      ScrollTrigger.getById("bg-scrub-human-footer")?.kill(true);
-
+      [
+        "bg-scrub-siamo-facciamo",
+        "bg-scrub-facciamo-human",
+        "bg-scrub-human-press",
+        "bg-scrub-press-footer",
+        "bg-range-human",
+        "bg-range-footer",
+      ].forEach((id) => ScrollTrigger.getById(id)?.kill(true));
     };
   }, []);
 
@@ -199,6 +187,8 @@ export default function Home() {
               "Un servizio di analisi e monitoraggio su misura, costruito sulle tue priorità.",
             ]}
           />
+
+          <Press id="press" items={PRESS_ITEMS} />
 
           <Footer
             facebookHref="#"

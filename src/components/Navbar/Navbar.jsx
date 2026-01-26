@@ -11,6 +11,7 @@ const LINKS = [
   { id: "siamo", label: "Siamo" },
   { id: "facciamo", label: "Facciamo" },
   { id: "human", label: "Human" },
+  { id: "press", label: "Press" }, 
   { id: "contatti", label: "Contatti" },
 ];
 
@@ -22,18 +23,21 @@ export default function Navbar() {
   const navLock = useRef(false);
 
   const OFFSETS_DESKTOP = {
-    siamo: 300,
-    facciamo: 950,
-    human: 760,
-    contatti: 200,
-  };
+  siamo: 300,
+  facciamo: 950,
+  human: 760,
+  press: 200,       // ✅ iniziale, poi lo fine-tuniamo
+  contatti: 200,
+};
 
-  const OFFSETS_MOBILE = {
-    siamo: 280,
-    facciamo: 1100,
-    human: 800,
-    contatti: 50,
-  };
+const OFFSETS_MOBILE = {
+  siamo: 280,
+  facciamo: 1100,
+  human: 800,
+  press: 120,       // ✅ iniziale
+  contatti: 50,
+};
+
 
   const getOffset = (id) => {
     const isMobile = window.matchMedia("(max-width: 720px)").matches;
