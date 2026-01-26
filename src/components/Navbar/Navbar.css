@@ -27,13 +27,16 @@
   padding: 10px 12px;
   border-radius: 999px;
 
+  /* ✅ lascia qui i default (GSAP li anima) */
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(14px);
   box-shadow: var(--shadow-float), inset 0 1px 0 var(--glass-highlight);
+
+  will-change: background-color, border-color, box-shadow, backdrop-filter;
 }
 
-/* brand: nessun bordo */
+/* brand */
 .navBrand{
   display: inline-flex;
   align-items: center;
@@ -48,7 +51,7 @@
   display: block;
 }
 
-/* links: SEMPRE una riga, NO scroll, NO wrap */
+/* links */
 .navLinks{
   display: flex;
   align-items: center;
@@ -94,7 +97,23 @@
   color: var(--ink);
 }
 
-/* MOBILE: compressione più aggressiva */
+/* ✅ Solo colori “light” (il background viene animato da GSAP) */
+.navBar.isOnLight .navLink{
+  color: rgba(0,0,0,0.60);
+}
+
+.navBar.isOnLight .navLink:hover{
+  background: rgba(0,0,0,0.06);
+  color: rgba(0,0,0,0.92);
+}
+
+.navBar.isOnLight .navLink.isActive{
+  background: rgba(0,159,183,0.16);
+  border-color: rgba(0,159,183,0.42);
+  color: rgba(0,0,0,0.92);
+}
+
+/* MOBILE: compressione */
 @media (max-width: 720px){
   .navShell{
     bottom: 10px;
@@ -102,35 +121,33 @@
   }
 
   .navBar{
-    padding: 8px 10px;      /* ↓ */
-    gap: 8px;               /* ↓ */
+    padding: 8px 10px;
+    gap: 8px;
   }
 
   .navLogo{
-    height: 20px;           /* ↓ */
-    max-width: 92px;        /* ↓ */
+    height: 20px;
+    max-width: 92px;
   }
 
   .navLinks{
-    gap: 2px;               /* ↓ (da 0/6) */
+    gap: 2px;
     overflow: hidden;
     min-width: 0;
   }
 
   .navLink{
-    height: 28px;           /* ↓ */
-    padding: 0 clamp(6px, 1.8vw, 9px);  /* ↓ */
-    font-size: clamp(10px, 2.4vw, 11px);/* ↓ */
+    height: 28px;
+    padding: 0 clamp(6px, 1.8vw, 9px);
+    font-size: clamp(10px, 2.4vw, 11px);
     letter-spacing: 0;
   }
 
-  /* IMPORTANT: permetti ai link di stringersi davvero */
   .navLink{
     min-width: 0;
     flex: 0 1 auto;
   }
 
-  /* pill attiva un filo più compatta */
   .navLink.isActive{
     border-color: rgba(0,159,183,0.42);
     background: rgba(0,159,183,0.16);

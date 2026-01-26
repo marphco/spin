@@ -11,7 +11,7 @@ const LINKS = [
   { id: "siamo", label: "Siamo" },
   { id: "facciamo", label: "Facciamo" },
   { id: "human", label: "Human" },
-  { id: "press", label: "Press" }, 
+  { id: "press", label: "Press" },
   { id: "contatti", label: "Contatti" },
 ];
 
@@ -19,25 +19,25 @@ export default function Navbar() {
   const [active, setActive] = useState(null);
   const ids = useMemo(() => LINKS.map((l) => l.id), []);
 
-  // ✅ lock per evitare che i trigger sovrascrivano active mentre scrolliamo via click
   const navLock = useRef(false);
+  const elsRef = useRef([]);
+  const barRef = useRef(null);
 
   const OFFSETS_DESKTOP = {
-  siamo: 300,
-  facciamo: 950,
-  human: 760,
-  press: 50,       // ✅ iniziale, poi lo fine-tuniamo
-  contatti: 200,
-};
+    siamo: 300,
+    facciamo: 950,
+    human: 760,
+    press: 50,
+    contatti: 200,
+  };
 
-const OFFSETS_MOBILE = {
-  siamo: 280,
-  facciamo: 1100,
-  human: 800,
-  press: 50,       // ✅ iniziale
-  contatti: 50,
-};
-
+  const OFFSETS_MOBILE = {
+    siamo: 280,
+    facciamo: 1100,
+    human: 800,
+    press: 50,
+    contatti: 50,
+  };
 
   const getOffset = (id) => {
     const isMobile = window.matchMedia("(max-width: 720px)").matches;
@@ -46,13 +46,53 @@ const OFFSETS_MOBILE = {
 
   const getPinnedTriggerId = (id) => `${id}-${id}`;
 
-  const elsRef = useRef([]);
+  // ---------------------------------------------------
+  // NAVBAR SKIN ANIMATION (dark <-> light) — smooth
+  // ---------------------------------------------------
+  const toLightSkin = useMemo(
+    () => ({
+      backgroundColor: "rgba(255,255,255,0.72)",
+      borderColor: "rgba(0,0,0,0.10)",
+      boxShadow: "0 14px 40px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.70)",
+      backdropFilter: "blur(16px)",
+    }),
+    [],
+  );
 
+  const toDarkSkin = useMemo(
+    () => ({
+      backgroundColor: "var(--glass-bg)",
+      borderColor: "var(--glass-border)",
+      boxShadow: "var(--shadow-float), inset 0 1px 0 var(--glass-highlight)",
+      backdropFilter: "blur(14px)",
+    }),
+    [],
+  );
+
+  const animateSkin = (mode) => {
+    const el = barRef.current;
+    if (!el) return;
+
+    gsap.to(el, {
+      ...(mode === "light" ? toLightSkin : toDarkSkin),
+      duration: 0.45,
+      ease: "power2.out",
+      overwrite: "auto",
+    });
+
+    // classe solo per i colori dei link (non per il background)
+    if (mode === "light") el.classList.add("isOnLight");
+    else el.classList.remove("isOnLight");
+  };
+
+  // ---------------------------------------------------
+  // TRIGGERS
+  // ---------------------------------------------------
   useEffect(() => {
-    // kill vecchi trigger
     ids.forEach((id) => ScrollTrigger.getById(`nav-${id}`)?.kill());
     ScrollTrigger.getById("nav-top")?.kill();
     ScrollTrigger.getById("nav-smart")?.kill();
+    ScrollTrigger.getById("nav-press-skin")?.kill();
 
     const getNavEl = (id) => {
       if (id === "contatti") return document.getElementById("footer");
@@ -70,19 +110,16 @@ const OFFSETS_MOBILE = {
 
       const center = window.innerHeight * 0.5;
 
-      // ✅ Hero dominante SOLO se il centro è ancora dentro Hero
       const stSiamo = ScrollTrigger.getById("siamo-siamo");
       if (stSiamo && window.scrollY < stSiamo.start + 1) {
         setActive(null);
         return;
       }
 
-      const els = elsRef.current;
-
       let best = null;
       let bestDist = Infinity;
 
-      for (const { id, el } of els) {
+      for (const { id, el } of elsRef.current) {
         const rect = el.getBoundingClientRect();
         const elCenter = rect.top + rect.height / 2;
         const dist = Math.abs(elCenter - center);
@@ -96,8 +133,6 @@ const OFFSETS_MOBILE = {
       setActive(best);
     };
 
-
-    // trigger “globale” che aggiorna in modo fluido
     const smart = ScrollTrigger.create({
       id: "nav-smart",
       start: 0,
@@ -106,27 +141,53 @@ const OFFSETS_MOBILE = {
       onRefresh: setActiveSmart,
     });
 
-    // trigger top per il reset sicuro (come “guardrail”)
     const topTrigger = ScrollTrigger.create({
       id: "nav-top",
       trigger: "#top",
       start: "top top",
       end: "bottom top",
-      onEnter: () => { if (!navLock.current) setActive(null); },
-      onEnterBack: () => { if (!navLock.current) setActive(null); },
+      onEnter: () => {
+        if (!navLock.current) setActive(null);
+      },
+      onEnterBack: () => {
+        if (!navLock.current) setActive(null);
+      },
     });
 
-    // prima valutazione
+    // ✅ transizione soft su Press
+    const pressSkin = ScrollTrigger.create({
+      id: "nav-press-skin",
+      trigger: "#press",
+      start: "top 25%",
+      end: "bottom 25%",
+      onEnter: () => animateSkin("light"),
+      onEnterBack: () => animateSkin("light"),
+      onLeave: () => animateSkin("dark"),
+      onLeaveBack: () => animateSkin("dark"),
+    });
+
+    // init: forza skin corretta al load
+    requestAnimationFrame(() => {
+      const pressEl = document.getElementById("press");
+      if (!pressEl) return;
+      const r = pressEl.getBoundingClientRect();
+      const inPress = r.top < window.innerHeight * 0.25 && r.bottom > window.innerHeight * 0.25;
+      animateSkin(inPress ? "light" : "dark");
+    });
+
     setActiveSmart();
 
     return () => {
       smart.kill();
       topTrigger.kill();
+      pressSkin.kill();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ids]);
 
-
-  // ✅ helper: rilascia lock DOPO che ScrollTrigger ha aggiornato e poi forza active
+  // ---------------------------------------------------
+  // CLICK SCROLL
+  // ---------------------------------------------------
   const finalizeNav = (id) => {
     requestAnimationFrame(() => {
       ScrollTrigger.update();
@@ -134,19 +195,11 @@ const OFFSETS_MOBILE = {
       requestAnimationFrame(() => {
         ScrollTrigger.update();
 
-        // ✅ ora che la posizione è stabile, forziamo active
         setActive(id === "top" ? null : id);
-
-        // ✅ sblocchiamo (da questo momento i trigger possono aggiornare di nuovo)
         navLock.current = false;
 
-        // ✅ refresh leggero per evitare micro mismatch su iOS
-        // ✅ refresh leggero per evitare micro mismatch su iOS
         ScrollTrigger.refresh(true);
 
-        // ✅ FIX: salto Footer (nero) -> Human (verde)
-        // su iOS a volte il trigger del footer riscrive il nero dopo lo scroll.
-        // Qui forziamo l'update dei range-trigger di Home.jsx.
         if (id === "human") {
           requestAnimationFrame(() => {
             ScrollTrigger.getById("bg-range-human")?.refresh();
@@ -154,7 +207,6 @@ const OFFSETS_MOBILE = {
             requestAnimationFrame(() => ScrollTrigger.update());
           });
         }
-
       });
     });
   };
@@ -162,16 +214,12 @@ const OFFSETS_MOBILE = {
   const onNav = (e, id) => {
     e.preventDefault();
 
-    // ✅ attiva lock
     navLock.current = true;
-
-    // stoppa scroll in corso
     gsap.killTweensOf(window);
 
     requestAnimationFrame(() => {
       const offset = getOffset(id);
 
-      // TOP
       if (id === "top") {
         gsap.to(window, {
           scrollTo: 0,
@@ -184,7 +232,6 @@ const OFFSETS_MOBILE = {
         return;
       }
 
-      // Sezione pinnata? usa START del trigger
       const st = ScrollTrigger.getById(getPinnedTriggerId(id));
       if (st) {
         const y = st.start + offset;
@@ -197,11 +244,9 @@ const OFFSETS_MOBILE = {
           onUpdate: ScrollTrigger.update,
           onComplete: () => finalizeNav(id),
         });
-
         return;
       }
 
-      // Fallback (contatti / altre non pinnate)
       const anchor =
         document.getElementById(`${id}__nav`) || document.getElementById(id);
       if (!anchor) {
@@ -224,7 +269,7 @@ const OFFSETS_MOBILE = {
 
   return (
     <div className="navShell" role="navigation" aria-label="Sezioni">
-      <div className="navBar">
+      <div ref={barRef} className="navBar">
         <a className="navBrand" href="#top" onClick={(e) => onNav(e, "top")}>
           <img className="navLogo" src={logo} alt="Spin Factor" />
         </a>
