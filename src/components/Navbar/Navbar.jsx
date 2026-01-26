@@ -26,7 +26,7 @@ export default function Navbar() {
   siamo: 300,
   facciamo: 950,
   human: 760,
-  press: 200,       // ✅ iniziale, poi lo fine-tuniamo
+  press: 50,       // ✅ iniziale, poi lo fine-tuniamo
   contatti: 200,
 };
 
@@ -34,7 +34,7 @@ const OFFSETS_MOBILE = {
   siamo: 280,
   facciamo: 1100,
   human: 800,
-  press: 120,       // ✅ iniziale
+  press: 50,       // ✅ iniziale
   contatti: 50,
 };
 

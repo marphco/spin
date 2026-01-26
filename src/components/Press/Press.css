@@ -351,3 +351,65 @@
   }
 }
 
+/* ---------------------------------------------------
+   FULL-WIDTH CAROUSEL
+   - SOLO MOBILE (desktop resta compatto dentro pressInner)
+--------------------------------------------------- */
+
+@media (max-width: 860px){
+  .pressRail{
+    position: relative;
+
+    width: 100vw;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+  }
+
+  .pressMobileScroller{
+    padding-inline: 20px;
+  }
+}
+
+@media (min-width: 861px){
+  .pressDeskScroller{
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 100%;
+    gap: clamp(26px, 3.6vw, 44px);
+
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    padding: 10px 0;
+  }
+
+  .pressDeskScroller::-webkit-scrollbar{ display:none; }
+
+  .pressDeskPage{
+    scroll-snap-align: start;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(26px, 3.6vw, 44px);
+  }
+}
+
+/* LA7: logo troppo piccolo, override ad-hoc */
+.pressLogo--la7{
+  height: 44px;      /* prova 34-38px */
+  max-width: 210px;  /* un filo più largo se serve */
+  opacity: .98;
+  filter: saturate(1);
+}
+
+@media (max-width: 860px){
+  .pressLogo--la7{
+    height: 32px;
+    max-width: 190px;
+  }
+}

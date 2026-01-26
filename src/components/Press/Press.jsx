@@ -25,8 +25,10 @@ function parseItalianDate(dateStr) {
   const month = months[(parts[1] || "").toLowerCase()];
   const year = Number(parts[2]);
 
-  if (!Number.isFinite(day) || !Number.isFinite(year) || month == null)
+  if (!Number.isFinite(day) || !Number.isFinite(year) || month == null) {
     return new Date(0);
+  }
+
   return new Date(year, month, day);
 }
 
@@ -37,13 +39,29 @@ function chunk2(arr) {
 }
 
 export default function Press({ id = "press", items = [] }) {
-  const sorted = useMemo(() => {
+  const baseItems = useMemo(() => {
     return [...items].sort(
       (a, b) => parseItalianDate(b?.date) - parseItalianDate(a?.date),
     );
   }, [items]);
 
+  const isCarousel = baseItems.length > 2;
+
+  // Loop: 3 copie
+  const loopItems = useMemo(() => {
+    if (!isCarousel) return baseItems;
+    return [...baseItems, ...baseItems, ...baseItems];
+  }, [baseItems, isCarousel]);
+
   const scrollerRef = useRef(null);
+  const railRef = useRef(null);
+
+  const isHoveringRef = useRef(false);
+  const ignoreHintScrollRef = useRef(false);
+
+  const isJumpingRef = useRef(false);
+  const userInteractingRef = useRef(false);
+  const resumeTRef = useRef(null);
 
   const [isMobile, setIsMobile] = useState(
     () => window.matchMedia("(max-width: 860px)").matches,
@@ -52,11 +70,12 @@ export default function Press({ id = "press", items = [] }) {
   // hint state (solo dismiss)
   const [hintDismissed, setHintDismissed] = useState(false);
 
-  const isCarousel = sorted.length > 2;
   const showArrows = isCarousel && !isMobile;
   const showSwipeHint = isCarousel && isMobile && !hintDismissed;
 
-  // responsive: NO setState sync dentro effect body
+  // ---------------------------------------------------
+  // RESPONSIVE
+  // ---------------------------------------------------
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 860px)");
     const onChange = (e) => setIsMobile(e.matches);
@@ -65,29 +84,146 @@ export default function Press({ id = "press", items = [] }) {
     return () => mq.removeEventListener?.("change", onChange);
   }, []);
 
-  // reset hint SOLO quando "modalità" cambia (mobile+carousel ON/OFF)
+  // reset hint quando serve
   useEffect(() => {
-    // quando non serve, lo consideriamo dismissed e fine
     if (!isMobile || !isCarousel) {
       if (!hintDismissed) setHintDismissed(true);
       return;
     }
-    // quando torna utile (mobile+carousel), lo ri-mostriamo
     if (hintDismissed) setHintDismissed(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMobile, isCarousel]);
+  }, [isMobile, isCarousel, baseItems.length]);
 
-  // auto-dismiss hint: primo scroll orizzontale o timeout
+  // ---------------------------------------------------
+  // USER INTERACTION FLAG
+  // ---------------------------------------------------
+  const setUserInteracting = useCallback(() => {
+    userInteractingRef.current = true;
+    if (resumeTRef.current) window.clearTimeout(resumeTRef.current);
+    resumeTRef.current = window.setTimeout(() => {
+      userInteractingRef.current = false;
+    }, 2200);
+  }, []);
+
+  // ---------------------------------------------------
+  // JUMP WITHOUT BOUNCE (usato dal loop)
+  // ---------------------------------------------------
+  const jumpWithoutBounce = useCallback((newLeft) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+
+    isJumpingRef.current = true;
+
+    // evita che hint si chiuda per scroll programmatici
+    ignoreHintScrollRef.current = true;
+
+    const prev = el.style.scrollBehavior;
+    el.style.scrollBehavior = "auto";
+    el.scrollLeft = newLeft;
+
+    requestAnimationFrame(() => {
+      el.style.scrollBehavior = prev || "";
+      isJumpingRef.current = false;
+
+      requestAnimationFrame(() => {
+        ignoreHintScrollRef.current = false;
+      });
+    });
+  }, []);
+
+  // ---------------------------------------------------
+  // SCROLL STEP (per pagina)
+  // ---------------------------------------------------
+  const getStep = useCallback(() => {
+    const el = scrollerRef.current;
+    if (!el) return 0;
+
+    const target = el.querySelector(isMobile ? ".pressPage" : ".pressDeskPage");
+    if (!target) return 0;
+
+    const cs = getComputedStyle(el);
+    const gap = parseFloat(cs.columnGap || cs.gap || "0") || 0;
+
+    return target.getBoundingClientRect().width + gap;
+  }, [isMobile]);
+
+  const getRailGap = useCallback(() => {
+    const el = scrollerRef.current;
+    if (!el) return 0;
+    const cs = getComputedStyle(el);
+    return parseFloat(cs.columnGap || cs.gap || "0") || 0;
+  }, []);
+
+  // copy width coerente con step (desktop+mobile)
+  const getCopyWidth = useCallback(() => {
+    const step = getStep();
+    if (!step) return 0;
+
+    const gap = getRailGap();
+    const pageCount = Math.ceil(baseItems.length / 2);
+
+    // step = pageWidth + gap  => copyW = pageCount*step - gap
+    const copyW = pageCount * step - gap;
+
+    return Number.isFinite(copyW) ? copyW : 0;
+  }, [getStep, getRailGap, baseItems.length]);
+
+  // ✅ PRE-WRAP per evitare clamp a 0 (nessun scroll event)
+  const ensureMiddleCopyForDir = useCallback(
+    (dir) => {
+      if (!isCarousel) return;
+
+      const el = scrollerRef.current;
+      if (!el) return;
+
+      const copyW = getCopyWidth();
+      if (!copyW) return;
+
+      const left = el.scrollLeft;
+
+      if (dir < 0 && left <= copyW + 2) {
+        jumpWithoutBounce(left + copyW);
+        return;
+      }
+
+      if (dir > 0 && left >= 2 * copyW - 2) {
+        jumpWithoutBounce(left - copyW);
+      }
+    },
+    [isCarousel, getCopyWidth, jumpWithoutBounce],
+  );
+
+  // scroll via frecce
+  const scrollByDir = useCallback(
+    (dir) => {
+      const el = scrollerRef.current;
+      if (!el) return;
+
+      const step = getStep();
+      if (!step) return;
+
+      ensureMiddleCopyForDir(dir);
+      el.scrollBy({ left: dir * step, behavior: "smooth" });
+    },
+    [getStep, ensureMiddleCopyForDir],
+  );
+
+  // ---------------------------------------------------
+  // HINT auto-dismiss (non triggerare su jump/autoplay)
+  // ---------------------------------------------------
   useEffect(() => {
     if (!isMobile || !isCarousel || hintDismissed) return;
 
     const el = scrollerRef.current;
     if (!el) return;
 
+    const startLeft = el.scrollLeft;
     const t = window.setTimeout(() => setHintDismissed(true), 4500);
 
     const onScroll = () => {
-      if (el.scrollLeft > 8) {
+      if (ignoreHintScrollRef.current) return;
+
+      if (Math.abs(el.scrollLeft - startLeft) > 8) {
         setHintDismissed(true);
         window.clearTimeout(t);
       }
@@ -100,59 +236,181 @@ export default function Press({ id = "press", items = [] }) {
     };
   }, [isMobile, isCarousel, hintDismissed]);
 
-  const getStep = useCallback(() => {
-    const el = scrollerRef.current;
-    if (!el) return 0;
+  // ---------------------------------------------------
+  // POSITION INIT: copia centrale
+  // ---------------------------------------------------
+  useEffect(() => {
+    if (!isCarousel) return;
 
-    const target = el.querySelector(isMobile ? ".pressPage" : ".pressCard");
-    if (!target) return 0;
-
-    const cs = getComputedStyle(el);
-    const gap = parseFloat(cs.columnGap || cs.gap || "0") || 0;
-    return target.getBoundingClientRect().width + gap;
-  }, [isMobile]);
-
-  const scrollByDir = (dir) => {
     const el = scrollerRef.current;
     if (!el) return;
 
-    const step = getStep();
-    if (!step) return;
+    let raf1 = 0;
+    let raf2 = 0;
 
-    el.scrollBy({ left: dir * step, behavior: "smooth" });
-  };
+    if (!isMobile) {
+      raf1 = requestAnimationFrame(() => {
+        raf2 = requestAnimationFrame(() => {
+          const copyW = getCopyWidth();
+          if (!copyW) return;
+          jumpWithoutBounce(copyW);
+        });
+      });
+      return () => {
+        cancelAnimationFrame(raf1);
+        cancelAnimationFrame(raf2);
+      };
+    }
 
-  const renderCard = (x, i) => (
-    <a
-      key={`${x.href}-${i}`}
-      className="pressCard"
-      href={x.href}
-      target="_blank"
-      rel="noreferrer noopener"
-      aria-label={`${x.brand}: ${x.title} (apre in nuova tab)`}
-    >
-      <div className="pressCardTop">
-        {x.logo ? (
-          <img
-            className="pressLogo"
-            src={x.logo}
-            alt={x.brand || "Testata"}
-            loading="lazy"
-          />
-        ) : (
-          <div className="pressLogoFallback">{x.brand}</div>
-        )}
-      </div>
+    const raf = requestAnimationFrame(() => {
+      const copyW = getCopyWidth();
+      if (!copyW) return;
+      jumpWithoutBounce(copyW);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [isCarousel, isMobile, getCopyWidth, jumpWithoutBounce]);
 
-      <div className="pressCardTitle">{x.title}</div>
-      <div className="pressCardMeta">{x.date}</div>
-    </a>
+  // ---------------------------------------------------
+  // WRAP quando esci dalla copia centrale
+  // ---------------------------------------------------
+  useEffect(() => {
+    if (!isCarousel) return;
+
+    const el = scrollerRef.current;
+    if (!el) return;
+
+    let raf = 0;
+
+    const onScroll = () => {
+      if (isJumpingRef.current) return;
+
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const copyW = getCopyWidth();
+        if (!copyW) return;
+
+        const left = el.scrollLeft;
+
+        if (left >= 2 * copyW) {
+          jumpWithoutBounce(left - copyW);
+        } else if (left < copyW) {
+          jumpWithoutBounce(left + copyW);
+        }
+      });
+    };
+
+    const markInteract = () => setUserInteracting();
+
+    el.addEventListener("scroll", onScroll, { passive: true });
+    el.addEventListener("wheel", markInteract, { passive: true });
+    el.addEventListener("touchstart", markInteract, { passive: true });
+    el.addEventListener("pointerdown", markInteract, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      el.removeEventListener("scroll", onScroll);
+      el.removeEventListener("wheel", markInteract);
+      el.removeEventListener("touchstart", markInteract);
+      el.removeEventListener("pointerdown", markInteract);
+    };
+  }, [isCarousel, getCopyWidth, jumpWithoutBounce, setUserInteracting]);
+
+  // ---------------------------------------------------
+  // AUTOPLAY (pausa su hover + non uccide hint su mobile)
+  // ---------------------------------------------------
+  useEffect(() => {
+    if (!isCarousel) return;
+
+    const el = scrollerRef.current;
+    if (!el) return;
+
+    const idInt = window.setInterval(() => {
+      if (isJumpingRef.current) return;
+      if (userInteractingRef.current) return;
+      if (isHoveringRef.current) return;
+
+      const step = getStep();
+      if (!step) return;
+
+      if (isMobile) ignoreHintScrollRef.current = true;
+      el.scrollBy({ left: step, behavior: "smooth" });
+      if (isMobile) {
+        window.setTimeout(() => {
+          ignoreHintScrollRef.current = false;
+        }, 350);
+      }
+    }, 4200);
+
+    return () => window.clearInterval(idInt);
+  }, [isCarousel, getStep, isMobile]);
+
+  // ---------------------------------------------------
+  // HOVER PAUSE
+  // ---------------------------------------------------
+  useEffect(() => {
+    if (!isCarousel) return;
+
+    const el = railRef.current;
+    if (!el) return;
+
+    const onEnter = () => {
+      isHoveringRef.current = true;
+    };
+    const onLeave = () => {
+      isHoveringRef.current = false;
+    };
+
+    el.addEventListener("pointerenter", onEnter);
+    el.addEventListener("pointerleave", onLeave);
+
+    return () => {
+      el.removeEventListener("pointerenter", onEnter);
+      el.removeEventListener("pointerleave", onLeave);
+    };
+  }, [isCarousel]);
+
+  // ---------------------------------------------------
+  // RENDER
+  // ---------------------------------------------------
+  const renderCard = useCallback(
+    (x, i) => (
+      <a
+        key={`${x.href}-${i}`}
+        className="pressCard"
+        href={x.href}
+        target="_blank"
+        rel="noreferrer noopener"
+        aria-label={`${x.brand}: ${x.title} (apre in nuova tab)`}
+      >
+        <div className="pressCardTop">
+          {x.logo ? (
+            <img
+              className={`pressLogo ${x.brand === "LA7" ? "pressLogo--la7" : ""}`}
+              src={x.logo}
+              alt={x.brand || "Testata"}
+              loading="lazy"
+            />
+          ) : (
+            <div className="pressLogoFallback">{x.brand}</div>
+          )}
+        </div>
+
+        <div className="pressCardTitle">{x.title}</div>
+        <div className="pressCardMeta">{x.date}</div>
+      </a>
+    ),
+    [],
   );
 
-  const pages = useMemo(() => {
+  const pagesMobile = useMemo(() => {
     if (!isCarousel || !isMobile) return [];
-    return chunk2(sorted);
-  }, [sorted, isCarousel, isMobile]);
+    return chunk2(loopItems);
+  }, [loopItems, isCarousel, isMobile]);
+
+  const pagesDesktop = useMemo(() => {
+    if (!isCarousel || isMobile) return [];
+    return chunk2(loopItems);
+  }, [loopItems, isCarousel, isMobile]);
 
   return (
     <section className="pressSection" id={id}>
@@ -162,7 +420,10 @@ export default function Press({ id = "press", items = [] }) {
         <div className="pressKicker">Press</div>
         <div className="pressUnderline" aria-hidden="true" />
 
-        <div className={`pressRail ${isCarousel ? "isCarousel" : ""}`}>
+        <div
+          ref={railRef}
+          className={`pressRail ${isCarousel ? "isCarousel" : ""}`}
+        >
           {showArrows && (
             <>
               <button
@@ -212,12 +473,21 @@ export default function Press({ id = "press", items = [] }) {
           )}
 
           {/* DESKTOP */}
-          {!isMobile && (
+          {!isMobile && !isCarousel && (
+            <div className="pressGrid">{baseItems.map(renderCard)}</div>
+          )}
+
+          {!isMobile && isCarousel && (
             <div
               ref={scrollerRef}
-              className={`pressGrid ${isCarousel ? "isCarousel" : ""}`}
+              className="pressDeskScroller"
+              aria-label="Rassegna stampa"
             >
-              {sorted.map(renderCard)}
+              {pagesDesktop.map((pair, p) => (
+                <div className="pressDeskPage" key={`desk-page-${p}`}>
+                  {pair.map(renderCard)}
+                </div>
+              ))}
             </div>
           )}
 
@@ -229,7 +499,7 @@ export default function Press({ id = "press", items = [] }) {
                 className="pressMobileScroller"
                 aria-label="Rassegna stampa"
               >
-                {pages.map((pair, p) => (
+                {pagesMobile.map((pair, p) => (
                   <div className="pressPage" key={`page-${p}`}>
                     {pair.map(renderCard)}
                   </div>
@@ -242,6 +512,11 @@ export default function Press({ id = "press", items = [] }) {
                 </div>
               )}
             </div>
+          )}
+
+          {/* MOBILE non-carousel (<=2 items): fallback semplice */}
+          {isMobile && !isCarousel && (
+            <div className="pressGrid">{baseItems.map(renderCard)}</div>
           )}
         </div>
       </div>
