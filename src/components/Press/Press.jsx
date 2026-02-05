@@ -507,12 +507,6 @@ export default function Press({ id = "press", items = [] }) {
     return loopPages;
   }, [loopPages, isCarousel, isMobile]);
 
-  console.log({
-    railW: railRef.current?.offsetWidth,
-    step: getStep(),
-    left: scrollerRef.current?.scrollLeft,
-  });
-
   return (
     <section ref={sectionRef} className="pressSection" id={id}>
       <div id="press__nav" className="navAnchor" aria-hidden="true" />
