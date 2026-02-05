@@ -4,6 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./Facciamo.css";
 
 import FacciamoServizi from "./FacciamoServizi";
+import facciamoImg from "../../assets/facciamo.png";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -37,8 +38,12 @@ export default function Facciamo({
   titleAria = "FACCIAMO",
   paragraphs = [],
   textPx,
+  imageSrc = facciamoImg,
+  imageAlt = "Dettaglio scacchiera - strategia e metodo",
 }) {
   const rootRef = useRef(null);
+  const imgWrapRef = useRef(null);
+  const imgRef = useRef(null);
 
   const bodyText = useMemo(() => paragraphs.join("\n\n"), [paragraphs]);
   const titleTokens = useMemo(() => tokenize(title), [title]);
@@ -46,9 +51,14 @@ export default function Facciamo({
 
   useLayoutEffect(() => {
     const root = rootRef.current;
-    if (!root) return;
+    const imgWrap = imgWrapRef.current;
+    const img = imgRef.current;
+    if (!root || !imgWrap || !img) return;
 
     const isMobile = window.matchMedia("(max-width: 720px)").matches;
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
     const ctx = gsap.context(() => {
       ScrollTrigger.getById(`facciamo-${id}`)?.kill(true);
@@ -79,7 +89,9 @@ export default function Facciamo({
         root.querySelectorAll('[data-fsvcpage="2"] [data-service]'),
       );
 
-      // stato iniziale intro
+      // -------------------------
+      // INIT STATES (intro)
+      // -------------------------
       gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], {
         autoAlpha: 0,
         y: 10,
@@ -87,16 +99,23 @@ export default function Facciamo({
       gsap.set(titleTargets, { autoAlpha: 0, y: 10 });
       gsap.set(bodyTargets, { autoAlpha: 0, y: 6 });
 
+      // ✅ immagine: stessa grammatica di Siamo
+      gsap.set(imgWrap, { autoAlpha: 0, y: 14, rotate: -0.4, scale: 0.98 });
+      gsap.set(img, { scale: 1.04 });
+
       gsap.set(track, { x: 0 });
 
-      // stato iniziale services
+      // -------------------------
+      // INIT STATES (services)
+      // -------------------------
       gsap.set(servicesPanel, { autoAlpha: 1 });
       gsap.set(servicesWrap, { autoAlpha: 0 });
       gsap.set(servicesTrack, { x: 0 });
-
       gsap.set([...svcPage1, ...svcPage2], { autoAlpha: 0, y: 18 });
 
-      // durata testo (come tua logica)
+      // -------------------------
+      // DURATIONS (same logic)
+      // -------------------------
       const charsCount = titleEls.length + bodyEls.length;
       const vw = Math.max(
         document.documentElement.clientWidth,
@@ -109,7 +128,6 @@ export default function Facciamo({
       );
       const textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
 
-      // durate
       const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75));
       const svcReveal1Px = Math.round(Math.max(680, window.innerHeight * 0.95));
       const svcSlidePx = Math.round(Math.max(520, window.innerWidth * 0.85));
@@ -133,7 +151,9 @@ export default function Facciamo({
         animation: tl,
       });
 
-      // A) TESTO
+      // -------------------------
+      // A) TEXT SEGMENTS
+      // -------------------------
       const pad = 12;
       const frame = Math.round(textPxFinal * 0.12);
       const wrap = Math.round(textPxFinal * 0.06);
@@ -160,13 +180,47 @@ export default function Facciamo({
         return Math.max(0, (segmentDur - perCharDur) / (n - 1));
       };
 
+      // kicker + underline
       tl.to(
         [kickerEl, underlineEl],
         { autoAlpha: 1, y: 0, duration: frame },
         t_frameStart,
       );
-      tl.to(titleWrap, { autoAlpha: 1, y: 0, duration: wrap }, t_titleWrapStart);
 
+      // title wrapper
+      tl.to(
+        titleWrap,
+        { autoAlpha: 1, y: 0, duration: wrap },
+        t_titleWrapStart,
+      );
+
+      // ✅ IMMAGINE: entra PRIMA e in sync (come Siamo)
+      // - entra tra titleWrap e titleTargets, non dopo
+      if (!prefersReduced) {
+        const imgDur = Math.max(120, Math.round(titleSeg * 0.55));
+        const imgAt = Math.max(
+          t_titleWrapStart + Math.round(wrap * 0.55),
+          t_titleStart - Math.round(titleSeg * 0.25),
+        );
+
+        tl.to(
+          imgWrap,
+          {
+            autoAlpha: 1,
+            y: 0,
+            rotate: 0,
+            scale: 1,
+            duration: imgDur,
+          },
+          imgAt,
+        );
+        tl.to(img, { scale: 1, duration: Math.round(imgDur * 0.9) }, imgAt + 10);
+      } else {
+        tl.to(imgWrap, { autoAlpha: 1, y: 0, duration: 1 }, t_titleWrapStart);
+        tl.to(img, { scale: 1, duration: 1 }, t_titleWrapStart);
+      }
+
+      // title chars / block
       tl.to(
         titleTargets,
         isMobile
@@ -183,8 +237,14 @@ export default function Facciamo({
         t_titleStart,
       );
 
-      tl.to(bodyWrap, { autoAlpha: 1, y: 0, duration: wrap }, t_bodyWrapStart);
+      // body wrapper
+      tl.to(
+        bodyWrap,
+        { autoAlpha: 1, y: 0, duration: wrap },
+        t_bodyWrapStart,
+      );
 
+      // body chars / block
       tl.to(
         bodyTargets,
         isMobile
@@ -201,11 +261,15 @@ export default function Facciamo({
         t_bodyStart,
       );
 
-      // B) SLIDE ORIZZONTALE: intro -> services
+      // -------------------------
+      // B) HORIZONTAL SLIDE intro -> services
+      // -------------------------
       const hStart = textPxFinal + 1;
       tl.to(track, { x: () => -window.innerWidth, duration: horizPx }, hStart);
 
-      // C) SERVICES: reveal 4 -> slide -> reveal 3
+      // -------------------------
+      // C) SERVICES reveal + slide + reveal
+      // -------------------------
       const sStart = hStart + horizPx + 1;
 
       tl.to(servicesWrap, { autoAlpha: 1, duration: 120 }, sStart);
@@ -220,7 +284,11 @@ export default function Facciamo({
       });
 
       const slideStart = sStart + svcReveal1Px + 40;
-      tl.to(servicesTrack, { x: () => -window.innerWidth, duration: svcSlidePx }, slideStart);
+      tl.to(
+        servicesTrack,
+        { x: () => -window.innerWidth, duration: svcSlidePx },
+        slideStart,
+      );
 
       const r2Start = slideStart + svcSlidePx + 40;
       const step2 = Math.round(svcReveal2Px / (svcPage2.length + 1));
@@ -239,32 +307,51 @@ export default function Facciamo({
   return (
     <section className="facSection" id={id} ref={rootRef}>
       <div id="facciamo__nav" className="navAnchor" aria-hidden="true" />
+
       <div className="facViewport">
         <div className="facTrack" data-ftrack>
           {/* PANEL 1: INTRO */}
           <div className="facPanel" data-fpanel="intro">
             <div className="facIntroLayer" data-fintro>
               <div className="facInner">
-                <div className="facKicker" data-fkicker>
-                  {kicker}
+                {/* MEDIA */}
+                <div className="facMedia" ref={imgWrapRef} aria-hidden="true">
+                  <div className="facPhotoFrame">
+                    <img
+                      ref={imgRef}
+                      className="facPhoto"
+                      src={imageSrc}
+                      alt={imageAlt}
+                      loading="lazy"
+                    />
+                  </div>
                 </div>
 
-                <h2 className="facTitle" data-ftitlewrap aria-label={titleAria}>
-                  {titleTokens.map((tok, idx) => {
-                    if (tok === "\n") return <br key={`ftbr-${idx}`} />;
-                    if (/^[ \t]+$/.test(tok)) return <span key={`ftsp-${idx}`}> </span>;
-                    return <Word key={`ftw-${idx}`} token={tok} type="t" />;
-                  })}
-                </h2>
+                {/* COPY */}
+                <div className="facCopy">
+                  <div className="facKicker" data-fkicker>
+                    {kicker}
+                  </div>
 
-                <div className="facUnderline" data-funderline aria-hidden="true" />
+                  <h2 className="facTitle" data-ftitlewrap aria-label={titleAria}>
+                    {titleTokens.map((tok, idx) => {
+                      if (tok === "\n") return <br key={`ftbr-${idx}`} />;
+                      if (/^[ \t]+$/.test(tok))
+                        return <span key={`ftsp-${idx}`}> </span>;
+                      return <Word key={`ftw-${idx}`} token={tok} type="t" />;
+                    })}
+                  </h2>
 
-                <div className="facBody" data-fbodywrap aria-label={bodyText}>
-                  {bodyTokens.map((tok, idx) => {
-                    if (tok === "\n") return <br key={`fbbr-${idx}`} />;
-                    if (/^[ \t]+$/.test(tok)) return <span key={`fbsp-${idx}`}> </span>;
-                    return <Word key={`fbw-${idx}`} token={tok} type="b" />;
-                  })}
+                  <div className="facUnderline" data-funderline aria-hidden="true" />
+
+                  <div className="facBody" data-fbodywrap aria-label={bodyText}>
+                    {bodyTokens.map((tok, idx) => {
+                      if (tok === "\n") return <br key={`fbbr-${idx}`} />;
+                      if (/^[ \t]+$/.test(tok))
+                        return <span key={`fbsp-${idx}`}> </span>;
+                      return <Word key={`fbw-${idx}`} token={tok} type="b" />;
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
