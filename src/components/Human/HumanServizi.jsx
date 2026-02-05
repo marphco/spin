@@ -4,7 +4,14 @@ import "./HumanServizi.css";
 function IconPulse() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="humSvcIconSvg">
-      <path d="M4 13h3l2-6 4 14 2-8h5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M4 13h3l2-6 4 14 2-8h5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -12,32 +19,70 @@ function IconPulse() {
 function IconDoc() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="humSvcIconSvg">
-      <path d="M7 3h7l3 3v15H7V3Z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-      <path d="M14 3v4h4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-      <path d="M9 11h6M9 15h6M9 19h4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path
+        d="M7 3h7l3 3v15H7V3Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M14 3v4h4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 11h6M9 15h6M9 19h4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
+
+function IconSemantic() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="humSvcIconSvg">
+      <circle cx="7" cy="12" r="2" fill="none" stroke="currentColor" strokeWidth="2" />
+      <circle cx="17" cy="7" r="2" fill="none" stroke="currentColor" strokeWidth="2" />
+      <circle cx="17" cy="17" r="2" fill="none" stroke="currentColor" strokeWidth="2" />
+      <path
+        d="M8.7 11.1l6.2-3.1M8.7 12.9l6.2 3.1M15.6 8.6v6.8"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 
 export default function HumanServizi({ items }) {
   const data = useMemo(
     () =>
       items ?? [
-       {
-  title: "Sentiment Analysis",
-  text:
-    "Analizziamo il parlato del web per capire come viene percepito un brand, un tema o una persona. Commenti, post, articoli, recensioni e reaction vengono interpretati per individuare emozioni, orientamenti e dinamiche che guidano le conversazioni. Il sentiment rivela fiducia, credibilità, interesse e reputazione, mostrando non solo cosa si dice, ma come e perché lo si dice.",
-  icon: <IconPulse />,
-},
-{
-  title: "Report",
-  text:
-    "I report trasformano i dati in una visione chiara e utilizzabile. Mostrano l’evoluzione delle conversazioni, le performance dei canali analizzati e la struttura emotiva del dibattito online. Grazie a modelli di Intelligenza Artificiale, l’analisi può concentrarsi su temi o hashtag specifici, restituendo insight quantitativi e qualitativi sulla reale percezione della rete.",
-  icon: <IconDoc />,
-},
-
+        {
+          title: "Sentiment Analysis",
+          text: "Capire il clima emotivo. Analizziamo le conversazioni per leggere fiducia, interesse e reputazione. Non solo cosa viene detto, ma come viene percepito.",
+          icon: <IconPulse />,
+        },
+        {
+          title: "Analisi semantica",
+          text: "Le parole rivelano direzioni. Attraverso modelli linguistici e AI individuiamo temi chiave, concetti emergenti e connessioni nel dibattito online.",
+          icon: <IconSemantic />,
+        },
+        {
+          title: "Dati e report",
+          text: "Sintesi, non rumore. Trasformiamo grandi volumi di dati in report chiari e periodici, utili a leggere l’evoluzione del contesto e orientare le scelte.",
+          icon: <IconDoc />,
+        },
       ],
-    [items]
+    [items],
   );
 
   // utility: trasforma \n e bullet in righe
@@ -45,8 +90,17 @@ export default function HumanServizi({ items }) {
     t.split("\n").map((line, i) => {
       const trimmed = line.trim();
       if (!trimmed) return <div key={i} style={{ height: 10 }} />;
-      if (trimmed.startsWith("•")) return <div key={i} className="humSvcBullet">{trimmed}</div>;
-      return <p key={i} className="humSvcP">{trimmed}</p>;
+      if (trimmed.startsWith("•"))
+        return (
+          <div key={i} className="humSvcBullet">
+            {trimmed}
+          </div>
+        );
+      return (
+        <p key={i} className="humSvcP">
+          {trimmed}
+        </p>
+      );
     });
 
   return (

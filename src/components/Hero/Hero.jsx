@@ -9,7 +9,7 @@ export default function Hero({
   id = "top",
   src,
   alt = "",
-  title = "comunicare è un gioco di parole",
+  title = "less is more",
   durationPx = 900,
 }) {
   const shellRef = useRef(null);

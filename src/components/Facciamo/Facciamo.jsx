@@ -33,9 +33,7 @@ function Word({ token, type }) {
 export default function Facciamo({
   id = "facciamo",
   kicker = "Facciamo",
-  // ✅ titolo diverso per evitare “FACCIAMO” doppio (poi lo cambi come vuoi)
   title = "Metodo, strategia, impatto.",
-  // il label per screen reader resta “FACCIAMO”
   titleAria = "FACCIAMO",
   paragraphs = [],
   textPx,
@@ -55,11 +53,9 @@ export default function Facciamo({
     const ctx = gsap.context(() => {
       ScrollTrigger.getById(`facciamo-${id}`)?.kill(true);
 
-      //   const rootEl = document.documentElement;
-
       const track = root.querySelector("[data-ftrack]");
 
-      // ---- Intro refs
+      // Intro refs
       const kickerEl = root.querySelector("[data-fkicker]");
       const underlineEl = root.querySelector("[data-funderline]");
       const titleWrap = root.querySelector("[data-ftitlewrap]");
@@ -71,14 +67,19 @@ export default function Facciamo({
       const titleTargets = isMobile ? [titleWrap] : titleEls;
       const bodyTargets = isMobile ? [bodyWrap] : bodyEls;
 
-      // ---- Services refs
+      // Services refs
       const servicesPanel = root.querySelector("[data-fservicespanel]");
       const servicesWrap = root.querySelector("[data-serviceswrap]");
-      const serviceItems = gsap.utils.toArray(
-        root.querySelectorAll("[data-service]")
+      const servicesTrack = root.querySelector("[data-fservicestrack]");
+
+      const svcPage1 = gsap.utils.toArray(
+        root.querySelectorAll('[data-fsvcpage="1"] [data-service]'),
+      );
+      const svcPage2 = gsap.utils.toArray(
+        root.querySelectorAll('[data-fsvcpage="2"] [data-service]'),
       );
 
-      // stato iniziale
+      // stato iniziale intro
       gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], {
         autoAlpha: 0,
         y: 10,
@@ -88,30 +89,34 @@ export default function Facciamo({
 
       gsap.set(track, { x: 0 });
 
-      gsap.set(servicesPanel, { autoAlpha: 1 }); // il panel esiste, ma lo reveal lo fai sugli items
+      // stato iniziale services
+      gsap.set(servicesPanel, { autoAlpha: 1 });
       gsap.set(servicesWrap, { autoAlpha: 0 });
-      gsap.set(serviceItems, { autoAlpha: 0, y: 18 });
+      gsap.set(servicesTrack, { x: 0 });
 
-      // durata testo (come tua)
+      gsap.set([...svcPage1, ...svcPage2], { autoAlpha: 0, y: 18 });
+
+      // durata testo (come tua logica)
       const charsCount = titleEls.length + bodyEls.length;
       const vw = Math.max(
         document.documentElement.clientWidth,
-        window.innerWidth || 0
+        window.innerWidth || 0,
       );
       const mobileBoost = vw < 640 ? 1.35 : vw < 900 ? 1.18 : 1;
 
       const textPxAuto = Math.round(
-        Math.max(1000, Math.min(3200, charsCount * 3.8)) * mobileBoost
+        Math.max(1000, Math.min(3200, charsCount * 3.8)) * mobileBoost,
       );
       const textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
 
-      //   const blu = "#0b1320";
-      //   const nero = "#010101";
+      // durate
+      const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75));
+      const svcReveal1Px = Math.round(Math.max(680, window.innerHeight * 0.95));
+      const svcSlidePx = Math.round(Math.max(520, window.innerWidth * 0.85));
+      const svcReveal2Px = Math.round(Math.max(620, window.innerHeight * 0.9));
 
-      const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75)); // slide orizzontale
-      const servicesPx = Math.round(Math.max(720, window.innerHeight * 1.05)); // reveal
-
-      const totalPx = textPxFinal + horizPx + servicesPx;
+      const totalPx =
+        textPxFinal + horizPx + svcReveal1Px + svcSlidePx + svcReveal2Px;
 
       const tl = gsap.timeline({ defaults: { ease: "none" } });
 
@@ -128,10 +133,7 @@ export default function Facciamo({
         animation: tl,
       });
 
-
-      // -------------------------
-      // A) TESTO (0 -> textPxFinal)  [uguale a prima]
-      // -------------------------
+      // A) TESTO
       const pad = 12;
       const frame = Math.round(textPxFinal * 0.12);
       const wrap = Math.round(textPxFinal * 0.06);
@@ -161,28 +163,24 @@ export default function Facciamo({
       tl.to(
         [kickerEl, underlineEl],
         { autoAlpha: 1, y: 0, duration: frame },
-        t_frameStart
+        t_frameStart,
       );
-      tl.to(
-        titleWrap,
-        { autoAlpha: 1, y: 0, duration: wrap },
-        t_titleWrapStart
-      );
+      tl.to(titleWrap, { autoAlpha: 1, y: 0, duration: wrap }, t_titleWrapStart);
 
       tl.to(
         titleTargets,
         isMobile
           ? { autoAlpha: 1, y: 0, duration: titleSeg }
           : {
-            autoAlpha: 1,
-            y: 0,
-            duration: 1,
-            stagger: {
-              each: staggerEachFit(titleSeg, titleEls.length),
-              from: "start",
+              autoAlpha: 1,
+              y: 0,
+              duration: 1,
+              stagger: {
+                each: staggerEachFit(titleSeg, titleEls.length),
+                from: "start",
+              },
             },
-          },
-        t_titleStart
+        t_titleStart,
       );
 
       tl.to(bodyWrap, { autoAlpha: 1, y: 0, duration: wrap }, t_bodyWrapStart);
@@ -192,34 +190,45 @@ export default function Facciamo({
         isMobile
           ? { autoAlpha: 1, y: 0, duration: bodySeg }
           : {
-            autoAlpha: 1,
-            y: 0,
-            duration: 1,
-            stagger: {
-              each: staggerEachFit(bodySeg, bodyEls.length),
-              from: "start",
+              autoAlpha: 1,
+              y: 0,
+              duration: 1,
+              stagger: {
+                each: staggerEachFit(bodySeg, bodyEls.length),
+                from: "start",
+              },
             },
-          },
-        t_bodyStart
+        t_bodyStart,
       );
 
-      // B) ORIZZONTALE (text -> services)
+      // B) SLIDE ORIZZONTALE: intro -> services
       const hStart = textPxFinal + 1;
       tl.to(track, { x: () => -window.innerWidth, duration: horizPx }, hStart);
 
-      // -------------------------
-      // C) REVEAL SERVIZI (dopo lo slide)
-      // -------------------------
+      // C) SERVICES: reveal 4 -> slide -> reveal 3
       const sStart = hStart + horizPx + 1;
 
       tl.to(servicesWrap, { autoAlpha: 1, duration: 120 }, sStart);
 
-      const step = Math.round(servicesPx / (serviceItems.length + 1));
-      serviceItems.forEach((el, i) => {
+      const step1 = Math.round(svcReveal1Px / (svcPage1.length + 1));
+      svcPage1.forEach((el, i) => {
         tl.to(
           el,
-          { autoAlpha: 1, y: 0, duration: Math.round(step * 0.7) },
-          sStart + 80 + step * i
+          { autoAlpha: 1, y: 0, duration: Math.round(step1 * 0.7) },
+          sStart + 80 + step1 * i,
+        );
+      });
+
+      const slideStart = sStart + svcReveal1Px + 40;
+      tl.to(servicesTrack, { x: () => -window.innerWidth, duration: svcSlidePx }, slideStart);
+
+      const r2Start = slideStart + svcSlidePx + 40;
+      const step2 = Math.round(svcReveal2Px / (svcPage2.length + 1));
+      svcPage2.forEach((el, i) => {
+        tl.to(
+          el,
+          { autoAlpha: 1, y: 0, duration: Math.round(step2 * 0.75) },
+          r2Start + step2 * i,
         );
       });
     }, root);
@@ -243,23 +252,17 @@ export default function Facciamo({
                 <h2 className="facTitle" data-ftitlewrap aria-label={titleAria}>
                   {titleTokens.map((tok, idx) => {
                     if (tok === "\n") return <br key={`ftbr-${idx}`} />;
-                    if (/^[ \t]+$/.test(tok))
-                      return <span key={`ftsp-${idx}`}> </span>;
+                    if (/^[ \t]+$/.test(tok)) return <span key={`ftsp-${idx}`}> </span>;
                     return <Word key={`ftw-${idx}`} token={tok} type="t" />;
                   })}
                 </h2>
 
-                <div
-                  className="facUnderline"
-                  data-funderline
-                  aria-hidden="true"
-                />
+                <div className="facUnderline" data-funderline aria-hidden="true" />
 
                 <div className="facBody" data-fbodywrap aria-label={bodyText}>
                   {bodyTokens.map((tok, idx) => {
                     if (tok === "\n") return <br key={`fbbr-${idx}`} />;
-                    if (/^[ \t]+$/.test(tok))
-                      return <span key={`fbsp-${idx}`}> </span>;
+                    if (/^[ \t]+$/.test(tok)) return <span key={`fbsp-${idx}`}> </span>;
                     return <Word key={`fbw-${idx}`} token={tok} type="b" />;
                   })}
                 </div>

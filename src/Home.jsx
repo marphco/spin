@@ -42,7 +42,7 @@ export default function Home() {
       gsap.fromTo(
         rootEl,
         { "--pageBg": from },
-        { "--pageBg": to, ease: "none", immediateRender: false }
+        { "--pageBg": to, ease: "none", immediateRender: false },
       );
 
     // stato iniziale
@@ -103,7 +103,7 @@ export default function Home() {
     });
 
     requestAnimationFrame(() =>
-      requestAnimationFrame(() => ScrollTrigger.refresh())
+      requestAnimationFrame(() => ScrollTrigger.refresh()),
     );
 
     let resizeRaf = 0;
@@ -116,7 +116,9 @@ export default function Home() {
     if (!isMobileNow) {
       window.addEventListener("resize", safeRefresh, { passive: true });
     } else {
-      window.addEventListener("orientationchange", safeRefresh, { passive: true });
+      window.addEventListener("orientationchange", safeRefresh, {
+        passive: true,
+      });
     }
 
     return () => {
@@ -151,8 +153,7 @@ export default function Home() {
             alt="Hero"
             title={
               <>
-                comunicare
-                <br />è un gioco di parole
+                less is more
               </>
             }
             durationPx={900}
@@ -161,10 +162,11 @@ export default function Home() {
           <Siamo
             id="siamo"
             kicker="Siamo"
-            title="Visione e metodo, analisi e strategia."
+            title="Strategia che prende posizione."
             paragraphs={[
-              "Spin Factor è una società attiva dal 2017 nel settore della comunicazione e della consulenza politica e istituzionale. Un team con competenze complementari per costruire identità, creare connessioni e sviluppare posizionamenti strategici.",
-              "Approccio integrato e metodo sartoriale: dall’analisi di scenario alla definizione strategica, fino all’esecuzione coerente e misurabile.",
+              "Spin Factor lavora nella comunicazione politica e istituzionale. Fondata nel 2017 e guidata da Tiberio Brunetti, affianca organizzazioni e istituzioni nella costruzione di posizionamenti chiari, riconoscibili, difendibili.",
+              "Partiamo dai dati. Leggiamo il contesto.",
+              "Scegliamo una direzione e la trasformiamo in risultati misurabili.",
             ]}
             durationPx={1000}
           />
@@ -172,10 +174,12 @@ export default function Home() {
           <Facciamo
             id="facciamo"
             kicker="Facciamo"
-            title="Dal dato alla strategia."
+            title="Un metodo chiaro.
+            Dati, strategia, azione."
             paragraphs={[
-              "Il nostro è un processo integrato e innovativo che attuiamo con cura sartoriale sui progetti che scegliamo di seguire.",
-              "Le nostre proposte strategiche partono dall’analisi dei dati reali, geolocalizzati e targettizzati. Grazie a Human, la nostra esclusiva piattaforma di web e social listening, otteniamo una fotografia della situazione attuale e sviluppiamo gli scenari a breve e lungo termine. Su questa base elaboriamo strategie di posizionamento mirate che vengono successivamente declinate in piani di comunicazione integrata. Monitoriamo costantemente la reputazione e gli stati di avanzamento dei progetti.",
+              "Un metodo chiaro. Dati, strategia, azione. Ascoltiamo il contesto attraverso Human, la nostra piattaforma di web e social listening.",
+              "Analizziamo ciò che emerge, definiamo un posizionamento e lo traduciamo in comunicazione integrata.",
+              "Monitoriamo tutto: reputazione, performance, impatto. Per capire cosa funziona. E cosa va cambiato.",
             ]}
           />
 
