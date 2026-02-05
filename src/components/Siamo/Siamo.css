@@ -134,6 +134,7 @@
   transform: translateZ(-1px);
 }
 
+
 /* ✅ MOBILE: stack + centro, immagine sotto */
 @media (max-width: 720px){
   .siamoSection{
@@ -143,10 +144,14 @@
 
   .siamoInner{
     width: min(900px, calc(100% - 32px));
-    padding-bottom: 50px;
 
-    grid-template-columns: 1fr;
-    gap: 18px;
+    /* ✅ lascia aria ma evita overflow sotto navbar */
+    padding-top: 8px;
+    padding-bottom: 92px; /* ✅ spazio navbar bottom */
+    
+    display: grid;
+    grid-template-columns: 1fr; /* ✅ reset definitivo */
+    gap: 12px;
 
     align-content: center;
     place-content: center;
@@ -154,28 +159,54 @@
   }
 
   /* testo sopra, immagine sotto */
-  .siamoCopy{ order: 1; }
+  .siamoCopy{
+    order: 1;
+    gap: 10px; /* ✅ più compatto */
+  }
+
   .siamoMedia{
     order: 2;
-    width: min(420px, 86vw);
+    width: min(520px, 92vw); /* ✅ più largo = meno altezza percepita */
     margin: 0 auto;
   }
 
   .siamoUnderline{
-    margin: 6px auto 10px;
+    margin: 6px auto 8px;
+    width: 78px;
+    height: 4px;
   }
 
   .siamoTitle{
-    font-size: clamp(22px, 7.2vw, 30px);
-    line-height: 1.15;
+    font-size: clamp(20px, 6.6vw, 28px);
+    line-height: 1.12; /* ✅ più tight */
   }
 
   .siamoBody{
-    font-size: clamp(14px, 4vw, 16px);
-    line-height: 1.65;
-    max-width: 34ch;
+    /* ✅ chiave: meno righe */
+    font-size: clamp(13px, 3.7vw, 14.5px);
+    line-height: 1.42;        /* ✅ più compatto */
+    max-width: 46ch;          /* ✅ più largo = meno a capo */
     margin: 0 auto;
   }
 
-  .siamoP{ margin: 0 0 12px; }
+  .siamoP{
+    margin: 0 0 8px; /* ✅ riduce altezza totale */
+  }
+
+  /* ✅ immagine: non deve “mangiare” la viewport */
+  .siamoPhotoFrame{
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    max-height: 24svh; /* ✅ limite: entra sempre */
+    overflow: hidden;
+    border-radius: 22px;
+  }
+
+  .siamoPhoto{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 38%;
+  }
 }
+
