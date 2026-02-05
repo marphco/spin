@@ -3,6 +3,9 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./Siamo.css";
 
+// ✅ metti il file in /src/assets/ e rinomina come preferisci
+import founderImg from "../../assets/tiberio.png";
+
 gsap.registerPlugin(ScrollTrigger);
 
 /**
@@ -15,7 +18,6 @@ function tokenize(str) {
 }
 
 function Word({ token, type }) {
-  // type: "t" -> title, "b" -> body (solo per data-attr)
   const chars = Array.from(token);
   const dataAttr = type === "t" ? "data-tch" : "data-bch";
 
@@ -34,8 +36,19 @@ function Word({ token, type }) {
   );
 }
 
-export default function Siamo({ id = "siamo", kicker = "Siamo", title, paragraphs = [], durationPx = 900 }) {
+export default function Siamo({
+  id = "siamo",
+  kicker = "Siamo",
+  title,
+  paragraphs = [],
+  durationPx = 900,
+  imageSrc = founderImg,
+  imageAlt = "Fondatore Spin Factor",
+}) {
   const rootRef = useRef(null);
+  const tiltRef = useRef(null);
+  const imgWrapRef = useRef(null);
+  const imgRef = useRef(null);
 
   // ✅ disponibili nel render
   const isMobile = window.matchMedia("(max-width: 720px)").matches;
@@ -47,7 +60,17 @@ export default function Siamo({ id = "siamo", kicker = "Siamo", title, paragraph
 
   useLayoutEffect(() => {
     const root = rootRef.current;
-    if (!root) return;
+    const imgWrap = imgWrapRef.current;
+    const img = imgRef.current;
+    const tiltEl = tiltRef.current;
+    if (!tiltEl) return;
+
+    if (!root || !imgWrap || !img) return;
+
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const isTouch = window.matchMedia("(hover: none)").matches;
 
     const ctx = gsap.context(() => {
       ScrollTrigger.getById(`siamo-${id}`)?.kill(true);
@@ -60,15 +83,20 @@ export default function Siamo({ id = "siamo", kicker = "Siamo", title, paragraph
       const titleEls = root.querySelectorAll("[data-tch]");
       const bodyEls = root.querySelectorAll("[data-bch]");
 
-      // ✅ mobile: animiamo wrapper, non i char
       const titleTargets = reduceChars ? [titleWrap] : titleEls;
       const bodyTargets = reduceChars ? [bodyWrap] : bodyEls;
 
-      gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], { autoAlpha: 0, y: 10 });
+      // stato iniziale testo
+      gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], {
+        autoAlpha: 0,
+        y: 10,
+      });
       gsap.set(titleTargets, { autoAlpha: 0, y: 10 });
       gsap.set(bodyTargets, { autoAlpha: 0, y: 6 });
 
-      const isMobile = window.matchMedia("(max-width: 720px)").matches;
+      // ✅ stato iniziale immagine (reveal in sync)
+      gsap.set(imgWrap, { autoAlpha: 0, y: 14, rotate: -0.4, scale: 0.98 });
+      gsap.set(img, { scale: 1.04 });
 
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -84,27 +112,167 @@ export default function Siamo({ id = "siamo", kicker = "Siamo", title, paragraph
         },
       });
 
-
-      tl.to([kickerEl, underlineEl], { autoAlpha: 1, y: 0, ease: "none", duration: 0.12 }, 0.02);
-      tl.to(titleWrap, { autoAlpha: 1, y: 0, ease: "none", duration: 0.06 }, 0.06);
+      tl.to(
+        [kickerEl, underlineEl],
+        { autoAlpha: 1, y: 0, ease: "none", duration: 0.12 },
+        0.02,
+      );
+      tl.to(
+        titleWrap,
+        { autoAlpha: 1, y: 0, ease: "none", duration: 0.06 },
+        0.06,
+      );
 
       tl.to(
         titleTargets,
         reduceChars
           ? { autoAlpha: 1, y: 0, ease: "none", duration: 0.22 }
-          : { autoAlpha: 1, y: 0, ease: "none", duration: 0.22, stagger: { amount: 0.22, from: "start" } },
-        0.08
+          : {
+              autoAlpha: 1,
+              y: 0,
+              ease: "none",
+              duration: 0.22,
+              stagger: { amount: 0.22, from: "start" },
+            },
+        0.08,
       );
 
-      tl.to(bodyWrap, { autoAlpha: 1, y: 0, ease: "none", duration: 0.06 }, 0.22);
+      // ✅ reveal immagine: subito dopo title/underline, prima del body
+      tl.to(
+        imgWrap,
+        {
+          autoAlpha: 1,
+          y: 0,
+          rotate: 0,
+          scale: 1,
+          ease: "none",
+          duration: 0.18,
+        },
+        0.16,
+      );
+      tl.to(img, { scale: 1, ease: "none", duration: 0.22 }, 0.18);
+
+      tl.to(
+        bodyWrap,
+        { autoAlpha: 1, y: 0, ease: "none", duration: 0.06 },
+        0.22,
+      );
 
       tl.to(
         bodyTargets,
         reduceChars
           ? { autoAlpha: 1, y: 0, ease: "none", duration: 0.45 }
-          : { autoAlpha: 1, y: 0, ease: "none", duration: 0.78, stagger: { amount: 0.85, from: "start" } },
-        0.24
+          : {
+              autoAlpha: 1,
+              y: 0,
+              ease: "none",
+              duration: 0.78,
+              stagger: { amount: 0.85, from: "start" },
+            },
+        0.24,
       );
+
+      // -------------------------
+      // ✅ FLOATING LOOP premium (anche mobile)
+      // -------------------------
+      if (!prefersReduced) {
+        gsap.to(imgWrap, {
+          y: "-=7",
+          duration: 1.8, // ✅ un po’ più percepibile ma sempre slow
+          ease: "sine.inOut",
+          yoyo: true,
+          repeat: -1,
+        });
+
+        // gsap.to(imgWrap, {
+        //   rotate: 0.6,
+        //   duration: 1.6, // ✅ coerente col movimento verticale
+        //   ease: "sine.inOut",
+        //   yoyo: true,
+        //   repeat: -1,
+        // });
+      }
+
+      // -------------------------
+      // ✅ HOVER TILT (solo desktop con hover)
+      // -------------------------
+      if (!prefersReduced && !isTouch) {
+        const setRX = gsap.quickTo(tiltEl, "rotationX", {
+          duration: 0.45,
+          ease: "power3.out",
+        });
+        const setRY = gsap.quickTo(tiltEl, "rotationY", {
+          duration: 0.45,
+          ease: "power3.out",
+        });
+        const setSX = gsap.quickTo(tiltEl, "x", {
+          duration: 0.45,
+          ease: "power3.out",
+        });
+        const setSY = gsap.quickTo(tiltEl, "y", {
+          duration: 0.45,
+          ease: "power3.out",
+        });
+
+        const onMove = (e) => {
+          const r = imgWrap.getBoundingClientRect();
+          const px = (e.clientX - r.left) / r.width;
+          const py = (e.clientY - r.top) / r.height;
+
+          setRX((0.5 - py) * 8);
+          setRY((px - 0.5) * 10);
+          setSX((px - 0.5) * 10);
+          setSY((py - 0.5) * 6);
+        };
+
+        const onEnter = () => {
+          gsap.to(imgWrap, { scale: 1.02, duration: 0.35, ease: "power3.out" });
+        };
+
+        const onLeave = () => {
+          gsap.to(tiltEl, {
+            rotationX: 0,
+            rotationY: 0,
+            x: 0,
+            y: 0,
+            duration: 0.6,
+            ease: "power3.out",
+          });
+          gsap.to(imgWrap, { scale: 1, duration: 0.6, ease: "power3.out" });
+        };
+
+        imgWrap.addEventListener("mousemove", onMove);
+        imgWrap.addEventListener("mouseenter", onEnter);
+        imgWrap.addEventListener("mouseleave", onLeave);
+
+        return () => {
+          imgWrap.removeEventListener("mousemove", onMove);
+          imgWrap.removeEventListener("mouseenter", onEnter);
+          imgWrap.removeEventListener("mouseleave", onLeave);
+        };
+      }
+
+      // -------------------------
+      // ✅ TAP FEEL mobile (micro feedback, senza hover)
+      // -------------------------
+      if (!prefersReduced && isTouch) {
+        const onDown = () =>
+          gsap.to(imgWrap, { scale: 0.99, duration: 0.18, ease: "power2.out" });
+        const onUp = () =>
+          gsap.to(imgWrap, { scale: 1, duration: 0.25, ease: "power2.out" });
+
+        imgWrap.addEventListener("pointerdown", onDown);
+        imgWrap.addEventListener("pointerup", onUp);
+        imgWrap.addEventListener("pointercancel", onUp);
+        imgWrap.addEventListener("pointerleave", onUp);
+
+        return () => {
+          imgWrap.removeEventListener("pointerdown", onDown);
+          imgWrap.removeEventListener("pointerup", onUp);
+          imgWrap.removeEventListener("pointercancel", onUp);
+          imgWrap.removeEventListener("pointerleave", onUp);
+        };
+      }
     }, rootRef);
 
     return () => ctx.revert();
@@ -113,31 +281,57 @@ export default function Siamo({ id = "siamo", kicker = "Siamo", title, paragraph
   return (
     <section className="siamoSection" id={id} ref={rootRef}>
       <div id="siamo__nav" className="navAnchor" aria-hidden="true" />
+
       <div className="siamoInner">
-        <div className="siamoKicker" data-kicker>{kicker}</div>
+        {/* COL LEFT: immagine (desktop) / si sposta sotto (mobile via CSS order) */}
+        <div className="siamoMedia" ref={imgWrapRef} aria-hidden="true">
+          <div className="siamoPhotoFrame" ref={tiltRef}>
+            <img
+              ref={imgRef}
+              className="siamoPhoto"
+              src={imageSrc}
+              alt={imageAlt}
+              loading="lazy"
+            />
+            {/* <span className="siamoShine" aria-hidden="true" /> */}
+          </div>
 
-        <h2 className="siamoTitle" data-titlewrap aria-label={title}>
-          {reduceChars
-            ? title
-            : titleTokens.map((tok, idx) => {
-              if (tok === "\n") return <br key={`tbr-${idx}`} />;
-              if (/^[ \t]+$/.test(tok)) return <span key={`tsp-${idx}`}> </span>;
-              return <Word key={`tw-${idx}`} token={tok} type="t" />;
-            })}
-        </h2>
+          {/* <div className="siamoPhotoGlow" /> */}
+        </div>
 
-        <div className="siamoUnderline" data-underline aria-hidden="true" />
+        {/* COL RIGHT: testo */}
+        <div className="siamoCopy">
+          <div className="siamoKicker" data-kicker>
+            {kicker}
+          </div>
 
-        <div className="siamoBody" data-bodywrap aria-label={bodyText}>
-          {reduceChars
-            ? paragraphs.map((p, i) => (
-              <p key={i} className="siamoP">{p}</p>
-            ))
-            : bodyTokens.map((tok, idx) => {
-              if (tok === "\n") return <br key={`bbr-${idx}`} />;
-              if (/^[ \t]+$/.test(tok)) return <span key={`bsp-${idx}`}> </span>;
-              return <Word key={`bw-${idx}`} token={tok} type="b" />;
-            })}
+          <h2 className="siamoTitle" data-titlewrap aria-label={title}>
+            {reduceChars
+              ? title
+              : titleTokens.map((tok, idx) => {
+                  if (tok === "\n") return <br key={`tbr-${idx}`} />;
+                  if (/^[ \t]+$/.test(tok))
+                    return <span key={`tsp-${idx}`}> </span>;
+                  return <Word key={`tw-${idx}`} token={tok} type="t" />;
+                })}
+          </h2>
+
+          <div className="siamoUnderline" data-underline aria-hidden="true" />
+
+          <div className="siamoBody" data-bodywrap aria-label={bodyText}>
+            {reduceChars
+              ? paragraphs.map((p, i) => (
+                  <p key={i} className="siamoP">
+                    {p}
+                  </p>
+                ))
+              : bodyTokens.map((tok, idx) => {
+                  if (tok === "\n") return <br key={`bbr-${idx}`} />;
+                  if (/^[ \t]+$/.test(tok))
+                    return <span key={`bsp-${idx}`}> </span>;
+                  return <Word key={`bw-${idx}`} token={tok} type="b" />;
+                })}
+          </div>
         </div>
       </div>
     </section>

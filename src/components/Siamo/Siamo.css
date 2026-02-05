@@ -22,15 +22,23 @@
   position: relative;
   z-index: 2;
   height: 100%;
-  width: min(900px, calc(100% - 48px));
+  width: min(1040px, calc(100% - 48px));
   margin: 0 auto;
 
   display: grid;
-  place-content: center;
-  gap: 14px;
+  grid-template-columns: 380px 1fr;
+  gap: 44px;
+  align-items: center;
 
-  text-align: center;
-  /* padding-top: 90px; */
+  text-align: left;
+  perspective: 900px; /* ✅ per tilt premium */
+}
+
+/* blocco testo */
+.siamoCopy{
+  display: grid;
+  gap: 14px;
+  align-content: center;
 }
 
 .siamoKicker{
@@ -46,8 +54,6 @@
   letter-spacing: -0.01em;
   line-height: 1.2;
   color: var(--text-strong);
-
-  /* ✅ evita hyphenation/random breaks */
   hyphens: none;
   word-break: normal;
   overflow-wrap: normal;
@@ -58,11 +64,10 @@
   height: 4px;
   border-radius: 99px;
   background: var(--brand);
-  margin: 6px auto 10px;
+  margin: 2px 0 6px;
 }
 
 .siamoBody{
-  margin: 0 auto;
   max-width: 76ch;
   font-size: 16px;
   line-height: 1.9;
@@ -73,7 +78,6 @@
   overflow-wrap: normal;
 }
 
-/* ✅ wrapper parola: impedisce a capo dentro la parola */
 .siamoWord{
   display: inline-block;
   white-space: nowrap;
@@ -88,21 +92,77 @@
   margin: 0 0 14px;
 }
 
+/* ✅ MEDIA / PHOTO */
+.siamoMedia{
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+  cursor: default;
+}
+
+.siamoPhotoFrame{
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.04);
+  box-shadow: 0 18px 46px rgba(0,0,0,0.55);
+  transform: translateZ(0);
+}
+
+.siamoPhoto{
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+
+  filter: grayscale(100%);
+  opacity: 0.96;
+  transform: translateZ(0);
+}
+
+.siamoPhotoGlow{
+  position: absolute;
+  inset: -14%;
+  pointer-events: none;
+  background:
+    radial-gradient(55% 55% at 30% 25%, rgba(0,159,183,0.20), transparent 60%),
+    radial-gradient(55% 55% at 70% 75%, rgba(0,159,183,0.12), transparent 62%);
+  filter: blur(18px);
+  opacity: 0.9;
+  transform: translateZ(-1px);
+}
+
+/* ✅ MOBILE: stack + centro, immagine sotto */
 @media (max-width: 720px){
   .siamoSection{
-    height: 100svh;            /* iOS friendly */
+    height: 100svh;
     min-height: 100svh;
   }
 
   .siamoInner{
     width: min(900px, calc(100% - 32px));
-    /* padding-top: calc(env(safe-area-inset-top) + var(--pad-top)); */
     padding-bottom: 50px;
 
-    /* ✅ centro vero in verticale, ma rispettando top/bottom */
+    grid-template-columns: 1fr;
+    gap: 18px;
+
     align-content: center;
     place-content: center;
-    gap: 12px;
+    text-align: center;
+  }
+
+  /* testo sopra, immagine sotto */
+  .siamoCopy{ order: 1; }
+  .siamoMedia{
+    order: 2;
+    width: min(420px, 86vw);
+    margin: 0 auto;
+  }
+
+  .siamoUnderline{
+    margin: 6px auto 10px;
   }
 
   .siamoTitle{
@@ -113,7 +173,8 @@
   .siamoBody{
     font-size: clamp(14px, 4vw, 16px);
     line-height: 1.65;
-    max-width: 34ch; /* stringe un po’ per non “sbordare” */
+    max-width: 34ch;
+    margin: 0 auto;
   }
 
   .siamoP{ margin: 0 0 12px; }
