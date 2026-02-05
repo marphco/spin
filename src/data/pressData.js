@@ -4,9 +4,6 @@ import adn from "../assets/adn.svg";
 import skytg24 from "../assets/skytg24.svg";
 import corriere from "../assets/corriere.svg";
 import la7 from "../assets/la7.svg";
-// se vuoi usare i nuovi loghi:
-// import s24 from "../assets/s24.svg";
-// import stampa from "../assets/stampa.svg";
 
 export const PRESS_ITEMS = [
   {

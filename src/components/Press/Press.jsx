@@ -70,6 +70,14 @@ export default function Press({ id = "press", items = [] }) {
   // hint state (solo dismiss)
   const [hintDismissed, setHintDismissed] = useState(false);
 
+  const sectionRef = useRef(null);
+
+  // sezione in viewport (serve per mostrare hint solo quando la raggiungi)
+  const [pressInView, setPressInView] = useState(false);
+
+  // motivo dismiss: "user" = non riproporre, "auto" = riproporre quando rientri
+  const hintDismissReasonRef = useRef("auto");
+
   const showArrows = isCarousel && !isMobile;
   const showSwipeHint = isCarousel && isMobile && !hintDismissed;
 
@@ -90,9 +98,47 @@ export default function Press({ id = "press", items = [] }) {
       if (!hintDismissed) setHintDismissed(true);
       return;
     }
-    if (hintDismissed) setHintDismissed(false);
+    if (hintDismissed) {
+      hintDismissReasonRef.current = "auto";
+      setHintDismissed(false);
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile, isCarousel, baseItems.length]);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        // true quando la sezione è davvero “navigata” (down o up)
+        setPressInView(entry.isIntersecting);
+      },
+      {
+        // entra un filo prima, esce un filo dopo: feel migliore
+        root: null,
+        threshold: 0.18,
+        rootMargin: "-10% 0px -10% 0px",
+      },
+    );
+
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!pressInView) return;
+
+    // Mostra hint quando arrivi alla sezione, ma solo se:
+    // - sei mobile
+    // - è carousel
+    // - non è stato dismissato dall’utente
+    if (isMobile && isCarousel && hintDismissReasonRef.current !== "user") {
+      setHintDismissed(false);
+      hintDismissReasonRef.current = "auto";
+    }
+  }, [pressInView, isMobile, isCarousel]);
 
   // ---------------------------------------------------
   // USER INTERACTION FLAG
@@ -212,29 +258,37 @@ export default function Press({ id = "press", items = [] }) {
   // HINT auto-dismiss (non triggerare su jump/autoplay)
   // ---------------------------------------------------
   useEffect(() => {
+    if (!pressInView) return;
     if (!isMobile || !isCarousel || hintDismissed) return;
 
     const el = scrollerRef.current;
     if (!el) return;
 
     const startLeft = el.scrollLeft;
-    const t = window.setTimeout(() => setHintDismissed(true), 4500);
+
+    const t = window.setTimeout(() => {
+      hintDismissReasonRef.current = "auto";
+      setHintDismissed(true);
+    }, 4500);
 
     const onScroll = () => {
       if (ignoreHintScrollRef.current) return;
 
+      // qui è user swipe/scroll reale (non autoplay/jump)
       if (Math.abs(el.scrollLeft - startLeft) > 8) {
+        hintDismissReasonRef.current = "user";
         setHintDismissed(true);
         window.clearTimeout(t);
       }
     };
 
     el.addEventListener("scroll", onScroll, { passive: true });
+
     return () => {
       window.clearTimeout(t);
       el.removeEventListener("scroll", onScroll);
     };
-  }, [isMobile, isCarousel, hintDismissed]);
+  }, [pressInView, isMobile, isCarousel, hintDismissed]);
 
   // ---------------------------------------------------
   // POSITION INIT: copia centrale
@@ -413,7 +467,7 @@ export default function Press({ id = "press", items = [] }) {
   }, [loopItems, isCarousel, isMobile]);
 
   return (
-    <section className="pressSection" id={id}>
+    <section ref={sectionRef} className="pressSection" id={id}>
       <div id="press__nav" className="navAnchor" aria-hidden="true" />
 
       <div className="pressInner">
