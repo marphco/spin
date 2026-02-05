@@ -166,7 +166,7 @@
 
   .siamoMedia{
     order: 2;
-    width: min(520px, 92vw); /* ✅ più largo = meno altezza percepita */
+    width: min(520px, 85vw); /* ✅ più largo = meno altezza percepita */
     margin: 0 auto;
   }
 
@@ -194,19 +194,23 @@
   }
 
   /* ✅ immagine: non deve “mangiare” la viewport */
-  .siamoPhotoFrame{
-    width: 100%;
-    aspect-ratio: 16 / 10;
-    max-height: 24svh; /* ✅ limite: entra sempre */
-    overflow: hidden;
-    border-radius: 22px;
-  }
+  /* ✅ immagine: più alta, quasi quadrata */
+.siamoPhotoFrame{
+  width: 100%;
+  aspect-ratio: 4 / 5;   /* ✅ quasi quadrato, elegante */
+  max-height: 32svh;     /* ✅ più aria ma entra ancora in 1 schermata */
+  overflow: hidden;
+  border-radius: 22px;
+}
 
-  .siamoPhoto{
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: 50% 38%;
-  }
+.siamoPhoto{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+
+  /* ✅ focus sul volto */
+  object-position: 50% 28%;
+}
+
 }
 
