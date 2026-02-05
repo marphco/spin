@@ -151,7 +151,7 @@ export default function Home() {
             id="top"
             src={heroImg}
             alt="Hero"
-            title={<>Less is more</>}
+            title={<>Hanno<br/>Tutti<br/>Ragione</>}
             durationPx={900}
           />
 
