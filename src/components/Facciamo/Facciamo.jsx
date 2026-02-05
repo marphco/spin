@@ -121,13 +121,22 @@ export default function Facciamo({
         document.documentElement.clientWidth,
         window.innerWidth || 0,
       );
-      const mobileBoost = vw < 640 ? 1.35 : vw < 900 ? 1.18 : 1;
+
+      // ⛔️ prima: 1.35 su mobile = scroll lunghissimo
+      // ✅ ora: boost più leggero + compressione ulteriore solo mobile
+      const mobileBoost = vw < 640 ? 1.1 : vw < 900 ? 1.05 : 1;
 
       const textPxAuto = Math.round(
-        Math.max(1000, Math.min(3200, charsCount * 3.8)) * mobileBoost,
+        Math.max(980, Math.min(2600, charsCount * 3.4)) * mobileBoost,
       );
-      const textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
 
+      let textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
+
+      // ✅ chiave: “accorcia” SOLO su mobile la distanza verticale prima dello slide
+      // (mantiene la coreografia, ma riduce lo scroll morto)
+      if (isMobile) textPxFinal = Math.round(textPxFinal * 0.72);
+
+      // durate (restano uguali come impostazione tua)
       const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75));
       const svcReveal1Px = Math.round(Math.max(680, window.innerHeight * 0.95));
       const svcSlidePx = Math.round(Math.max(520, window.innerWidth * 0.85));
@@ -214,7 +223,11 @@ export default function Facciamo({
           },
           imgAt,
         );
-        tl.to(img, { scale: 1, duration: Math.round(imgDur * 0.9) }, imgAt + 10);
+        tl.to(
+          img,
+          { scale: 1, duration: Math.round(imgDur * 0.9) },
+          imgAt + 10,
+        );
       } else {
         tl.to(imgWrap, { autoAlpha: 1, y: 0, duration: 1 }, t_titleWrapStart);
         tl.to(img, { scale: 1, duration: 1 }, t_titleWrapStart);
@@ -238,11 +251,7 @@ export default function Facciamo({
       );
 
       // body wrapper
-      tl.to(
-        bodyWrap,
-        { autoAlpha: 1, y: 0, duration: wrap },
-        t_bodyWrapStart,
-      );
+      tl.to(bodyWrap, { autoAlpha: 1, y: 0, duration: wrap }, t_bodyWrapStart);
 
       // body chars / block
       tl.to(
@@ -333,7 +342,11 @@ export default function Facciamo({
                     {kicker}
                   </div>
 
-                  <h2 className="facTitle" data-ftitlewrap aria-label={titleAria}>
+                  <h2
+                    className="facTitle"
+                    data-ftitlewrap
+                    aria-label={titleAria}
+                  >
                     {titleTokens.map((tok, idx) => {
                       if (tok === "\n") return <br key={`ftbr-${idx}`} />;
                       if (/^[ \t]+$/.test(tok))
@@ -342,7 +355,11 @@ export default function Facciamo({
                     })}
                   </h2>
 
-                  <div className="facUnderline" data-funderline aria-hidden="true" />
+                  <div
+                    className="facUnderline"
+                    data-funderline
+                    aria-hidden="true"
+                  />
 
                   <div className="facBody" data-fbodywrap aria-label={bodyText}>
                     {bodyTokens.map((tok, idx) => {
