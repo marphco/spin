@@ -1,3 +1,4 @@
+// Hero.jsx
 import React, { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -5,13 +6,7 @@ import "./Hero.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function Hero({
-  id = "top",
-  src,
-  alt = "",
-  title = "less is more",
-  durationPx = 900,
-}) {
+export default function Hero({ id = "top", src, alt = "", title, durationPx = 900 }) {
   const shellRef = useRef(null);
   const imgRef = useRef(null);
   const titleRef = useRef(null);
@@ -27,10 +22,8 @@ export default function Hero({
     const isMobile = window.matchMedia("(max-width: 720px)").matches;
 
     const ctx = gsap.context(() => {
-      // kill SOLO il nostro trigger se esiste già
       ScrollTrigger.getById("heroFX")?.kill(true);
 
-      // stato iniziale (sempre uguale)
       gsap.set(shell, { backgroundColor: "#000" });
       gsap.set(img, {
         opacity: 1,
@@ -58,18 +51,14 @@ export default function Hero({
           anticipatePin: isMobile ? 2 : 1,
           invalidateOnRefresh: true,
         },
-
       });
 
-      // Titolo: micro move + fade
       tl.to(titleEl, { y: -10, ease: "none" }, 0);
       tl.to(titleEl, { opacity: 0, ease: "none" }, 0.08);
 
-      // Grain
       tl.to(grain, { opacity: 0.22, ease: "none" }, 0.12);
       tl.to(grain, { scale: 1.03, ease: "none" }, 0.12);
 
-      // Immagine: blur + zoom + darken
       tl.to(
         img,
         {
@@ -80,7 +69,6 @@ export default function Hero({
         0.12
       );
 
-      // chiusura a nero
       tl.to(img, { opacity: 0, ease: "none" }, 0.99);
       tl.to(grain, { opacity: 0, ease: "none" }, 0.99);
     }, shell);

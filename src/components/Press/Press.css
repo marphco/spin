@@ -69,7 +69,9 @@
   border: 0;
   border-radius: 0;
 
-  transition: transform 0.18s ease, filter 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    filter 0.18s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -119,7 +121,9 @@
   width: auto;
   max-width: 180px;
   opacity: 0.92;
-  transition: opacity 0.18s ease, filter 0.18s ease;
+  transition:
+    opacity 0.18s ease,
+    filter 0.18s ease;
   filter: saturate(0.95);
 }
 
@@ -246,18 +250,27 @@
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
 
-    transition: transform 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
+    transition:
+      transform 0.18s ease,
+      border-color 0.18s ease,
+      opacity 0.18s ease;
   }
 
-  .pressArrowLeft { left: 16px; }
-  .pressArrowRight { right: 16px; }
+  .pressArrowLeft {
+    left: 16px;
+  }
+  .pressArrowRight {
+    right: 16px;
+  }
 
   .pressArrowIcon {
     width: 22px;
     height: 22px;
     color: color-mix(in srgb, var(--brand) 85%, #0e0e0e 15%);
     opacity: 0.95;
-    transition: transform 0.18s ease, opacity 0.18s ease;
+    transition:
+      transform 0.18s ease,
+      opacity 0.18s ease;
   }
 
   .pressArrow:hover {
@@ -274,8 +287,6 @@
     transform: translateY(-50%) scale(0.98);
   }
 }
-
-
 
 /* ---------------------------------------------------
    MOBILE: STACK + DIVIDER
@@ -356,6 +367,7 @@
     scrollbar-width: none;
 
     padding: 0;
+    align-items: start;
   }
 
   .pressMobileScroller::-webkit-scrollbar {

@@ -514,124 +514,124 @@ export default function Press({ id = "press", items = [] }) {
   });
 
   return (
-  <section ref={sectionRef} className="pressSection" id={id}>
-    <div id="press__nav" className="navAnchor" aria-hidden="true" />
+    <section ref={sectionRef} className="pressSection" id={id}>
+      <div id="press__nav" className="navAnchor" aria-hidden="true" />
 
-    <div className="pressInner">
-      <div className="pressKicker">Press</div>
-      <div className="pressUnderline" aria-hidden="true" />
+      <div className="pressInner">
+        <div className="pressKicker">Press</div>
+        <div className="pressUnderline" aria-hidden="true" />
 
-      <div
-        ref={railRef}
-        className={`pressRail ${isCarousel ? "isCarousel" : ""}`}
-      >
-        {/* ===================== DESKTOP ===================== */}
-        {!isMobile && (
-          <>
-            {/* NON CAROUSEL (<= 2) */}
-            {!isCarousel && (
-              <div className="pressGrid">{baseItems.map(renderCard)}</div>
-            )}
+        <div
+          ref={railRef}
+          className={`pressRail ${isCarousel ? "isCarousel" : ""}`}
+        >
+          {/* ===================== DESKTOP ===================== */}
+          {!isMobile && (
+            <>
+              {/* NON CAROUSEL (<= 2) */}
+              {!isCarousel && (
+                <div className="pressGrid">{baseItems.map(renderCard)}</div>
+              )}
 
-            {/* CAROUSEL */}
-            {isCarousel && (
-              <div className="pressDeskViewport" aria-label="Rassegna stampa">
-                <div className="pressDeskClip">
-                  <div ref={scrollerRef} className="pressDeskScroller">
-                    {pagesDesktop.map((pair, p) => (
-                      <div className="pressDeskPage" key={`desk-page-${p}`}>
-                        <div className="pressDeskPageInner">
-                          {pair.map((x, i) =>
-                            renderCard(x, `desk-${p}-${i}-${x.href}`),
-                          )}
+              {/* CAROUSEL */}
+              {isCarousel && (
+                <div className="pressDeskViewport" aria-label="Rassegna stampa">
+                  <div className="pressDeskClip">
+                    <div ref={scrollerRef} className="pressDeskScroller">
+                      {pagesDesktop.map((pair, p) => (
+                        <div className="pressDeskPage" key={`desk-page-${p}`}>
+                          <div className="pressDeskPageInner">
+                            {pair.map((x, i) =>
+                              renderCard(x, `desk-${p}-${i}-${x.href}`),
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
+
+                  {showArrows && (
+                    <>
+                      <button
+                        className="pressArrow pressArrowLeft"
+                        type="button"
+                        aria-label="Articolo precedente"
+                        onClick={() => scrollByDir(-1)}
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          className="pressArrowIcon"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M14.5 5.5L8.5 12l6 6.5"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+
+                      <button
+                        className="pressArrow pressArrowRight"
+                        type="button"
+                        aria-label="Articolo successivo"
+                        onClick={() => scrollByDir(1)}
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          className="pressArrowIcon"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M9.5 5.5L15.5 12l-6 6.5"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </>
+                  )}
                 </div>
+              )}
+            </>
+          )}
 
-                {showArrows && (
-                  <>
-                    <button
-                      className="pressArrow pressArrowLeft"
-                      type="button"
-                      aria-label="Articolo precedente"
-                      onClick={() => scrollByDir(-1)}
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="pressArrowIcon"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="M14.5 5.5L8.5 12l6 6.5"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </button>
-
-                    <button
-                      className="pressArrow pressArrowRight"
-                      type="button"
-                      aria-label="Articolo successivo"
-                      onClick={() => scrollByDir(1)}
-                    >
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="pressArrowIcon"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="M9.5 5.5L15.5 12l-6 6.5"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </button>
-                  </>
-                )}
+          {/* ===================== MOBILE ===================== */}
+          {isMobile && isCarousel && (
+            <div className="pressMobileWrap">
+              <div
+                ref={scrollerRef}
+                className="pressMobileScroller"
+                aria-label="Rassegna stampa"
+              >
+                {pagesMobile.map((pair, p) => (
+                  <div className="pressPage" key={`page-${p}`}>
+                    {pair.map((x, i) =>
+                      renderCard(x, `mob-${p}-${i}-${x.href}`),
+                    )}
+                  </div>
+                ))}
               </div>
-            )}
-          </>
-        )}
 
-        {/* ===================== MOBILE ===================== */}
-        {isMobile && isCarousel && (
-          <div className="pressMobileWrap">
-            <div
-              ref={scrollerRef}
-              className="pressMobileScroller"
-              aria-label="Rassegna stampa"
-            >
-              {pagesMobile.map((pair, p) => (
-                <div className="pressPage" key={`page-${p}`}>
-                  {pair.map((x, i) => renderCard(x, `mob-${p}-${i}-${x.href}`))}
+              {showSwipeHint && (
+                <div className="pressSwipeHint" aria-hidden="true">
+                  <img className="pressSwipeImg" src={hintSvg} alt="" />
                 </div>
-              ))}
+              )}
             </div>
+          )}
 
-            {showSwipeHint && (
-              <div className="pressSwipeHint" aria-hidden="true">
-                <img className="pressSwipeImg" src={hintSvg} alt="" />
-              </div>
-            )}
-          </div>
-        )}
-
-        {isMobile && !isCarousel && (
-          <div className="pressGrid">{baseItems.map(renderCard)}</div>
-        )}
+          {isMobile && !isCarousel && (
+            <div className="pressGrid">{baseItems.map(renderCard)}</div>
+          )}
+        </div>
       </div>
-    </div>
-  </section>
-);
-
-
+    </section>
+  );
 }
