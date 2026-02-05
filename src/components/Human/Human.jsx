@@ -4,6 +4,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./Human.css";
 import HumanServizi from "./HumanServizi";
 
+import humanLogo from "../../assets/human.svg";
+
 gsap.registerPlugin(ScrollTrigger);
 
 function tokenize(str) {
@@ -35,8 +37,12 @@ export default function Human({
   title = "Dati che diventano direzione.",
   paragraphs = [],
   textPx,
+  imageSrc = humanLogo,
+  imageAlt = "Human logo",
 }) {
   const rootRef = useRef(null);
+  const imgWrapRef = useRef(null);
+  const imgRef = useRef(null);
 
   const bodyText = useMemo(() => paragraphs.join("\n\n"), [paragraphs]);
   const titleTokens = useMemo(() => tokenize(title), [title]);
@@ -44,9 +50,15 @@ export default function Human({
 
   useLayoutEffect(() => {
     const root = rootRef.current;
-    if (!root) return;
+    const imgWrap = imgWrapRef.current;
+    const img = imgRef.current;
+
+    if (!root || !imgWrap || !img) return;
 
     const isMobile = window.matchMedia("(max-width: 720px)").matches;
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
     const ctx = gsap.context(() => {
       ScrollTrigger.getById(`human-${id}`)?.kill(true);
@@ -68,10 +80,9 @@ export default function Human({
       const servicesPanel = root.querySelector("[data-hservicespanel]");
       const servicesWrap = root.querySelector("[data-hserviceswrap]");
       const serviceItems = gsap.utils.toArray(
-        root.querySelectorAll("[data-hservice]")
+        root.querySelectorAll("[data-hservice]"),
       );
 
-      // guard
       if (!track || !servicesPanel || !servicesWrap) return;
 
       // -------------------------
@@ -84,9 +95,12 @@ export default function Human({
       gsap.set(titleTargets, { autoAlpha: 0, y: 10 });
       gsap.set(bodyTargets, { autoAlpha: 0, y: 6 });
 
+      // ✅ logo: reveal coordinato (niente tilt/box)
+      gsap.set(imgWrap, { autoAlpha: 0, y: 14, scale: 0.985 });
+      gsap.set(img, { scale: 1.02 });
+
       gsap.set(track, { x: 0 });
 
-      // panel servizi esiste ma lo reveal lo fai su wrap/items
       gsap.set(servicesPanel, { autoAlpha: 1 });
       gsap.set(servicesWrap, { autoAlpha: 0 });
       gsap.set(serviceItems, { autoAlpha: 0, y: 18 });
@@ -97,16 +111,15 @@ export default function Human({
       const charsCount = titleEls.length + bodyEls.length;
       const vw = Math.max(
         document.documentElement.clientWidth,
-        window.innerWidth || 0
+        window.innerWidth || 0,
       );
       const mobileBoost = vw < 640 ? 1.35 : vw < 900 ? 1.18 : 1;
 
       const textPxAuto = Math.round(
-        Math.max(950, Math.min(2800, charsCount * 3.6)) * mobileBoost
+        Math.max(950, Math.min(2800, charsCount * 3.6)) * mobileBoost,
       );
       const textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
 
-      // come Facciamo (snello)
       const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75));
       const servicesPx = Math.round(Math.max(720, window.innerHeight * 1.05));
       const totalPx = textPxFinal + horizPx + servicesPx;
@@ -126,9 +139,8 @@ export default function Human({
         animation: tl,
       });
 
-
       // -------------------------
-      // A) TESTO (0 -> textPxFinal)
+      // A) TESTO
       // -------------------------
       const pad = 12;
       const frame = Math.round(textPxFinal * 0.12);
@@ -159,28 +171,48 @@ export default function Human({
       tl.to(
         [kickerEl, underlineEl],
         { autoAlpha: 1, y: 0, duration: frame },
-        t_frameStart
+        t_frameStart,
       );
+
       tl.to(
         titleWrap,
         { autoAlpha: 1, y: 0, duration: wrap },
-        t_titleWrapStart
+        t_titleWrapStart,
       );
+
+      // ✅ logo entra PRIMA (coerente con Facciamo/Siamo updated)
+      if (!prefersReduced) {
+        const imgDur = Math.max(120, Math.round(titleSeg * 0.55));
+        const imgAt = Math.max(
+          t_titleWrapStart + Math.round(wrap * 0.55),
+          t_titleStart - Math.round(titleSeg * 0.25),
+        );
+
+        tl.to(
+          imgWrap,
+          { autoAlpha: 1, y: 0, scale: 1, duration: imgDur },
+          imgAt,
+        );
+        tl.to(img, { scale: 1, duration: Math.round(imgDur * 0.9) }, imgAt + 10);
+      } else {
+        tl.to(imgWrap, { autoAlpha: 1, y: 0, scale: 1, duration: 1 }, t_titleWrapStart);
+        tl.to(img, { scale: 1, duration: 1 }, t_titleWrapStart);
+      }
 
       tl.to(
         titleTargets,
         isMobile
           ? { autoAlpha: 1, y: 0, duration: titleSeg }
           : {
-            autoAlpha: 1,
-            y: 0,
-            duration: 1,
-            stagger: {
-              each: staggerEachFit(titleSeg, titleEls.length),
-              from: "start",
+              autoAlpha: 1,
+              y: 0,
+              duration: 1,
+              stagger: {
+                each: staggerEachFit(titleSeg, titleEls.length),
+                from: "start",
+              },
             },
-          },
-        t_titleStart
+        t_titleStart,
       );
 
       tl.to(bodyWrap, { autoAlpha: 1, y: 0, duration: wrap }, t_bodyWrapStart);
@@ -190,32 +222,21 @@ export default function Human({
         isMobile
           ? { autoAlpha: 1, y: 0, duration: bodySeg }
           : {
-            autoAlpha: 1,
-            y: 0,
-            duration: 1,
-            stagger: {
-              each: staggerEachFit(bodySeg, bodyEls.length),
-              from: "start",
+              autoAlpha: 1,
+              y: 0,
+              duration: 1,
+              stagger: {
+                each: staggerEachFit(bodySeg, bodyEls.length),
+                from: "start",
+              },
             },
-          },
-        t_bodyStart
+        t_bodyStart,
       );
-
-      // lock
-      tl.set(
-        [kickerEl, underlineEl, titleWrap, bodyWrap],
-        { autoAlpha: 1, y: 0 },
-        textPxFinal
-      );
-      tl.set(titleEls, { autoAlpha: 1, y: 0 }, textPxFinal);
-      tl.set(bodyEls, { autoAlpha: 1, y: 0 }, textPxFinal);
 
       // -------------------------
       // B) ORIZZONTALE (intro -> servizi)
-      // NB: qui NON si tocca il background: lo gestisce App.jsx
       // -------------------------
       const hStart = textPxFinal + 1;
-
       tl.to(track, { x: () => -window.innerWidth, duration: horizPx }, hStart);
 
       // -------------------------
@@ -230,7 +251,7 @@ export default function Human({
         tl.to(
           el,
           { autoAlpha: 1, y: 0, duration: Math.round(step * 0.7) },
-          sStart + 80 + step * i
+          sStart + 80 + step * i,
         );
       });
     }, root);
@@ -241,37 +262,46 @@ export default function Human({
   return (
     <section className="humSection" id={id} ref={rootRef}>
       <div id="human__nav" className="navAnchor" aria-hidden="true" />
+
       <div className="humViewport">
         <div className="humTrack" data-htrack>
           {/* PANEL 1: INTRO */}
           <div className="humPanel" data-hpanel="intro">
             <div className="humInner">
-              <div className="humKicker" data-hkicker>
-                {kicker}
+              {/* LOGO (no box) */}
+              <div className="humMedia" ref={imgWrapRef} aria-hidden="true">
+                <img
+                  ref={imgRef}
+                  className="humLogo"
+                  src={imageSrc}
+                  alt={imageAlt}
+                  loading="lazy"
+                />
               </div>
 
-              <h2 className="humTitle" data-htitlewrap aria-label={title}>
-                {titleTokens.map((tok, idx) => {
-                  if (tok === "\n") return <br key={`htbr-${idx}`} />;
-                  if (/^[ \t]+$/.test(tok))
-                    return <span key={`htsp-${idx}`}> </span>;
-                  return <Word key={`htw-${idx}`} token={tok} type="t" />;
-                })}
-              </h2>
+              {/* COPY */}
+              <div className="humCopy">
+                <div className="humKicker" data-hkicker>
+                  {kicker}
+                </div>
 
-              <div
-                className="humUnderline"
-                data-hunderline
-                aria-hidden="true"
-              />
+                <h2 className="humTitle" data-htitlewrap aria-label={title}>
+                  {titleTokens.map((tok, idx) => {
+                    if (tok === "\n") return <br key={`htbr-${idx}`} />;
+                    if (/^[ \t]+$/.test(tok)) return <span key={`htsp-${idx}`}> </span>;
+                    return <Word key={`htw-${idx}`} token={tok} type="t" />;
+                  })}
+                </h2>
 
-              <div className="humBody" data-hbodywrap aria-label={bodyText}>
-                {bodyTokens.map((tok, idx) => {
-                  if (tok === "\n") return <br key={`hbbr-${idx}`} />;
-                  if (/^[ \t]+$/.test(tok))
-                    return <span key={`hbsp-${idx}`}> </span>;
-                  return <Word key={`hbw-${idx}`} token={tok} type="b" />;
-                })}
+                <div className="humUnderline" data-hunderline aria-hidden="true" />
+
+                <div className="humBody" data-hbodywrap aria-label={bodyText}>
+                  {bodyTokens.map((tok, idx) => {
+                    if (tok === "\n") return <br key={`hbbr-${idx}`} />;
+                    if (/^[ \t]+$/.test(tok)) return <span key={`hbsp-${idx}`}> </span>;
+                    return <Word key={`hbw-${idx}`} token={tok} type="b" />;
+                  })}
+                </div>
               </div>
             </div>
           </div>
