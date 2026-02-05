@@ -151,11 +151,7 @@ export default function Home() {
             id="top"
             src={heroImg}
             alt="Hero"
-            title={
-              <>
-                less is more
-              </>
-            }
+            title={<>less is more</>}
             durationPx={900}
           />
 
@@ -184,16 +180,15 @@ export default function Home() {
           />
 
           <Human
-  id="human"
-  kicker="HUMAN"
-  title="Trasformare l’ascolto in direzione"
-  paragraphs={[
-    "Human è la piattaforma di web e social listening di Spin Factor, sviluppata con Osservatorio Social. Analizza conversazioni, trend e performance, misura sentiment e reputazione e restituisce insight chiari e utilizzabili.",
-    "I dati sono segmentati per area geografica, profili e interessi. I nostri Data Analyst li interpretano e li trasformano in scelte strategiche.",
-    "Human non si limita a misurare. Orienta le decisioni.",
-  ]}
-/>
-
+            id="human"
+            kicker="HUMAN"
+            title="Trasformare l’ascolto in direzione"
+            paragraphs={[
+              "Human è la piattaforma di web e social listening di Spin Factor, sviluppata con Osservatorio Social. Analizza conversazioni, trend e performance, misura sentiment e reputazione e restituisce insight chiari e utilizzabili.",
+              "I dati sono segmentati per area geografica, profili e interessi. I nostri Data Analyst li interpretano e li trasformano in scelte strategiche.",
+              "Human non si limita a misurare. Orienta le decisioni.",
+            ]}
+          />
 
           <Press id="press" items={PRESS_ITEMS} />
 

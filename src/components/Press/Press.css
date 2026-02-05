@@ -4,7 +4,7 @@
    BASE
 --------------------------------------------------- */
 
-.pressSection{
+.pressSection {
   position: relative;
   min-height: 100vh;
   width: 100%;
@@ -13,7 +13,7 @@
   color: #121212;
 }
 
-.pressInner{
+.pressInner {
   position: relative;
   width: min(1120px, calc(100% - 48px));
   margin: 0 auto;
@@ -28,19 +28,19 @@
 }
 
 /* header */
-.pressKicker{
+.pressKicker {
   font-size: 12px;
-  letter-spacing: .18em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(0,0,0,0.42);
+  color: rgba(0, 0, 0, 0.42);
 }
 
-.pressUnderline{
+.pressUnderline {
   width: 92px;
   height: 4px;
   border-radius: 999px;
   background: var(--brand);
-  opacity: .9;
+  opacity: 0.9;
   margin: 0 auto 14px;
 }
 
@@ -48,7 +48,7 @@
    GRID + CARD
 --------------------------------------------------- */
 
-.pressGrid{
+.pressGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(26px, 3.6vw, 44px);
@@ -56,7 +56,7 @@
   padding: 10px 0;
 }
 
-.pressCard{
+.pressCard {
   position: relative;
   display: grid;
   gap: 14px;
@@ -69,12 +69,12 @@
   border: 0;
   border-radius: 0;
 
-  transition: transform .18s ease, filter .18s ease;
+  transition: transform 0.18s ease, filter 0.18s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
-.pressCard::after{
-  content:"";
+.pressCard::after {
+  content: "";
   position: absolute;
   left: 50%;
   bottom: 6px;
@@ -83,55 +83,55 @@
   height: 2px;
   border-radius: 999px;
   background: var(--brand);
-  opacity: .95;
-  transition: width .18s ease;
+  opacity: 0.95;
+  transition: width 0.18s ease;
 }
 
-@media (hover:hover){
-  .pressCard:hover{
+@media (hover: hover) {
+  .pressCard:hover {
     transform: translateY(-2px);
   }
-  .pressCard:hover::after{
+  .pressCard:hover::after {
     width: min(140px, 42%);
   }
-  .pressCard:hover .pressCardTitle{
+  .pressCard:hover .pressCardTitle {
     color: #0e0e0e;
   }
-  .pressCard:hover .pressLogo{
+  .pressCard:hover .pressLogo {
     opacity: 1;
   }
 }
 
-.pressCard:active{
+.pressCard:active {
   transform: translateY(-1px);
 }
 
 /* logo */
-.pressCardTop{
+.pressCardTop {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 34px;
 }
 
-.pressLogo{
+.pressLogo {
   height: 28px;
   width: auto;
   max-width: 180px;
-  opacity: .92;
-  transition: opacity .18s ease, filter .18s ease;
-  filter: saturate(.95);
+  opacity: 0.92;
+  transition: opacity 0.18s ease, filter 0.18s ease;
+  filter: saturate(0.95);
 }
 
-.pressLogoFallback{
+.pressLogoFallback {
   font-size: 13px;
   font-weight: 650;
-  letter-spacing: .02em;
-  color: rgba(0,0,0,0.55);
+  letter-spacing: 0.02em;
+  color: rgba(0, 0, 0, 0.55);
 }
 
 /* testo */
-.pressCardTitle{
+.pressCardTitle {
   font-size: clamp(16px, 1.55vw, 20px);
   line-height: 1.35;
   letter-spacing: -0.01em;
@@ -140,99 +140,105 @@
   max-width: 44ch;
 }
 
-.pressCardMeta{
+.pressCardMeta {
   font-size: 12px;
-  color: rgba(0,0,0,0.45);
-}
-
-/* ---------------------------------------------------
-   MOBILE: STACK + DIVIDER
---------------------------------------------------- */
-
-@media (max-width: 860px){
-  .pressInner{ padding: 96px 0 80px; }
-
-  .pressGrid{
-    grid-template-columns: 1fr;
-    gap: 0;
-    padding: 6px 0;
-  }
-
-  .pressCard{ padding: 20px 4px 22px; }
-
-  .pressCard + .pressCard{ position: relative; }
-
-  .pressCard + .pressCard::before{
-    content:"";
-    position: absolute;
-    left: 50%;
-    top: 0;
-    transform: translateX(-50%);
-    width: min(520px, 86%);
-    height: 1px;
-    background: rgba(0,0,0,0.08);
-  }
-
-  .pressCard:active::after{
-    width: min(150px, 46%);
-  }
-
-  .pressCardTitle{ max-width: 34ch; }
-
-  .pressLogo{
-    height: 26px;
-    max-width: 165px;
-  }
+  color: rgba(0, 0, 0, 0.45);
 }
 
 /* ---------------------------------------------------
    RAIL
 --------------------------------------------------- */
 
-.pressRail{
+.pressRail {
   position: relative;
   overflow: visible;
 }
 
 /* ---------------------------------------------------
-   DESKTOP CAROUSEL + ARROWS
+   DESKTOP: VIEWPORT + SCROLLER + ARROWS (DEFINITIVO)
 --------------------------------------------------- */
 
-@media (min-width: 861px){
-  .pressRail.isCarousel{
-    padding-inline: 84px; /* spazio frecce in gutter */
+@media (min-width: 861px) {
+  :root {
+    --pressArrow: 64px;
+    --pressSafe: 84px;
   }
 
-  .pressGrid.isCarousel{
+  /* IMPORTANTISSIMO: evita che i figli grid/flex esplodano */
+  .pressRail,
+  .pressDeskViewport,
+  .pressDeskClip,
+  .pressDeskScroller,
+  .pressDeskPage {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .pressDeskViewport {
+    position: relative;
+    overflow: visible;
+    padding: 0;
+  }
+
+  /* clip: taglia SOLO lo scroller, ma resta largo quanto il contenitore */
+  .pressDeskClip {
+    overflow: hidden;
+    padding: 10px 0;
+  }
+
+  .pressDeskScroller {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 100%;
+    gap: clamp(26px, 3.6vw, 44px);
+
     overflow-x: auto;
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
 
-    grid-auto-flow: column;
-    grid-auto-columns: calc((100% - clamp(26px, 3.6vw, 44px)) / 2);
-    grid-template-columns: unset;
+    padding: 0;
   }
 
-  .pressGrid.isCarousel::-webkit-scrollbar{ display:none; }
-
-  .pressGrid.isCarousel > .pressCard{
-    scroll-snap-align: start;
+  .pressDeskScroller::-webkit-scrollbar {
+    display: none;
   }
 
-  .pressArrow{
+  .pressDeskPage {
+    scroll-snap-align: center;
+    box-sizing: border-box;
+    display: block;
+  }
+
+  .pressDeskPageInner {
+    width: 100%;
+    box-sizing: border-box;
+    padding-inline: var(--pressSafe);
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(26px, 3.6vw, 44px);
+  }
+
+  .pressDeskPageInner > .pressCard:only-child {
+    grid-column: 1 / -1;
+    justify-self: center;
+  }
+
+  .pressArrow {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
     z-index: 10;
 
-    width: 64px;
-    height: 64px;
+    width: var(--pressArrow);
+    height: var(--pressArrow);
     border-radius: 999px;
 
     background: transparent;
-    border: 1px solid rgba(0,0,0,0.10);
+    border: 1px solid rgba(0, 0, 0, 0.1);
 
     display: grid;
     place-items: center;
@@ -240,52 +246,103 @@
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
 
-    transition: transform .18s ease, border-color .18s ease, opacity .18s ease;
+    transition: transform 0.18s ease, border-color 0.18s ease, opacity 0.18s ease;
   }
 
-  .pressArrowIcon{
+  .pressArrowLeft { left: 16px; }
+  .pressArrowRight { right: 16px; }
+
+  .pressArrowIcon {
     width: 22px;
     height: 22px;
     color: color-mix(in srgb, var(--brand) 85%, #0e0e0e 15%);
-    opacity: .95;
-    transition: transform .18s ease, opacity .18s ease;
+    opacity: 0.95;
+    transition: transform 0.18s ease, opacity 0.18s ease;
   }
 
-  .pressArrowLeft{ left: 16px; }
-  .pressArrowRight{ right: 16px; }
-
-  .pressArrow:hover{
+  .pressArrow:hover {
     transform: translateY(-50%) scale(1.05);
-    border-color: color-mix(in srgb, var(--brand) 50%, rgba(0,0,0,0.20));
+    border-color: color-mix(in srgb, var(--brand) 50%, rgba(0, 0, 0, 0.2));
   }
 
-  .pressArrow:hover .pressArrowIcon{
+  .pressArrow:hover .pressArrowIcon {
     transform: scale(1.08);
     opacity: 1;
   }
 
-  .pressArrow:active{
-    transform: translateY(-50%) scale(.98);
+  .pressArrow:active {
+    transform: translateY(-50%) scale(0.98);
   }
 }
 
-@media (max-width: 860px){
-  .pressArrow{ display:none; }
+
+
+/* ---------------------------------------------------
+   MOBILE: STACK + DIVIDER
+--------------------------------------------------- */
+
+@media (max-width: 860px) {
+  .pressInner {
+    padding: 96px 0 80px;
+  }
+
+  .pressGrid {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 6px 0;
+  }
+
+  .pressCard {
+    padding: 20px 4px 22px;
+  }
+
+  .pressCard + .pressCard {
+    position: relative;
+  }
+
+  .pressCard + .pressCard::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    width: min(520px, 86%);
+    height: 1px;
+    background: rgba(0, 0, 0, 0.08);
+  }
+
+  .pressCard:active::after {
+    width: min(150px, 46%);
+  }
+
+  .pressCardTitle {
+    max-width: 34ch;
+  }
+
+  .pressLogo {
+    height: 26px;
+    max-width: 165px;
+  }
+
+  /* frecce off su mobile */
+  .pressArrow {
+    display: none;
+  }
 }
 
 /* ---------------------------------------------------
    MOBILE CAROUSEL (2 articoli per pagina) + HINT SOTTO
 --------------------------------------------------- */
 
-@media (max-width: 860px){
-  .pressMobileWrap{
+@media (max-width: 860px) {
+  .pressMobileWrap {
     display: grid;
     justify-items: center;
     gap: 14px;
     margin-top: 10px;
   }
 
-  .pressMobileScroller{
+  .pressMobileScroller {
     width: 100%;
     display: grid;
     grid-auto-flow: column;
@@ -298,29 +355,31 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
 
-    padding: 0; /* no aloni */
+    padding: 0;
   }
 
-  .pressMobileScroller::-webkit-scrollbar{ display:none; }
+  .pressMobileScroller::-webkit-scrollbar {
+    display: none;
+  }
 
-  .pressPage{
+  .pressPage {
     scroll-snap-align: center;
     display: grid;
     grid-template-columns: 1fr;
-    gap: 0; /* divider già gestito */
+    gap: 0;
   }
 
-  .pressSwipeHint{
+  .pressSwipeHint {
     position: relative;
     z-index: 2;
     pointer-events: none;
 
     padding-bottom: 10px;
-    opacity: .7;
+    opacity: 0.7;
     animation: pressHintFade 2.6s ease-in-out infinite;
   }
 
-  .pressSwipeImg{
+  .pressSwipeImg {
     width: 46px;
     height: 46px;
     display: block;
@@ -328,38 +387,46 @@
     animation: pressHintNudge 1.2s ease-in-out infinite;
     transform-origin: 50% 50%;
 
-    /* ✅ fix “visivamente non centrato” (SVG sbilanciato) */
+    /* fix svg sbilanciato */
     transform: translateX(-6px);
   }
 
-  @keyframes pressHintNudge{
-    0%   { transform: translateX(-6px) translateX(-6px); }
-    50%  { transform: translateX(-6px) translateX(7px); }
-    100% { transform: translateX(-6px) translateX(-6px); }
+  @keyframes pressHintNudge {
+    0% {
+      transform: translateX(-6px) translateX(-6px);
+    }
+    50% {
+      transform: translateX(-6px) translateX(7px);
+    }
+    100% {
+      transform: translateX(-6px) translateX(-6px);
+    }
   }
 
-  @keyframes pressHintFade{
-    0%,100% { opacity: .35; }
-    50%     { opacity: .75; }
+  @keyframes pressHintFade {
+    0%,
+    100% {
+      opacity: 0.35;
+    }
+    50% {
+      opacity: 0.75;
+    }
   }
 }
 
-@media (prefers-reduced-motion: reduce){
+@media (prefers-reduced-motion: reduce) {
   .pressSwipeHint,
-  .pressSwipeImg{
+  .pressSwipeImg {
     animation: none !important;
   }
 }
 
 /* ---------------------------------------------------
-   FULL-WIDTH CAROUSEL
-   - SOLO MOBILE (desktop resta compatto dentro pressInner)
+   FULL-WIDTH CAROUSEL (MOBILE)
 --------------------------------------------------- */
 
-@media (max-width: 860px){
-  .pressRail{
-    position: relative;
-
+@media (max-width: 860px) {
+  .pressRail {
     width: 100vw;
     left: 50%;
     right: 50%;
@@ -367,48 +434,24 @@
     margin-right: -50vw;
   }
 
-  .pressMobileScroller{
+  .pressMobileScroller {
     padding-inline: 20px;
   }
 }
 
-@media (min-width: 861px){
-  .pressDeskScroller{
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 100%;
-    gap: clamp(26px, 3.6vw, 44px);
+/* ---------------------------------------------------
+   LA7 OVERRIDE
+--------------------------------------------------- */
 
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-
-    padding: 10px 0;
-  }
-
-  .pressDeskScroller::-webkit-scrollbar{ display:none; }
-
-  .pressDeskPage{
-    scroll-snap-align: start;
-
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: clamp(26px, 3.6vw, 44px);
-  }
-}
-
-/* LA7: logo troppo piccolo, override ad-hoc */
-.pressLogo--la7{
-  height: 44px;      /* prova 34-38px */
-  max-width: 210px;  /* un filo più largo se serve */
-  opacity: .98;
+.pressLogo--la7 {
+  height: 44px;
+  max-width: 210px;
+  opacity: 0.98;
   filter: saturate(1);
 }
 
-@media (max-width: 860px){
-  .pressLogo--la7{
+@media (max-width: 860px) {
+  .pressLogo--la7 {
     height: 32px;
     max-width: 190px;
   }

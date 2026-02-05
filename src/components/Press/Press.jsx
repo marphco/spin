@@ -47,11 +47,14 @@ export default function Press({ id = "press", items = [] }) {
 
   const isCarousel = baseItems.length > 2;
 
-  // Loop: 3 copie
-  const loopItems = useMemo(() => {
-    if (!isCarousel) return baseItems;
-    return [...baseItems, ...baseItems, ...baseItems];
-  }, [baseItems, isCarousel]);
+  // ✅ Pagine “pulite” (non tagliare mai tra copie)
+  const basePages = useMemo(() => chunk2(baseItems), [baseItems]);
+
+  // ✅ Loop: 3 copie di PAGINE, non di items
+  const loopPages = useMemo(() => {
+    if (!isCarousel) return basePages;
+    return [...basePages, ...basePages, ...basePages];
+  }, [basePages, isCarousel]);
 
   const scrollerRef = useRef(null);
   const railRef = useRef(null);
@@ -112,11 +115,9 @@ export default function Press({ id = "press", items = [] }) {
 
     const io = new IntersectionObserver(
       ([entry]) => {
-        // true quando la sezione è davvero “navigata” (down o up)
         setPressInView(entry.isIntersecting);
       },
       {
-        // entra un filo prima, esce un filo dopo: feel migliore
         root: null,
         threshold: 0.18,
         rootMargin: "-10% 0px -10% 0px",
@@ -130,10 +131,6 @@ export default function Press({ id = "press", items = [] }) {
   useEffect(() => {
     if (!pressInView) return;
 
-    // Mostra hint quando arrivi alla sezione, ma solo se:
-    // - sei mobile
-    // - è carousel
-    // - non è stato dismissato dall’utente
     if (isMobile && isCarousel && hintDismissReasonRef.current !== "user") {
       setHintDismissed(false);
       hintDismissReasonRef.current = "auto";
@@ -159,8 +156,6 @@ export default function Press({ id = "press", items = [] }) {
     if (!el) return;
 
     isJumpingRef.current = true;
-
-    // evita che hint si chiuda per scroll programmatici
     ignoreHintScrollRef.current = true;
 
     const prev = el.style.scrollBehavior;
@@ -169,6 +164,32 @@ export default function Press({ id = "press", items = [] }) {
 
     requestAnimationFrame(() => {
       el.style.scrollBehavior = prev || "";
+      isJumpingRef.current = false;
+
+      requestAnimationFrame(() => {
+        ignoreHintScrollRef.current = false;
+      });
+    });
+  }, []);
+
+  // ✅ INIT jump: disabilita temporaneamente lo snap così NON può partire dalla pagina “sbagliata”
+  const jumpInitWithoutSnap = useCallback((newLeft) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+
+    isJumpingRef.current = true;
+    ignoreHintScrollRef.current = true;
+
+    const prevBehavior = el.style.scrollBehavior;
+    const prevSnap = el.style.scrollSnapType;
+
+    el.style.scrollBehavior = "auto";
+    el.style.scrollSnapType = "none";
+    el.scrollLeft = newLeft;
+
+    requestAnimationFrame(() => {
+      el.style.scrollSnapType = prevSnap || "";
+      el.style.scrollBehavior = prevBehavior || "";
       isJumpingRef.current = false;
 
       requestAnimationFrame(() => {
@@ -188,31 +209,40 @@ export default function Press({ id = "press", items = [] }) {
     if (!target) return 0;
 
     const cs = getComputedStyle(el);
-    const gap = parseFloat(cs.columnGap || cs.gap || "0") || 0;
 
-    return target.getBoundingClientRect().width + gap;
+    // gap può essere decimale (clamp), lo quantizziamo a px interi
+    const gapRaw = parseFloat(cs.columnGap || cs.gap || "0") || 0;
+    const gap = Math.round(gapRaw);
+
+    // offsetWidth è sempre intero → perfetto con scrollLeft
+    const w = target.offsetWidth;
+
+    return w + gap;
   }, [isMobile]);
 
-  const getRailGap = useCallback(() => {
+  const normalizeToStep = useCallback(() => {
     const el = scrollerRef.current;
-    if (!el) return 0;
-    const cs = getComputedStyle(el);
-    return parseFloat(cs.columnGap || cs.gap || "0") || 0;
-  }, []);
+    if (!el) return;
 
-  // copy width coerente con step (desktop+mobile)
-  const getCopyWidth = useCallback(() => {
+    const step = getStep();
+    if (!step) return;
+
+    const snapped = Math.round(el.scrollLeft / step) * step;
+    if (snapped === el.scrollLeft) return;
+
+    jumpWithoutBounce(snapped);
+  }, [getStep, jumpWithoutBounce]);
+
+  // ✅ distanza tra copie = numero pagine della copia * step
+  const getCopySpan = useCallback(() => {
     const step = getStep();
     if (!step) return 0;
 
-    const gap = getRailGap();
-    const pageCount = Math.ceil(baseItems.length / 2);
+    const pageCount = basePages.length;
+    const span = pageCount * step;
 
-    // step = pageWidth + gap  => copyW = pageCount*step - gap
-    const copyW = pageCount * step - gap;
-
-    return Number.isFinite(copyW) ? copyW : 0;
-  }, [getStep, getRailGap, baseItems.length]);
+    return Number.isFinite(span) ? span : 0;
+  }, [getStep, basePages.length]);
 
   // ✅ PRE-WRAP per evitare clamp a 0 (nessun scroll event)
   const ensureMiddleCopyForDir = useCallback(
@@ -222,21 +252,21 @@ export default function Press({ id = "press", items = [] }) {
       const el = scrollerRef.current;
       if (!el) return;
 
-      const copyW = getCopyWidth();
-      if (!copyW) return;
+      const span = getCopySpan();
+      if (!span) return;
 
       const left = el.scrollLeft;
 
-      if (dir < 0 && left <= copyW + 2) {
-        jumpWithoutBounce(left + copyW);
+      if (dir < 0 && left <= span + 2) {
+        jumpWithoutBounce(left + span);
         return;
       }
 
-      if (dir > 0 && left >= 2 * copyW - 2) {
-        jumpWithoutBounce(left - copyW);
+      if (dir > 0 && left >= 2 * span - 2) {
+        jumpWithoutBounce(left - span);
       }
     },
-    [isCarousel, getCopyWidth, jumpWithoutBounce],
+    [isCarousel, getCopySpan, jumpWithoutBounce],
   );
 
   // scroll via frecce
@@ -274,7 +304,6 @@ export default function Press({ id = "press", items = [] }) {
     const onScroll = () => {
       if (ignoreHintScrollRef.current) return;
 
-      // qui è user swipe/scroll reale (non autoplay/jump)
       if (Math.abs(el.scrollLeft - startLeft) > 8) {
         hintDismissReasonRef.current = "user";
         setHintDismissed(true);
@@ -291,7 +320,7 @@ export default function Press({ id = "press", items = [] }) {
   }, [pressInView, isMobile, isCarousel, hintDismissed]);
 
   // ---------------------------------------------------
-  // POSITION INIT: copia centrale
+  // POSITION INIT: copia centrale (NO snap al load)
   // ---------------------------------------------------
   useEffect(() => {
     if (!isCarousel) return;
@@ -305,9 +334,13 @@ export default function Press({ id = "press", items = [] }) {
     if (!isMobile) {
       raf1 = requestAnimationFrame(() => {
         raf2 = requestAnimationFrame(() => {
-          const copyW = getCopyWidth();
-          if (!copyW) return;
-          jumpWithoutBounce(copyW);
+          const span = getCopySpan();
+          if (!span) return;
+          jumpInitWithoutSnap(span);
+
+          requestAnimationFrame(() => {
+            normalizeToStep();
+          });
         });
       });
       return () => {
@@ -317,12 +350,17 @@ export default function Press({ id = "press", items = [] }) {
     }
 
     const raf = requestAnimationFrame(() => {
-      const copyW = getCopyWidth();
-      if (!copyW) return;
-      jumpWithoutBounce(copyW);
+      const span = getCopySpan();
+      if (!span) return;
+      jumpInitWithoutSnap(span);
+
+      requestAnimationFrame(() => {
+        normalizeToStep();
+      });
     });
     return () => cancelAnimationFrame(raf);
-  }, [isCarousel, isMobile, getCopyWidth, jumpWithoutBounce]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCarousel, isMobile, getCopySpan, jumpInitWithoutSnap]);
 
   // ---------------------------------------------------
   // WRAP quando esci dalla copia centrale
@@ -340,15 +378,17 @@ export default function Press({ id = "press", items = [] }) {
 
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        const copyW = getCopyWidth();
-        if (!copyW) return;
+        const span = getCopySpan();
+        if (!span) return;
 
         const left = el.scrollLeft;
 
-        if (left >= 2 * copyW) {
-          jumpWithoutBounce(left - copyW);
-        } else if (left < copyW) {
-          jumpWithoutBounce(left + copyW);
+        if (left >= 2 * span) {
+          jumpWithoutBounce(left - span);
+          requestAnimationFrame(() => normalizeToStep());
+        } else if (left < span) {
+          jumpWithoutBounce(left + span);
+          requestAnimationFrame(() => normalizeToStep());
         }
       });
     };
@@ -367,7 +407,8 @@ export default function Press({ id = "press", items = [] }) {
       el.removeEventListener("touchstart", markInteract);
       el.removeEventListener("pointerdown", markInteract);
     };
-  }, [isCarousel, getCopyWidth, jumpWithoutBounce, setUserInteracting]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCarousel, getCopySpan, jumpWithoutBounce, setUserInteracting]);
 
   // ---------------------------------------------------
   // AUTOPLAY (pausa su hover + non uccide hint su mobile)
@@ -427,9 +468,9 @@ export default function Press({ id = "press", items = [] }) {
   // RENDER
   // ---------------------------------------------------
   const renderCard = useCallback(
-    (x, i) => (
+    (x, keyId) => (
       <a
-        key={`${x.href}-${i}`}
+        key={keyId}
         className="pressCard"
         href={x.href}
         target="_blank"
@@ -458,122 +499,139 @@ export default function Press({ id = "press", items = [] }) {
 
   const pagesMobile = useMemo(() => {
     if (!isCarousel || !isMobile) return [];
-    return chunk2(loopItems);
-  }, [loopItems, isCarousel, isMobile]);
+    return loopPages;
+  }, [loopPages, isCarousel, isMobile]);
 
   const pagesDesktop = useMemo(() => {
     if (!isCarousel || isMobile) return [];
-    return chunk2(loopItems);
-  }, [loopItems, isCarousel, isMobile]);
+    return loopPages;
+  }, [loopPages, isCarousel, isMobile]);
+
+  console.log({
+    railW: railRef.current?.offsetWidth,
+    step: getStep(),
+    left: scrollerRef.current?.scrollLeft,
+  });
 
   return (
-    <section ref={sectionRef} className="pressSection" id={id}>
-      <div id="press__nav" className="navAnchor" aria-hidden="true" />
+  <section ref={sectionRef} className="pressSection" id={id}>
+    <div id="press__nav" className="navAnchor" aria-hidden="true" />
 
-      <div className="pressInner">
-        <div className="pressKicker">Press</div>
-        <div className="pressUnderline" aria-hidden="true" />
+    <div className="pressInner">
+      <div className="pressKicker">Press</div>
+      <div className="pressUnderline" aria-hidden="true" />
 
-        <div
-          ref={railRef}
-          className={`pressRail ${isCarousel ? "isCarousel" : ""}`}
-        >
-          {showArrows && (
-            <>
-              <button
-                className="pressArrow pressArrowLeft"
-                type="button"
-                aria-label="Articolo precedente"
-                onClick={() => scrollByDir(-1)}
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="pressArrowIcon"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M14.5 5.5L8.5 12l6 6.5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
+      <div
+        ref={railRef}
+        className={`pressRail ${isCarousel ? "isCarousel" : ""}`}
+      >
+        {/* ===================== DESKTOP ===================== */}
+        {!isMobile && (
+          <>
+            {/* NON CAROUSEL (<= 2) */}
+            {!isCarousel && (
+              <div className="pressGrid">{baseItems.map(renderCard)}</div>
+            )}
 
-              <button
-                className="pressArrow pressArrowRight"
-                type="button"
-                aria-label="Articolo successivo"
-                onClick={() => scrollByDir(1)}
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  className="pressArrowIcon"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M9.5 5.5L15.5 12l-6 6.5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-            </>
-          )}
+            {/* CAROUSEL */}
+            {isCarousel && (
+              <div className="pressDeskViewport" aria-label="Rassegna stampa">
+                <div className="pressDeskClip">
+                  <div ref={scrollerRef} className="pressDeskScroller">
+                    {pagesDesktop.map((pair, p) => (
+                      <div className="pressDeskPage" key={`desk-page-${p}`}>
+                        <div className="pressDeskPageInner">
+                          {pair.map((x, i) =>
+                            renderCard(x, `desk-${p}-${i}-${x.href}`),
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-          {/* DESKTOP */}
-          {!isMobile && !isCarousel && (
-            <div className="pressGrid">{baseItems.map(renderCard)}</div>
-          )}
+                {showArrows && (
+                  <>
+                    <button
+                      className="pressArrow pressArrowLeft"
+                      type="button"
+                      aria-label="Articolo precedente"
+                      onClick={() => scrollByDir(-1)}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="pressArrowIcon"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M14.5 5.5L8.5 12l6 6.5"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
 
-          {!isMobile && isCarousel && (
+                    <button
+                      className="pressArrow pressArrowRight"
+                      type="button"
+                      aria-label="Articolo successivo"
+                      onClick={() => scrollByDir(1)}
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="pressArrowIcon"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M9.5 5.5L15.5 12l-6 6.5"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ===================== MOBILE ===================== */}
+        {isMobile && isCarousel && (
+          <div className="pressMobileWrap">
             <div
               ref={scrollerRef}
-              className="pressDeskScroller"
+              className="pressMobileScroller"
               aria-label="Rassegna stampa"
             >
-              {pagesDesktop.map((pair, p) => (
-                <div className="pressDeskPage" key={`desk-page-${p}`}>
-                  {pair.map(renderCard)}
+              {pagesMobile.map((pair, p) => (
+                <div className="pressPage" key={`page-${p}`}>
+                  {pair.map((x, i) => renderCard(x, `mob-${p}-${i}-${x.href}`))}
                 </div>
               ))}
             </div>
-          )}
 
-          {/* MOBILE carousel: pagine 2-up (vertical stack) */}
-          {isMobile && isCarousel && (
-            <div className="pressMobileWrap">
-              <div
-                ref={scrollerRef}
-                className="pressMobileScroller"
-                aria-label="Rassegna stampa"
-              >
-                {pagesMobile.map((pair, p) => (
-                  <div className="pressPage" key={`page-${p}`}>
-                    {pair.map(renderCard)}
-                  </div>
-                ))}
+            {showSwipeHint && (
+              <div className="pressSwipeHint" aria-hidden="true">
+                <img className="pressSwipeImg" src={hintSvg} alt="" />
               </div>
+            )}
+          </div>
+        )}
 
-              {showSwipeHint && (
-                <div className="pressSwipeHint" aria-hidden="true">
-                  <img className="pressSwipeImg" src={hintSvg} alt="" />
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* MOBILE non-carousel (<=2 items): fallback semplice */}
-          {isMobile && !isCarousel && (
-            <div className="pressGrid">{baseItems.map(renderCard)}</div>
-          )}
-        </div>
+        {isMobile && !isCarousel && (
+          <div className="pressGrid">{baseItems.map(renderCard)}</div>
+        )}
       </div>
-    </section>
-  );
+    </div>
+  </section>
+);
+
+
 }
