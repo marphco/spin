@@ -1,3 +1,4 @@
+// Human.jsx
 import React, { useLayoutEffect, useMemo, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -52,18 +53,22 @@ export default function Human({
     const root = rootRef.current;
     const imgWrap = imgWrapRef.current;
     const img = imgRef.current;
-
     if (!root || !imgWrap || !img) return;
 
     const isMobile = window.matchMedia("(max-width: 720px)").matches;
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
+    const isTouch = window.matchMedia("(hover: none)").matches;
+
+    let cleanup = null;
 
     const ctx = gsap.context(() => {
       ScrollTrigger.getById(`human-${id}`)?.kill(true);
 
-      // ---- Intro refs
+      const track = root.querySelector("[data-htrack]");
+
+      // intro refs
       const kickerEl = root.querySelector("[data-hkicker]");
       const underlineEl = root.querySelector("[data-hunderline]");
       const titleWrap = root.querySelector("[data-htitlewrap]");
@@ -75,8 +80,7 @@ export default function Human({
       const titleTargets = isMobile ? [titleWrap] : titleEls;
       const bodyTargets = isMobile ? [bodyWrap] : bodyEls;
 
-      // ---- Track + services refs
-      const track = root.querySelector("[data-htrack]");
+      // services refs
       const servicesPanel = root.querySelector("[data-hservicespanel]");
       const servicesWrap = root.querySelector("[data-hserviceswrap]");
       const serviceItems = gsap.utils.toArray(
@@ -95,7 +99,7 @@ export default function Human({
       gsap.set(titleTargets, { autoAlpha: 0, y: 10 });
       gsap.set(bodyTargets, { autoAlpha: 0, y: 6 });
 
-      // ✅ logo: reveal coordinato (niente tilt/box)
+      // logo (no rotate: è un logo)
       gsap.set(imgWrap, { autoAlpha: 0, y: 14, scale: 0.985 });
       gsap.set(img, { scale: 1.02 });
 
@@ -106,19 +110,24 @@ export default function Human({
       gsap.set(serviceItems, { autoAlpha: 0, y: 18 });
 
       // -------------------------
-      // DURATIONS
+      // DURATIONS (coerenti con Facciamo fix)
       // -------------------------
       const charsCount = titleEls.length + bodyEls.length;
       const vw = Math.max(
         document.documentElement.clientWidth,
         window.innerWidth || 0,
       );
-      const mobileBoost = vw < 640 ? 1.35 : vw < 900 ? 1.18 : 1;
+
+      const mobileBoost = vw < 640 ? 1.1 : vw < 900 ? 1.05 : 1;
 
       const textPxAuto = Math.round(
-        Math.max(950, Math.min(2800, charsCount * 3.6)) * mobileBoost,
+        Math.max(950, Math.min(2500, charsCount * 3.4)) * mobileBoost,
       );
-      const textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
+
+      let textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
+
+      // accorcia il “tratto morto” solo mobile (come Facciamo)
+      if (isMobile) textPxFinal = Math.round(textPxFinal * 0.72);
 
       const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75));
       const servicesPx = Math.round(Math.max(720, window.innerHeight * 1.05));
@@ -140,7 +149,7 @@ export default function Human({
       });
 
       // -------------------------
-      // A) TESTO
+      // A) TEXT SEGMENTS
       // -------------------------
       const pad = 12;
       const frame = Math.round(textPxFinal * 0.12);
@@ -180,7 +189,7 @@ export default function Human({
         t_titleWrapStart,
       );
 
-      // ✅ logo entra PRIMA (coerente con Facciamo/Siamo updated)
+      // logo entra PRIMA e in sync
       if (!prefersReduced) {
         const imgDur = Math.max(120, Math.round(titleSeg * 0.55));
         const imgAt = Math.max(
@@ -188,11 +197,7 @@ export default function Human({
           t_titleStart - Math.round(titleSeg * 0.25),
         );
 
-        tl.to(
-          imgWrap,
-          { autoAlpha: 1, y: 0, scale: 1, duration: imgDur },
-          imgAt,
-        );
+        tl.to(imgWrap, { autoAlpha: 1, y: 0, scale: 1, duration: imgDur }, imgAt);
         tl.to(img, { scale: 1, duration: Math.round(imgDur * 0.9) }, imgAt + 10);
       } else {
         tl.to(imgWrap, { autoAlpha: 1, y: 0, scale: 1, duration: 1 }, t_titleWrapStart);
@@ -234,13 +239,13 @@ export default function Human({
       );
 
       // -------------------------
-      // B) ORIZZONTALE (intro -> servizi)
+      // B) HORIZONTAL intro -> services
       // -------------------------
       const hStart = textPxFinal + 1;
       tl.to(track, { x: () => -window.innerWidth, duration: horizPx }, hStart);
 
       // -------------------------
-      // C) REVEAL SERVIZI
+      // C) SERVICES reveal
       // -------------------------
       const sStart = hStart + horizPx + 1;
 
@@ -254,9 +259,100 @@ export default function Human({
           sStart + 80 + step * i,
         );
       });
+
+      // -------------------------
+      // FLOATING + HOVER/TAP (come Siamo)
+      // -------------------------
+      if (!prefersReduced) {
+        gsap.to(imgWrap, {
+          y: "-=7",
+          duration: 1.8,
+          ease: "sine.inOut",
+          yoyo: true,
+          repeat: -1,
+        });
+      }
+
+      if (!prefersReduced && !isTouch) {
+        const setRX = gsap.quickTo(imgWrap, "rotationX", {
+          duration: 0.45,
+          ease: "power3.out",
+        });
+        const setRY = gsap.quickTo(imgWrap, "rotationY", {
+          duration: 0.45,
+          ease: "power3.out",
+        });
+        const setSX = gsap.quickTo(imgWrap, "x", {
+          duration: 0.45,
+          ease: "power3.out",
+        });
+        const setSY = gsap.quickTo(imgWrap, "y", {
+          duration: 0.45,
+          ease: "power3.out",
+        });
+
+        const onMove = (e) => {
+          const r = imgWrap.getBoundingClientRect();
+          const px = (e.clientX - r.left) / r.width;
+          const py = (e.clientY - r.top) / r.height;
+
+          setRX((0.5 - py) * 8);
+          setRY((px - 0.5) * 10);
+          setSX((px - 0.5) * 10);
+          setSY((py - 0.5) * 6);
+        };
+
+        const onEnter = () => {
+          gsap.to(imgWrap, { scale: 1.02, duration: 0.35, ease: "power3.out" });
+        };
+
+        const onLeave = () => {
+          gsap.to(imgWrap, {
+            rotationX: 0,
+            rotationY: 0,
+            x: 0,
+            y: 0,
+            scale: 1,
+            duration: 0.6,
+            ease: "power3.out",
+          });
+        };
+
+        imgWrap.addEventListener("mousemove", onMove);
+        imgWrap.addEventListener("mouseenter", onEnter);
+        imgWrap.addEventListener("mouseleave", onLeave);
+
+        cleanup = () => {
+          imgWrap.removeEventListener("mousemove", onMove);
+          imgWrap.removeEventListener("mouseenter", onEnter);
+          imgWrap.removeEventListener("mouseleave", onLeave);
+        };
+      }
+
+      if (!prefersReduced && isTouch) {
+        const onDown = () =>
+          gsap.to(imgWrap, { scale: 0.99, duration: 0.18, ease: "power2.out" });
+        const onUp = () =>
+          gsap.to(imgWrap, { scale: 1, duration: 0.25, ease: "power2.out" });
+
+        imgWrap.addEventListener("pointerdown", onDown);
+        imgWrap.addEventListener("pointerup", onUp);
+        imgWrap.addEventListener("pointercancel", onUp);
+        imgWrap.addEventListener("pointerleave", onUp);
+
+        cleanup = () => {
+          imgWrap.removeEventListener("pointerdown", onDown);
+          imgWrap.removeEventListener("pointerup", onUp);
+          imgWrap.removeEventListener("pointercancel", onUp);
+          imgWrap.removeEventListener("pointerleave", onUp);
+        };
+      }
     }, root);
 
-    return () => ctx.revert();
+    return () => {
+      cleanup?.();
+      ctx.revert();
+    };
   }, [id, textPx, titleTokens.length, bodyTokens.length]);
 
   return (
@@ -268,7 +364,7 @@ export default function Human({
           {/* PANEL 1: INTRO */}
           <div className="humPanel" data-hpanel="intro">
             <div className="humInner">
-              {/* LOGO (no box) */}
+              {/* LOGO */}
               <div className="humMedia" ref={imgWrapRef} aria-hidden="true">
                 <img
                   ref={imgRef}
@@ -288,7 +384,8 @@ export default function Human({
                 <h2 className="humTitle" data-htitlewrap aria-label={title}>
                   {titleTokens.map((tok, idx) => {
                     if (tok === "\n") return <br key={`htbr-${idx}`} />;
-                    if (/^[ \t]+$/.test(tok)) return <span key={`htsp-${idx}`}> </span>;
+                    if (/^[ \t]+$/.test(tok))
+                      return <span key={`htsp-${idx}`}> </span>;
                     return <Word key={`htw-${idx}`} token={tok} type="t" />;
                   })}
                 </h2>
@@ -298,7 +395,8 @@ export default function Human({
                 <div className="humBody" data-hbodywrap aria-label={bodyText}>
                   {bodyTokens.map((tok, idx) => {
                     if (tok === "\n") return <br key={`hbbr-${idx}`} />;
-                    if (/^[ \t]+$/.test(tok)) return <span key={`hbsp-${idx}`}> </span>;
+                    if (/^[ \t]+$/.test(tok))
+                      return <span key={`hbsp-${idx}`}> </span>;
                     return <Word key={`hbw-${idx}`} token={tok} type="b" />;
                   })}
                 </div>
@@ -306,7 +404,7 @@ export default function Human({
             </div>
           </div>
 
-          {/* PANEL 2: SERVIZI */}
+          {/* PANEL 2: SERVICES */}
           <div className="humPanel" data-hpanel="services">
             <div className="humServicesLayer" data-hservicespanel>
               <HumanServizi />

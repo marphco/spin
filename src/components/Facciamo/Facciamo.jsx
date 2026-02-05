@@ -59,6 +59,7 @@ export default function Facciamo({
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
+    const isTouch = window.matchMedia("(hover: none)").matches;
 
     const ctx = gsap.context(() => {
       ScrollTrigger.getById(`facciamo-${id}`)?.kill(true);
@@ -308,6 +309,100 @@ export default function Facciamo({
           r2Start + step2 * i,
         );
       });
+      // -------------------------
+      // ✅ FLOATING LOOP premium (come Siamo)
+      // -------------------------
+      if (!prefersReduced) {
+        gsap.to(imgWrap, {
+          y: "-=7",
+          duration: 1.8,
+          ease: "sine.inOut",
+          yoyo: true,
+          repeat: -1,
+        });
+      }
+
+      // -------------------------
+      // ✅ HOVER TILT (solo desktop con hover)
+      // -------------------------
+      if (!prefersReduced && !isTouch) {
+        const setRX = gsap.quickTo(imgWrap, "rotationX", {
+          duration: 0.45,
+          ease: "power3.out",
+        });
+        const setRY = gsap.quickTo(imgWrap, "rotationY", {
+          duration: 0.45,
+          ease: "power3.out",
+        });
+        const setSX = gsap.quickTo(imgWrap, "x", {
+          duration: 0.45,
+          ease: "power3.out",
+        });
+        const setSY = gsap.quickTo(imgWrap, "y", {
+          duration: 0.45,
+          ease: "power3.out",
+        });
+
+        const onMove = (e) => {
+          const r = imgWrap.getBoundingClientRect();
+          const px = (e.clientX - r.left) / r.width;
+          const py = (e.clientY - r.top) / r.height;
+
+          setRX((0.5 - py) * 8);
+          setRY((px - 0.5) * 10);
+          setSX((px - 0.5) * 10);
+          setSY((py - 0.5) * 6);
+        };
+
+        const onEnter = () => {
+          gsap.to(imgWrap, { scale: 1.02, duration: 0.35, ease: "power3.out" });
+        };
+
+        const onLeave = () => {
+          gsap.to(imgWrap, {
+            rotationX: 0,
+            rotationY: 0,
+            x: 0,
+            y: 0,
+            duration: 0.6,
+            ease: "power3.out",
+          });
+          gsap.to(imgWrap, { scale: 1, duration: 0.6, ease: "power3.out" });
+        };
+
+        imgWrap.addEventListener("mousemove", onMove);
+        imgWrap.addEventListener("mouseenter", onEnter);
+        imgWrap.addEventListener("mouseleave", onLeave);
+
+        // IMPORTANT: cleanup in return
+        return () => {
+          imgWrap.removeEventListener("mousemove", onMove);
+          imgWrap.removeEventListener("mouseenter", onEnter);
+          imgWrap.removeEventListener("mouseleave", onLeave);
+        };
+      }
+
+      // -------------------------
+      // ✅ TAP FEEL mobile (micro feedback)
+      // -------------------------
+      if (!prefersReduced && isTouch) {
+        const onDown = () =>
+          gsap.to(imgWrap, { scale: 0.99, duration: 0.18, ease: "power2.out" });
+        const onUp = () =>
+          gsap.to(imgWrap, { scale: 1, duration: 0.25, ease: "power2.out" });
+
+        imgWrap.addEventListener("pointerdown", onDown);
+        imgWrap.addEventListener("pointerup", onUp);
+        imgWrap.addEventListener("pointercancel", onUp);
+        imgWrap.addEventListener("pointerleave", onUp);
+
+        return () => {
+          imgWrap.removeEventListener("pointerdown", onDown);
+          imgWrap.removeEventListener("pointerup", onUp);
+          imgWrap.removeEventListener("pointercancel", onUp);
+          imgWrap.removeEventListener("pointerleave", onUp);
+        };
+      }
     }, root);
 
     return () => ctx.revert();

@@ -1,3 +1,4 @@
+/* Human.css */
 .humSection{
   position: relative;
   height: 100vh;
@@ -113,13 +114,15 @@
 .humCh{ display: inline-block; will-change: opacity, transform; }
 
 /* =========================
-   LOGO (NO BOX)
+   LOGO (SVG, NO BOX)
    ========================= */
 .humMedia{
   position: relative;
   will-change: transform;
   display: grid;
   place-items: center;
+  transform-style: preserve-3d;
+  cursor: default;
 }
 
 .humLogo{
@@ -127,15 +130,13 @@
   height: auto;
   display: block;
 
-  /* niente box/angoli/ombre */
   border: none;
   border-radius: 0;
   box-shadow: none;
   background: transparent;
 
-  /* se il png ha trasparenza e vuoi “premium” */
-  filter: saturate(1.02) contrast(1.02);
   opacity: 0.98;
+  transform: translateZ(0);
 }
 
 /* =========================

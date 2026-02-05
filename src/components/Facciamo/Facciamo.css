@@ -1,4 +1,4 @@
-.facSection{
+.facSection {
   position: relative;
   height: 100vh;
   width: 100%;
@@ -6,35 +6,43 @@
   background: transparent;
 }
 
-.facViewport{
+.facViewport {
   position: absolute;
   inset: 0;
   overflow: hidden;
 }
 
 /* stesso sfondo premium */
-.facViewport::before{
-  content:"";
-  position:absolute;
-  inset:-20%;
+.facViewport::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
   background:
-    radial-gradient(60% 40% at 50% 55%, rgba(0,159,183,.14), transparent 60%),
-    radial-gradient(40% 30% at 25% 30%, rgba(0,159,183,.08), transparent 55%);
+    radial-gradient(
+      60% 40% at 50% 55%,
+      rgba(0, 159, 183, 0.14),
+      transparent 60%
+    ),
+    radial-gradient(
+      40% 30% at 25% 30%,
+      rgba(0, 159, 183, 0.08),
+      transparent 55%
+    );
   filter: blur(16px);
-  opacity: .9;
-  pointer-events:none;
+  opacity: 0.9;
+  pointer-events: none;
   transform: translateZ(0);
 }
 
 /* track orizzontale */
-.facTrack{
+.facTrack {
   height: 100%;
   display: flex;
   width: 200vw;
   will-change: transform;
 }
 
-.facPanel{
+.facPanel {
   width: 100vw;
   height: 100vh;
   position: relative;
@@ -43,7 +51,7 @@
 
 /* layers sovrapposti */
 .facIntroLayer,
-.facServicesLayer{
+.facServicesLayer {
   position: absolute;
   inset: 0;
   z-index: 2;
@@ -52,7 +60,7 @@
 /* =========================
    INTRO LAYOUT (DESKTOP)
    ========================= */
-.facInner{
+.facInner {
   position: relative;
   z-index: 2;
   height: 100%;
@@ -65,23 +73,24 @@
   align-items: center;
 
   text-align: left;
+  perspective: 900px;
 }
 
-.facCopy{
+.facCopy {
   display: grid;
   gap: 14px;
   align-content: center;
 }
 
-.facKicker{
+.facKicker {
   font-size: 12px;
-  letter-spacing: .18em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
 /* ✅ (1) titolo desktop allineato a Siamo */
-.facTitle{
+.facTitle {
   margin: 0;
   font-size: clamp(24px, 3.2vw, 40px);
   letter-spacing: -0.01em;
@@ -92,7 +101,7 @@
   overflow-wrap: normal;
 }
 
-.facUnderline{
+.facUnderline {
   width: 84px;
   height: 4px;
   border-radius: 99px;
@@ -100,7 +109,7 @@
   margin: 2px 0 6px;
 }
 
-.facBody{
+.facBody {
   max-width: 76ch;
   font-size: 16px;
   line-height: 1.9;
@@ -112,11 +121,11 @@
 }
 
 /* token wrappers */
-.facWord{
+.facWord {
   display: inline-block;
   white-space: nowrap;
 }
-.facCh{
+.facCh {
   display: inline-block;
   will-change: opacity, transform;
 }
@@ -124,26 +133,28 @@
 /* =========================
    MEDIA (DESKTOP)
    ========================= */
-.facMedia{
+.facMedia {
   position: relative;
   will-change: transform;
+  transform-style: preserve-3d;
+  cursor: default;
 }
 
-.facPhotoFrame{
+.facPhotoFrame {
   position: relative;
   border-radius: 22px;
   overflow: hidden;
 
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.04);
-  box-shadow: 0 18px 46px rgba(0,0,0,0.55);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.55);
   transform: translateZ(0);
 
   /* ✅ desktop: quadrata/premium */
   aspect-ratio: 1 / 1;
 }
 
-.facPhoto{
+.facPhoto {
   width: 100%;
   height: 100%;
   display: block;
@@ -160,13 +171,13 @@
 /* =========================
    MOBILE
    ========================= */
-@media (max-width: 720px){
-  .facSection{
+@media (max-width: 720px) {
+  .facSection {
     height: 100svh;
     min-height: 100svh;
   }
 
-  .facInner{
+  .facInner {
     width: min(900px, calc(100% - 32px));
 
     /* spazio navbar bottom, come Siamo */
@@ -182,25 +193,28 @@
   }
 
   /* testo sopra, immagine sotto */
-  .facCopy{ order: 1; gap: 10px; }
-  .facMedia{
+  .facCopy {
+    order: 1;
+    gap: 10px;
+  }
+  .facMedia {
     order: 2;
     width: min(520px, 85vw);
     margin: 0 auto;
   }
 
-  .facTitle{
+  .facTitle {
     font-size: clamp(20px, 6.6vw, 28px);
     line-height: 1.12;
   }
 
-  .facUnderline{
+  .facUnderline {
     margin: 6px auto 8px;
     width: 78px;
     height: 4px;
   }
 
-  .facBody{
+  .facBody {
     font-size: clamp(13px, 3.7vw, 14.5px);
     line-height: 1.42;
     max-width: 46ch;
@@ -209,15 +223,15 @@
 
   /* ✅ (3) immagine: più alta e meno tagliata */
   /* (mobile: “forzata orizzontale” ma con più altezza utile) */
-  .facPhotoFrame{
+  .facPhotoFrame {
     width: 100%;
     aspect-ratio: 16 / 10;
-    max-height: 34svh;   /* ✅ più aria rispetto a prima */
+    max-height: 34svh; /* ✅ più aria rispetto a prima */
     border-radius: 22px;
     overflow: hidden;
   }
 
-  .facPhoto{
+  .facPhoto {
     width: 100%;
     height: 100%;
     object-fit: cover;

@@ -184,13 +184,16 @@ export default function Home() {
           />
 
           <Human
-            paragraphs={[
-              "Human è la nostra piattaforma esclusiva di web e social listening, sviluppata con Osservatorio Social.",
-              "Monitora performance, trend e topic, misurando sentiment e reputation per individuare insight utili e tempestivi.",
-              "Gli indicatori sono segmentati per area geografica, demografia e interessi. I nostri Data Analyst interpretano i risultati e li trasformano in decisioni di posizionamento.",
-              "Un servizio di analisi e monitoraggio su misura, costruito sulle tue priorità.",
-            ]}
-          />
+  id="human"
+  kicker="HUMAN"
+  title="Trasformare l’ascolto in direzione"
+  paragraphs={[
+    "Human è la piattaforma di web e social listening di Spin Factor, sviluppata con Osservatorio Social. Analizza conversazioni, trend e performance, misura sentiment e reputazione e restituisce insight chiari e utilizzabili.",
+    "I dati sono segmentati per area geografica, profili e interessi. I nostri Data Analyst li interpretano e li trasformano in scelte strategiche.",
+    "Human non si limita a misurare. Orienta le decisioni.",
+  ]}
+/>
+
 
           <Press id="press" items={PRESS_ITEMS} />
 

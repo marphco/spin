@@ -25,16 +25,16 @@ export default function Navbar() {
 
   const OFFSETS_DESKTOP = {
     siamo: 300,
-    facciamo: 950,
-    human: 760,
+    facciamo: 520,
+    human: 660,
     press: 50,
     contatti: 200,
   };
 
   const OFFSETS_MOBILE = {
-    siamo: 280,
-    facciamo: 1100,
-    human: 800,
+    siamo: 500,
+    facciamo: 900,
+    human: 900,
     press: 50,
     contatti: 50,
   };
