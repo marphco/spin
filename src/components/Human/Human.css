@@ -186,6 +186,7 @@
   }
 
   .humLogo{
-    width: min(240px, 40vw);
+    width: min(360px, 70vw);
+    margin-top: 3vh;
   }
 }
