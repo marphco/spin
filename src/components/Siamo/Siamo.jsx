@@ -74,6 +74,7 @@ export default function Siamo({
 
     const ctx = gsap.context(() => {
       ScrollTrigger.getById(`siamo-${id}`)?.kill(true);
+      ScrollTrigger.getById(`siamo-img-pre-${id}`)?.kill(true);
 
       const kickerEl = root.querySelector("[data-kicker]");
       const underlineEl = root.querySelector("[data-underline]");
@@ -112,8 +113,31 @@ export default function Siamo({
         },
       });
 
-      
-      // ✅ reveal immagine: subito dopo title/underline, prima del body
+      // pre-reveal: avvia l'entrata dell'immagine PRIMA del pin
+      gsap.timeline({
+        scrollTrigger: {
+          id: `siamo-img-pre-${id}`,
+          trigger: root,
+          start: "top 92%",
+          end: "top 76%",
+          scrub: true,
+          invalidateOnRefresh: true,
+        },
+      })
+        .to(
+          imgWrap,
+          {
+            autoAlpha: 0.45,
+            y: 8,
+            rotate: -0.2,
+            scale: 0.99,
+            ease: "none",
+          },
+          0,
+        )
+        .to(img, { scale: 1.02, ease: "none" }, 0);
+
+      // reveal principale: resta agganciato al pin (come comportamento originale)
       tl.to(
         imgWrap,
         {
@@ -127,8 +151,6 @@ export default function Siamo({
         0,
       );
       tl.to(img, { scale: 1, ease: "none", duration: 0.22 }, 0.01);
-
-      
 
       // testo già visibile: nessun reveal legato allo scroll
 
@@ -297,4 +319,3 @@ export default function Siamo({
     </section>
   );
 }
-
