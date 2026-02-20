@@ -84,7 +84,9 @@ export default function Facciamo({
       const servicesWrap = root.querySelector("[data-serviceswrap]");
       const servicesTrack = root.querySelector("[data-fservicestrack]");
 
-      const serviceItems = gsap.utils.toArray(root.querySelectorAll("[data-service]"));
+      const serviceItems = gsap.utils.toArray(
+        root.querySelectorAll("[data-service]"),
+      );
 
       // -------------------------
       // INIT STATES (intro)
@@ -130,17 +132,15 @@ export default function Facciamo({
       let textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
 
       // testo statico: accorciamo molto la fase intro per arrivare prima ai servizi
-      textPxFinal = Math.round(textPxFinal * (isMobile ? 0.5 : 0.4));
-      textPxFinal = Math.max(isMobile ? 320 : 420, textPxFinal);
+      textPxFinal = Math.round(textPxFinal * (isMobile ? 0.24 : 0.18));
+      textPxFinal = Math.max(isMobile ? 120 : 150, textPxFinal);
 
       // durate
       const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75));
-      // const svcHold1Px = Math.round(Math.max(360, window.innerHeight * 0.45));
       const svcSlidePx = Math.round(Math.max(520, window.innerWidth * 0.85));
-      
-      const servicesSettlePx = Math.round(Math.max(120, window.innerHeight * 0.16));
-
-      // const svcHold2Px = Math.round(Math.max(320, window.innerHeight * 0.4));
+      const servicesSettlePx = Math.round(
+        Math.max(120, window.innerHeight * 0.16),
+      );
 
       const totalPx = textPxFinal + horizPx + svcSlidePx + servicesSettlePx;
 
@@ -162,23 +162,24 @@ export default function Facciamo({
       // -------------------------
       // A) TEXT SEGMENTS
       // -------------------------
-      
+
       const wrap = Math.round(textPxFinal * 0.06);
       const titleSeg = Math.round(textPxFinal * 0.22);
 
-       const t_titleWrapStart = wrap;
+      const t_titleWrapStart = wrap;
 
       // pre-reveal: avvia l'immagine poco prima che inizi il pin
-      gsap.timeline({
-        scrollTrigger: {
-          id: `facciamo-img-pre-${id}`,
-          trigger: root,
-          start: "top 92%",
-          end: "top 76%",
-          scrub: true,
-          invalidateOnRefresh: true,
-        },
-      })
+      gsap
+        .timeline({
+          scrollTrigger: {
+            id: `facciamo-img-pre-${id}`,
+            trigger: root,
+            start: "top 92%",
+            end: "top 76%",
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        })
         .to(
           imgWrap,
           {
@@ -219,8 +220,6 @@ export default function Facciamo({
         tl.to(img, { scale: 1, duration: 1 }, t_titleWrapStart);
       }
 
-      
-
       // -------------------------
       // B) HORIZONTAL SLIDE intro -> services
       // -------------------------
@@ -238,8 +237,6 @@ export default function Facciamo({
         { x: () => -window.innerWidth, duration: svcSlidePx },
         sStart + 1,
       );
-
-  
 
       // -------------------------
       // ✅ FLOATING LOOP premium (come Siamo)

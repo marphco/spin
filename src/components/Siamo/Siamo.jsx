@@ -106,7 +106,7 @@ export default function Siamo({
           start: "top top",
           end: `+=${durationPx}`,
           scrub: true,
-          pin: true,
+          pin: false,
           pinSpacing: true,
           anticipatePin: 1,
           invalidateOnRefresh: true,
