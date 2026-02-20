@@ -114,3 +114,22 @@
     max-width: 46ch;
   }
 }
+
+@media (prefers-reduced-motion: no-preference){
+  .facSvcIconSvg{
+    animation: facIconFloat 2.8s ease-in-out infinite;
+    transform-origin: 50% 50%;
+  }
+
+  .facSvcItem:nth-child(2n) .facSvcIconSvg{ animation-delay: .2s; }
+  .facSvcItem:nth-child(3n) .facSvcIconSvg{ animation-delay: .4s; }
+
+  .facSvcItem:hover .facSvcIconSvg{
+    animation-duration: 1.6s;
+  }
+}
+
+@keyframes facIconFloat{
+  0%,100%{ transform: translateY(0) scale(1); opacity: .95; }
+  50%{ transform: translateY(-3px) scale(1.04); opacity: 1; }
+}

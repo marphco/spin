@@ -94,11 +94,11 @@ export default function Facciamo({
       // INIT STATES (intro)
       // -------------------------
       gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], {
-        autoAlpha: 0,
-        y: 10,
+        autoAlpha: 1,
+        y: 0,
       });
-      gsap.set(titleTargets, { autoAlpha: 0, y: 10 });
-      gsap.set(bodyTargets, { autoAlpha: 0, y: 6 });
+      gsap.set(titleTargets, { autoAlpha: 1, y: 0 });
+      gsap.set(bodyTargets, { autoAlpha: 1, y: 0 });
 
       // ✅ immagine: stessa grammatica di Siamo
       gsap.set(imgWrap, { autoAlpha: 0, y: 14, rotate: -0.4, scale: 0.98 });
@@ -110,9 +110,9 @@ export default function Facciamo({
       // INIT STATES (services)
       // -------------------------
       gsap.set(servicesPanel, { autoAlpha: 1 });
-      gsap.set(servicesWrap, { autoAlpha: 0 });
+      gsap.set(servicesWrap, { autoAlpha: 1 });
       gsap.set(servicesTrack, { x: 0 });
-      gsap.set([...svcPage1, ...svcPage2], { autoAlpha: 0, y: 18 });
+      gsap.set([...svcPage1, ...svcPage2], { autoAlpha: 1, y: 0 });
 
       // -------------------------
       // DURATIONS (same logic)
@@ -133,18 +133,18 @@ export default function Facciamo({
 
       let textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
 
-      // ✅ chiave: “accorcia” SOLO su mobile la distanza verticale prima dello slide
-      // (mantiene la coreografia, ma riduce lo scroll morto)
-      if (isMobile) textPxFinal = Math.round(textPxFinal * 0.72);
+      // testo statico: accorciamo molto la fase intro per arrivare prima ai servizi
+      textPxFinal = Math.round(textPxFinal * (isMobile ? 0.5 : 0.4));
+      textPxFinal = Math.max(isMobile ? 320 : 420, textPxFinal);
 
-      // durate (restano uguali come impostazione tua)
+      // durate
       const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75));
-      const svcReveal1Px = Math.round(Math.max(680, window.innerHeight * 0.95));
+      const svcHold1Px = Math.round(Math.max(360, window.innerHeight * 0.45));
       const svcSlidePx = Math.round(Math.max(520, window.innerWidth * 0.85));
-      const svcReveal2Px = Math.round(Math.max(620, window.innerHeight * 0.9));
+      const svcHold2Px = Math.round(Math.max(320, window.innerHeight * 0.4));
 
       const totalPx =
-        textPxFinal + horizPx + svcReveal1Px + svcSlidePx + svcReveal2Px;
+        textPxFinal + horizPx + svcHold1Px + svcSlidePx + svcHold2Px;
 
       const tl = gsap.timeline({ defaults: { ease: "none" } });
 
@@ -164,54 +164,18 @@ export default function Facciamo({
       // -------------------------
       // A) TEXT SEGMENTS
       // -------------------------
-      const pad = 12;
-      const frame = Math.round(textPxFinal * 0.12);
+      
       const wrap = Math.round(textPxFinal * 0.06);
       const titleSeg = Math.round(textPxFinal * 0.22);
 
-      const t_frameStart = pad;
-      const t_frameEnd = t_frameStart + frame;
+      const t_titleWrapStart = wrap;
+      // const t_titleStart = t_titleWrapStart + wrap;
 
-      const t_titleWrapStart = t_frameEnd;
-      const t_titleWrapEnd = t_titleWrapStart + wrap;
-
-      const t_titleStart = t_titleWrapEnd;
-      const t_titleEnd = t_titleStart + titleSeg;
-
-      const t_bodyWrapStart = t_titleEnd;
-      const t_bodyWrapEnd = t_bodyWrapStart + wrap;
-
-      const bodySeg = Math.max(1, textPxFinal - t_bodyWrapEnd);
-      const t_bodyStart = t_bodyWrapEnd;
-
-      const staggerEachFit = (segmentDur, n) => {
-        if (n <= 1) return 0;
-        const perCharDur = 1;
-        return Math.max(0, (segmentDur - perCharDur) / (n - 1));
-      };
-
-      // kicker + underline
-      tl.to(
-        [kickerEl, underlineEl],
-        { autoAlpha: 1, y: 0, duration: frame },
-        t_frameStart,
-      );
-
-      // title wrapper
-      tl.to(
-        titleWrap,
-        { autoAlpha: 1, y: 0, duration: wrap },
-        t_titleWrapStart,
-      );
-
-      // ✅ IMMAGINE: entra PRIMA e in sync (come Siamo)
+      // Testo statico: resta solo l'animazione dell'immagine
       // - entra tra titleWrap e titleTargets, non dopo
       if (!prefersReduced) {
         const imgDur = Math.max(120, Math.round(titleSeg * 0.55));
-        const imgAt = Math.max(
-          t_titleWrapStart + Math.round(wrap * 0.55),
-          t_titleStart - Math.round(titleSeg * 0.25),
-        );
+        const imgAt = 0;
 
         tl.to(
           imgWrap,
@@ -234,42 +198,7 @@ export default function Facciamo({
         tl.to(img, { scale: 1, duration: 1 }, t_titleWrapStart);
       }
 
-      // title chars / block
-      tl.to(
-        titleTargets,
-        isMobile
-          ? { autoAlpha: 1, y: 0, duration: titleSeg }
-          : {
-              autoAlpha: 1,
-              y: 0,
-              duration: 1,
-              stagger: {
-                each: staggerEachFit(titleSeg, titleEls.length),
-                from: "start",
-              },
-            },
-        t_titleStart,
-      );
-
-      // body wrapper
-      tl.to(bodyWrap, { autoAlpha: 1, y: 0, duration: wrap }, t_bodyWrapStart);
-
-      // body chars / block
-      tl.to(
-        bodyTargets,
-        isMobile
-          ? { autoAlpha: 1, y: 0, duration: bodySeg }
-          : {
-              autoAlpha: 1,
-              y: 0,
-              duration: 1,
-              stagger: {
-                each: staggerEachFit(bodySeg, bodyEls.length),
-                from: "start",
-              },
-            },
-        t_bodyStart,
-      );
+      
 
       // -------------------------
       // B) HORIZONTAL SLIDE intro -> services
@@ -282,33 +211,17 @@ export default function Facciamo({
       // -------------------------
       const sStart = hStart + horizPx + 1;
 
-      tl.to(servicesWrap, { autoAlpha: 1, duration: 120 }, sStart);
+      tl.to(servicesWrap, { autoAlpha: 1, duration: 1 }, sStart);
 
-      const step1 = Math.round(svcReveal1Px / (svcPage1.length + 1));
-      svcPage1.forEach((el, i) => {
-        tl.to(
-          el,
-          { autoAlpha: 1, y: 0, duration: Math.round(step1 * 0.7) },
-          sStart + 80 + step1 * i,
-        );
-      });
-
-      const slideStart = sStart + svcReveal1Px + 40;
+      const slideStart = sStart + svcHold1Px;
       tl.to(
         servicesTrack,
         { x: () => -window.innerWidth, duration: svcSlidePx },
         slideStart,
       );
 
-      const r2Start = slideStart + svcSlidePx + 40;
-      const step2 = Math.round(svcReveal2Px / (svcPage2.length + 1));
-      svcPage2.forEach((el, i) => {
-        tl.to(
-          el,
-          { autoAlpha: 1, y: 0, duration: Math.round(step2 * 0.75) },
-          r2Start + step2 * i,
-        );
-      });
+      const r2Start = slideStart + svcSlidePx;
+      tl.to({}, { duration: svcHold2Px }, r2Start);
       // -------------------------
       // ✅ FLOATING LOOP premium (come Siamo)
       // -------------------------

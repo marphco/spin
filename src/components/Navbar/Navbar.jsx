@@ -24,8 +24,8 @@ export default function Navbar() {
   const barRef = useRef(null);
 
   const OFFSETS_DESKTOP = {
-    siamo: 300,
-    facciamo: 520,
+    siamo: 850,
+    facciamo: 350,
     human: 660,
     press: 50,
     contatti: 200,

@@ -86,13 +86,13 @@ export default function Siamo({
       const titleTargets = reduceChars ? [titleWrap] : titleEls;
       const bodyTargets = reduceChars ? [bodyWrap] : bodyEls;
 
-      // stato iniziale testo
+      // testo statico: tutto visibile subito
       gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], {
-        autoAlpha: 0,
-        y: 10,
+        autoAlpha: 1,
+        y: 0,
       });
-      gsap.set(titleTargets, { autoAlpha: 0, y: 10 });
-      gsap.set(bodyTargets, { autoAlpha: 0, y: 6 });
+      gsap.set(titleTargets, { autoAlpha: 1, y: 0 });
+      gsap.set(bodyTargets, { autoAlpha: 1, y: 0 });
 
       // ✅ stato iniziale immagine (reveal in sync)
       gsap.set(imgWrap, { autoAlpha: 0, y: 14, rotate: -0.4, scale: 0.98 });
@@ -112,31 +112,7 @@ export default function Siamo({
         },
       });
 
-      tl.to(
-        [kickerEl, underlineEl],
-        { autoAlpha: 1, y: 0, ease: "none", duration: 0.12 },
-        0.02,
-      );
-      tl.to(
-        titleWrap,
-        { autoAlpha: 1, y: 0, ease: "none", duration: 0.06 },
-        0.06,
-      );
-
-      tl.to(
-        titleTargets,
-        reduceChars
-          ? { autoAlpha: 1, y: 0, ease: "none", duration: 0.22 }
-          : {
-              autoAlpha: 1,
-              y: 0,
-              ease: "none",
-              duration: 0.22,
-              stagger: { amount: 0.22, from: "start" },
-            },
-        0.08,
-      );
-
+      
       // ✅ reveal immagine: subito dopo title/underline, prima del body
       tl.to(
         imgWrap,
@@ -148,29 +124,13 @@ export default function Siamo({
           ease: "none",
           duration: 0.18,
         },
-        0.16,
+        0,
       );
-      tl.to(img, { scale: 1, ease: "none", duration: 0.22 }, 0.18);
+      tl.to(img, { scale: 1, ease: "none", duration: 0.22 }, 0.01);
 
-      tl.to(
-        bodyWrap,
-        { autoAlpha: 1, y: 0, ease: "none", duration: 0.06 },
-        0.22,
-      );
+      
 
-      tl.to(
-        bodyTargets,
-        reduceChars
-          ? { autoAlpha: 1, y: 0, ease: "none", duration: 0.45 }
-          : {
-              autoAlpha: 1,
-              y: 0,
-              ease: "none",
-              duration: 0.78,
-              stagger: { amount: 0.85, from: "start" },
-            },
-        0.24,
-      );
+      // testo già visibile: nessun reveal legato allo scroll
 
       // -------------------------
       // ✅ FLOATING LOOP premium (anche mobile)

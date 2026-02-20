@@ -93,11 +93,11 @@ export default function Human({
       // INITIAL STATE
       // -------------------------
       gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], {
-        autoAlpha: 0,
-        y: 10,
+        autoAlpha: 1,
+        y: 0,
       });
-      gsap.set(titleTargets, { autoAlpha: 0, y: 10 });
-      gsap.set(bodyTargets, { autoAlpha: 0, y: 6 });
+      gsap.set(titleTargets, { autoAlpha: 1, y: 0 });
+      gsap.set(bodyTargets, { autoAlpha: 1, y: 0 });
 
       // logo (no rotate: è un logo)
       gsap.set(imgWrap, { autoAlpha: 0, y: 14, scale: 0.985 });
@@ -106,8 +106,8 @@ export default function Human({
       gsap.set(track, { x: 0 });
 
       gsap.set(servicesPanel, { autoAlpha: 1 });
-      gsap.set(servicesWrap, { autoAlpha: 0 });
-      gsap.set(serviceItems, { autoAlpha: 0, y: 18 });
+      gsap.set(servicesWrap, { autoAlpha: 1 });
+      gsap.set(serviceItems, { autoAlpha: 1, y: 0 });
 
       // -------------------------
       // DURATIONS (coerenti con Facciamo fix)
@@ -126,11 +126,12 @@ export default function Human({
 
       let textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
 
-      // accorcia il “tratto morto” solo mobile (come Facciamo)
-      if (isMobile) textPxFinal = Math.round(textPxFinal * 0.72);
+      // testo statico: accorciamo molto la fase intro per arrivare prima ai servizi
+      textPxFinal = Math.round(textPxFinal * (isMobile ? 0.5 : 0.4));
+      textPxFinal = Math.max(isMobile ? 320 : 420, textPxFinal);
 
       const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75));
-      const servicesPx = Math.round(Math.max(720, window.innerHeight * 1.05));
+      const servicesPx = Math.round(Math.max(760, window.innerHeight * 0.95));
       const totalPx = textPxFinal + horizPx + servicesPx;
 
       const tl = gsap.timeline({ defaults: { ease: "none" } });
@@ -151,51 +152,18 @@ export default function Human({
       // -------------------------
       // A) TEXT SEGMENTS
       // -------------------------
-      const pad = 12;
-      const frame = Math.round(textPxFinal * 0.12);
+      
       const wrap = Math.round(textPxFinal * 0.06);
       const titleSeg = Math.round(textPxFinal * 0.22);
 
-      const t_frameStart = pad;
-      const t_frameEnd = t_frameStart + frame;
 
-      const t_titleWrapStart = t_frameEnd;
-      const t_titleWrapEnd = t_titleWrapStart + wrap;
-
-      const t_titleStart = t_titleWrapEnd;
-      const t_titleEnd = t_titleStart + titleSeg;
-
-      const t_bodyWrapStart = t_titleEnd;
-      const t_bodyWrapEnd = t_bodyWrapStart + wrap;
-
-      const bodySeg = Math.max(1, textPxFinal - t_bodyWrapEnd);
-      const t_bodyStart = t_bodyWrapEnd;
-
-      const staggerEachFit = (segmentDur, n) => {
-        if (n <= 1) return 0;
-        const perCharDur = 1;
-        return Math.max(0, (segmentDur - perCharDur) / (n - 1));
-      };
-
-      tl.to(
-        [kickerEl, underlineEl],
-        { autoAlpha: 1, y: 0, duration: frame },
-        t_frameStart,
-      );
-
-      tl.to(
-        titleWrap,
-        { autoAlpha: 1, y: 0, duration: wrap },
-        t_titleWrapStart,
-      );
+      const t_titleWrapStart = wrap;
+      // const t_titleStart = t_titleWrapStart + wrap;
 
       // logo entra PRIMA e in sync
       if (!prefersReduced) {
         const imgDur = Math.max(120, Math.round(titleSeg * 0.55));
-        const imgAt = Math.max(
-          t_titleWrapStart + Math.round(wrap * 0.55),
-          t_titleStart - Math.round(titleSeg * 0.25),
-        );
+        const imgAt = 0;
 
         tl.to(imgWrap, { autoAlpha: 1, y: 0, scale: 1, duration: imgDur }, imgAt);
         tl.to(img, { scale: 1, duration: Math.round(imgDur * 0.9) }, imgAt + 10);
@@ -203,40 +171,6 @@ export default function Human({
         tl.to(imgWrap, { autoAlpha: 1, y: 0, scale: 1, duration: 1 }, t_titleWrapStart);
         tl.to(img, { scale: 1, duration: 1 }, t_titleWrapStart);
       }
-
-      tl.to(
-        titleTargets,
-        isMobile
-          ? { autoAlpha: 1, y: 0, duration: titleSeg }
-          : {
-              autoAlpha: 1,
-              y: 0,
-              duration: 1,
-              stagger: {
-                each: staggerEachFit(titleSeg, titleEls.length),
-                from: "start",
-              },
-            },
-        t_titleStart,
-      );
-
-      tl.to(bodyWrap, { autoAlpha: 1, y: 0, duration: wrap }, t_bodyWrapStart);
-
-      tl.to(
-        bodyTargets,
-        isMobile
-          ? { autoAlpha: 1, y: 0, duration: bodySeg }
-          : {
-              autoAlpha: 1,
-              y: 0,
-              duration: 1,
-              stagger: {
-                each: staggerEachFit(bodySeg, bodyEls.length),
-                from: "start",
-              },
-            },
-        t_bodyStart,
-      );
 
       // -------------------------
       // B) HORIZONTAL intro -> services
@@ -249,16 +183,7 @@ export default function Human({
       // -------------------------
       const sStart = hStart + horizPx + 1;
 
-      tl.to(servicesWrap, { autoAlpha: 1, duration: 120 }, sStart);
-
-      const step = Math.round(servicesPx / (serviceItems.length + 1));
-      serviceItems.forEach((el, i) => {
-        tl.to(
-          el,
-          { autoAlpha: 1, y: 0, duration: Math.round(step * 0.7) },
-          sStart + 80 + step * i,
-        );
-      });
+      tl.to(servicesWrap, { autoAlpha: 1, duration: 1 }, sStart);
 
       // -------------------------
       // FLOATING + HOVER/TAP (come Siamo)
