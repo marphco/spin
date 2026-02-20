@@ -63,6 +63,7 @@ export default function Facciamo({
 
     const ctx = gsap.context(() => {
       ScrollTrigger.getById(`facciamo-${id}`)?.kill(true);
+      ScrollTrigger.getById(`facciamo-img-pre-${id}`)?.kill(true);
 
       const track = root.querySelector("[data-ftrack]");
 
@@ -83,12 +84,7 @@ export default function Facciamo({
       const servicesWrap = root.querySelector("[data-serviceswrap]");
       const servicesTrack = root.querySelector("[data-fservicestrack]");
 
-      const svcPage1 = gsap.utils.toArray(
-        root.querySelectorAll('[data-fsvcpage="1"] [data-service]'),
-      );
-      const svcPage2 = gsap.utils.toArray(
-        root.querySelectorAll('[data-fsvcpage="2"] [data-service]'),
-      );
+      const serviceItems = gsap.utils.toArray(root.querySelectorAll("[data-service]"));
 
       // -------------------------
       // INIT STATES (intro)
@@ -112,7 +108,7 @@ export default function Facciamo({
       gsap.set(servicesPanel, { autoAlpha: 1 });
       gsap.set(servicesWrap, { autoAlpha: 1 });
       gsap.set(servicesTrack, { x: 0 });
-      gsap.set([...svcPage1, ...svcPage2], { autoAlpha: 1, y: 0 });
+      gsap.set(serviceItems, { autoAlpha: 1, y: 0 });
 
       // -------------------------
       // DURATIONS (same logic)
@@ -139,12 +135,14 @@ export default function Facciamo({
 
       // durate
       const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75));
-      const svcHold1Px = Math.round(Math.max(360, window.innerHeight * 0.45));
+      // const svcHold1Px = Math.round(Math.max(360, window.innerHeight * 0.45));
       const svcSlidePx = Math.round(Math.max(520, window.innerWidth * 0.85));
-      const svcHold2Px = Math.round(Math.max(320, window.innerHeight * 0.4));
+      
+      const servicesSettlePx = Math.round(Math.max(120, window.innerHeight * 0.16));
 
-      const totalPx =
-        textPxFinal + horizPx + svcHold1Px + svcSlidePx + svcHold2Px;
+      // const svcHold2Px = Math.round(Math.max(320, window.innerHeight * 0.4));
+
+      const totalPx = textPxFinal + horizPx + svcSlidePx + servicesSettlePx;
 
       const tl = gsap.timeline({ defaults: { ease: "none" } });
 
@@ -168,8 +166,31 @@ export default function Facciamo({
       const wrap = Math.round(textPxFinal * 0.06);
       const titleSeg = Math.round(textPxFinal * 0.22);
 
-      const t_titleWrapStart = wrap;
-      // const t_titleStart = t_titleWrapStart + wrap;
+       const t_titleWrapStart = wrap;
+
+      // pre-reveal: avvia l'immagine poco prima che inizi il pin
+      gsap.timeline({
+        scrollTrigger: {
+          id: `facciamo-img-pre-${id}`,
+          trigger: root,
+          start: "top 92%",
+          end: "top 76%",
+          scrub: true,
+          invalidateOnRefresh: true,
+        },
+      })
+        .to(
+          imgWrap,
+          {
+            autoAlpha: 0.45,
+            y: 8,
+            rotate: -0.2,
+            scale: 0.99,
+            ease: "none",
+          },
+          0,
+        )
+        .to(img, { scale: 1.02, ease: "none" }, 0);
 
       // Testo statico: resta solo l'animazione dell'immagine
       // - entra tra titleWrap e titleTargets, non dopo
@@ -209,19 +230,17 @@ export default function Facciamo({
       // -------------------------
       // C) SERVICES reveal + slide + reveal
       // -------------------------
-      const sStart = hStart + horizPx + 1;
-
+      const sStart = hStart + horizPx;
       tl.to(servicesWrap, { autoAlpha: 1, duration: 1 }, sStart);
 
-      const slideStart = sStart + svcHold1Px;
       tl.to(
         servicesTrack,
         { x: () => -window.innerWidth, duration: svcSlidePx },
-        slideStart,
+        sStart + 1,
       );
 
-      const r2Start = slideStart + svcSlidePx;
-      tl.to({}, { duration: svcHold2Px }, r2Start);
+  
+
       // -------------------------
       // ✅ FLOATING LOOP premium (come Siamo)
       // -------------------------
