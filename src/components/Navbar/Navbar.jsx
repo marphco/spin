@@ -15,8 +15,18 @@ const LINKS = [
     id: "talks",
     label: "Talks",
     children: [
-      { id: "spin-talks", label: "Spin Talks", href: "https://spinfactor.it/spin-talks", external: true },
-      { id: "capri-talks", label: "Capri Talks", href: "https://spinfactor.it/capri-talks", external: true },
+      {
+        id: "spin-talks",
+        label: "Spin Talks",
+        href: "https://spinfactor.it/spin-talks",
+        external: true,
+      },
+      {
+        id: "capri-talks",
+        label: "Capri Talks",
+        href: "https://spinfactor.it/capri-talks",
+        external: true,
+      },
     ],
   },
   { id: "human", label: "Human Data" },
@@ -58,30 +68,28 @@ export default function Navbar() {
   const navLock = useRef(false);
   const elsRef = useRef([]);
   const barRef = useRef(null);
+  const darkSkinRef = useRef(null);
 
   const OFFSETS_DESKTOP = {
-    siamo: 0,
-    facciamo: 0,
-    talks: 0,
-    human: 0,
-    press: 0,
-    contatti: 0,
+    talks: 560,
+    press: 50,
+    contatti: 200,
     "spin-talks": 0,
     "capri-talks": 0,
   };
 
   const OFFSETS_MOBILE = {
-    siamo: 0,
-    facciamo: 0,
-    talks: 0,
-    human: 0,
-    press: 0,
-    contatti: 0,
+    talks: 900,
+    press: 50,
+    contatti: 50,
     "spin-talks": 0,
     "capri-talks": 0,
   };
 
+  const PINNED_IDS = new Set(["siamo", "facciamo", "human"]);
+
   const getOffset = (id) => {
+    if (PINNED_IDS.has(id)) return 0;
     const isMobile = window.matchMedia("(max-width: 720px)").matches;
     return (isMobile ? OFFSETS_MOBILE : OFFSETS_DESKTOP)[id] ?? 0;
   };
@@ -114,8 +122,10 @@ export default function Navbar() {
       const el = barRef.current;
       if (!el) return;
 
+      const darkSkin = darkSkinRef.current || toDarkSkin;
+
       gsap.to(el, {
-        ...(mode === "light" ? toLightSkin : toDarkSkin),
+        ...(mode === "light" ? toLightSkin : darkSkin),
         duration: 0.45,
         ease: "power2.out",
         overwrite: "auto",
@@ -126,6 +136,18 @@ export default function Navbar() {
     },
     [toDarkSkin, toLightSkin],
   );
+
+  useEffect(() => {
+    const el = barRef.current;
+    if (!el) return;
+    const cs = getComputedStyle(el);
+    darkSkinRef.current = {
+      backgroundColor: cs.backgroundColor,
+      borderColor: cs.borderColor,
+      boxShadow: cs.boxShadow,
+      backdropFilter: cs.backdropFilter,
+    };
+  }, []);
 
   useEffect(() => {
     ids.forEach((id) => ScrollTrigger.getById(`nav-${id}`)?.kill());
@@ -147,11 +169,30 @@ export default function Navbar() {
     const setActiveSmart = () => {
       if (navLock.current) return;
 
-      const center = window.innerHeight * 0.5;
+      const y = window.scrollY;
       const stSiamo = ScrollTrigger.getById("siamo-siamo");
-      if (stSiamo && window.scrollY < stSiamo.start + 1) {
+      if (stSiamo && y < stSiamo.start - 2) {
         setActive(null);
         return;
+      }
+
+      for (const id of ids) {
+        if (id === "talks") continue;
+        const st = ScrollTrigger.getById(getPinnedTriggerId(id));
+        if (!st) continue;
+        if (y >= st.start && y < st.end) {
+          setActive(id);
+          return;
+        }
+      }
+
+      const center = window.innerHeight * 0.5;
+      for (const { id, el } of elsRef.current) {
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= center && rect.bottom >= center) {
+          setActive(id);
+          return;
+        }
       }
 
       let best = null;
@@ -227,15 +268,6 @@ export default function Navbar() {
         ScrollTrigger.update();
         setActive(id === "top" ? null : id);
         navLock.current = false;
-        ScrollTrigger.refresh(true);
-
-        if (id === "human") {
-          requestAnimationFrame(() => {
-            ScrollTrigger.getById("bg-range-human")?.refresh();
-            ScrollTrigger.update();
-            requestAnimationFrame(() => ScrollTrigger.update());
-          });
-        }
       });
     });
   };
@@ -247,7 +279,9 @@ export default function Navbar() {
     gsap.killTweensOf(window);
 
     requestAnimationFrame(() => {
+      const maxY = ScrollTrigger.maxScroll(window);
       const offset = getOffset(id);
+
       if (id === "top") {
         gsap.to(window, {
           scrollTo: 0,
@@ -262,8 +296,9 @@ export default function Navbar() {
 
       const st = ScrollTrigger.getById(getPinnedTriggerId(id));
       if (st) {
+        const target = Math.max(0, Math.min(maxY, st.start));
         gsap.to(window, {
-          scrollTo: st.start + offset,
+          scrollTo: target,
           duration: 0.95,
           ease: "power2.out",
           overwrite: "auto",
@@ -280,8 +315,13 @@ export default function Navbar() {
         return;
       }
 
+      const target = Math.max(
+        0,
+        Math.min(maxY, anchor.getBoundingClientRect().top + window.scrollY + offset),
+      );
+
       gsap.to(window, {
-        scrollTo: anchor.getBoundingClientRect().top + window.scrollY + offset,
+        scrollTo: target,
         duration: 0.95,
         ease: "power2.out",
         overwrite: "auto",
@@ -337,11 +377,7 @@ export default function Navbar() {
                       className="navSubLink"
                       target={child.external ? "_blank" : undefined}
                       rel={child.external ? "noreferrer" : undefined}
-                      onClick={
-                        child.external
-                          ? undefined
-                          : (e) => onNav(e, child.id)
-                      }
+                      onClick={child.external ? undefined : (e) => onNav(e, child.id)}
                     >
                       {child.label}
                     </a>
