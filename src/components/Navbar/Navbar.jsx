@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FaInstagram, FaLinkedinIn, FaTiktok, FaXTwitter } from "react-icons/fa6";
+import { HiOutlineXMark } from "react-icons/hi2";
 import "./Navbar.css";
 import logo from "../../assets/logo.svg";
 
@@ -63,6 +64,8 @@ const SOCIAL_LINKS = [
 
 export default function Navbar() {
   const [active, setActive] = useState(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isLightSkin, setIsLightSkin] = useState(false);
   const ids = useMemo(() => LINKS.map((l) => l.id), []);
 
   const navLock = useRef(false);
@@ -131,7 +134,9 @@ export default function Navbar() {
         overwrite: "auto",
       });
 
-      if (mode === "light") el.classList.add("isOnLight");
+      const isLight = mode === "light";
+      setIsLightSkin(isLight);
+      if (isLight) el.classList.add("isOnLight");
       else el.classList.remove("isOnLight");
     },
     [toDarkSkin, toLightSkin],
@@ -148,6 +153,11 @@ export default function Navbar() {
       backdropFilter: cs.backdropFilter,
     };
   }, []);
+
+  useEffect(() => {
+    document.body.classList.toggle("mobileMenuOpen", mobileOpen);
+    return () => document.body.classList.remove("mobileMenuOpen");
+  }, [mobileOpen]);
 
   useEffect(() => {
     ids.forEach((id) => ScrollTrigger.getById(`nav-${id}`)?.kill());
@@ -285,6 +295,7 @@ export default function Navbar() {
     e.preventDefault();
 
     navLock.current = true;
+    setMobileOpen(false);
     gsap.killTweensOf(window);
 
     requestAnimationFrame(() => {
@@ -340,68 +351,155 @@ export default function Navbar() {
     });
   };
 
+  const closeMobileMenu = () => setMobileOpen(false);
+
+  const onOverlayClick = (e) => {
+    if (e.target === e.currentTarget) closeMobileMenu();
+  };
+
   return (
-    <div className="navShell" role="navigation" aria-label="Sezioni">
-      <div ref={barRef} className="navBar">
-        <a className="navBrand" href="#top" onClick={(e) => onNav(e, "top")}>
-          <img className="navLogo" src={logo} alt="Spin Factor" />
-        </a>
+    <>
+      <div className="navShell" role="navigation" aria-label="Sezioni">
+        <div ref={barRef} className="navBar">
+          <a className="navBrand" href="#top" onClick={(e) => onNav(e, "top")}>
+            <img className="navLogo" src={logo} alt="Spin Factor" />
+          </a>
 
-        <div className="navLinks" aria-label="Menu">
-          {LINKS.map((l) => {
-            if (!l.children) {
+          <div className="navLinks" aria-label="Menu desktop">
+            {LINKS.map((l) => {
+              if (!l.children) {
+                return (
+                  <a
+                    key={l.id}
+                    href={`#${l.id}`}
+                    onClick={(e) => onNav(e, l.id)}
+                    className={`navLink ${active === l.id ? "isActive" : ""}`}
+                    aria-current={active === l.id ? "page" : undefined}
+                  >
+                    {l.label}
+                  </a>
+                );
+              }
+
               return (
-                <a
-                  key={l.id}
-                  href={`#${l.id}`}
-                  onClick={(e) => onNav(e, l.id)}
-                  className={`navLink ${active === l.id ? "isActive" : ""}`}
-                  aria-current={active === l.id ? "page" : undefined}
-                >
-                  {l.label}
-                </a>
-              );
-            }
+                <div key={l.id} className="navItem navItem--hasMenu">
+                  <a
+                    href={`#${l.id}`}
+                    onClick={(e) => onNav(e, l.id)}
+                    className={`navLink navTrigger ${active === l.id ? "isActive" : ""}`}
+                    aria-current={active === l.id ? "page" : undefined}
+                  >
+                    {l.label}
+                    <span className="navChevron" aria-hidden="true">
+                      ▾
+                    </span>
+                  </a>
 
-            return (
-              <div key={l.id} className="navItem navItem--hasMenu">
-                <a
-                  href={`#${l.id}`}
-                  onClick={(e) => onNav(e, l.id)}
-                  className={`navLink navTrigger ${active === l.id ? "isActive" : ""}`}
-                  aria-current={active === l.id ? "page" : undefined}
-                >
-                  {l.label}
-                  <span className="navChevron" aria-hidden="true">
-                    ▾
-                  </span>
-                </a>
-
-                <div className="navSubmenu" role="menu" aria-label="Talks submenu">
-                  {l.children.map((child) => (
-                    <a
-                      key={child.id}
-                      href={child.href}
-                      role="menuitem"
-                      className="navSubLink"
-                      target={child.external ? "_blank" : undefined}
-                      rel={child.external ? "noreferrer" : undefined}
-                      onClick={child.external ? undefined : (e) => onNav(e, child.id)}
-                    >
-                      {child.label}
-                    </a>
-                  ))}
+                  <div className="navSubmenu" role="menu" aria-label="Talks submenu">
+                    {l.children.map((child) => (
+                      <a
+                        key={child.id}
+                        href={child.href}
+                        role="menuitem"
+                        className="navSubLink"
+                        target={child.external ? "_blank" : undefined}
+                        rel={child.external ? "noreferrer" : undefined}
+                        onClick={child.external ? undefined : (e) => onNav(e, child.id)}
+                      >
+                        {child.label}
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
 
-          <div className="navSocialDock" aria-label="Social links">
+            <div className="navSocialDock" aria-label="Social links">
+              {SOCIAL_LINKS.map(({ id, href, icon, label }) => (
+                <a
+                  key={id}
+                  href={href}
+                  className="navSocialIcon"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={label}
+                  title={label}
+                >
+                  {React.createElement(icon, { "aria-hidden": "true" })}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="navMobileToggle"
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-nav-overlay"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Apri menu"
+          >
+            <img className="navMobileToggleLogo" src={logo} alt="" aria-hidden="true" />
+            <span className="navHamburger" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div
+        id="mobile-nav-overlay"
+        className={`mobileNavOverlay ${mobileOpen ? "isOpen" : ""} ${
+          isLightSkin ? "isOnLight" : ""
+        }`}
+        aria-hidden={!mobileOpen}
+        onClick={onOverlayClick}
+      >
+        <div className="mobileNavPanel">
+          <nav className="mobileNavList" aria-label="Menu mobile">
+            {LINKS.map((l) => {
+              const isActive = active === l.id;
+              const isTalks = l.id === "talks";
+
+              return (
+                <React.Fragment key={l.id}>
+                  <a
+                    href={`#${l.id}`}
+                    onClick={(e) => onNav(e, l.id)}
+                    className={`mobileNavLink ${isActive ? "isActive" : ""}`}
+                  >
+                    {l.label}
+                  </a>
+
+                  {isTalks && (
+                    <div className="mobileTalksRow" aria-label="Talks links">
+                      {l.children?.map((talk) => (
+                        <a
+                          key={talk.id}
+                          href={talk.href}
+                          target={talk.external ? "_blank" : undefined}
+                          rel={talk.external ? "noreferrer" : undefined}
+                          className="mobileTalksLink"
+                          onClick={closeMobileMenu}
+                        >
+                          {talk.label}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </nav>
+
+          <div className="mobileNavSocialRow" aria-label="Social links">
             {SOCIAL_LINKS.map(({ id, href, icon, label }) => (
               <a
                 key={id}
                 href={href}
-                className="navSocialIcon"
+                className="mobileNavSocialIcon"
                 target="_blank"
                 rel="noreferrer"
                 aria-label={label}
@@ -412,7 +510,16 @@ export default function Navbar() {
             ))}
           </div>
         </div>
+
+        <button
+          type="button"
+          className="mobileNavClose"
+          aria-label="Chiudi menu"
+          onClick={closeMobileMenu}
+        >
+          <HiOutlineXMark aria-hidden="true" />
+        </button>
       </div>
-    </div>
+    </>
   );
 }

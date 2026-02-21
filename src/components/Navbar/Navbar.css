@@ -23,19 +23,8 @@
   will-change: background-color, border-color, box-shadow, backdrop-filter;
 }
 
-.navBrand{
-  display: inline-flex;
-  align-items: center;
-  padding: 0;
-  background: transparent;
-  flex: 0 0 auto;
-}
-
-.navLogo{
-  height: 22px;
-  width: auto;
-  display: block;
-}
+.navBrand{ display: inline-flex; align-items: center; padding: 0; background: transparent; flex: 0 0 auto; }
+.navLogo{ height: 22px; width: auto; display: block; }
 
 .navLinks{
   display: flex;
@@ -66,48 +55,16 @@
   transition: background 140ms ease, color 140ms ease, border-color 140ms ease, transform 140ms ease;
 }
 
-.navLink:hover{
-  background: var(--surface-hover);
-  color: var(--ink);
-}
-
+.navLink:hover{ background: var(--surface-hover); color: var(--ink); }
 .navLink:active{ transform: scale(.98); }
+.navLink.isActive{ background: var(--brand-bg); border-color: var(--brand-border); color: var(--ink); }
 
-.navLink.isActive{
-  background: var(--brand-bg);
-  border-color: var(--brand-border);
-  color: var(--ink);
-}
+.navItem{ position: relative; display: inline-flex; align-items: center; }
+.navTrigger{ gap: 4px; background: transparent; }
 
-.navItem{
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-}
-
-.navTrigger{
-  gap: 4px;
-  background: transparent;
-}
-
-.navItem--hasMenu::after{
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 100%;
-  height: 14px;
-}
-
-.navChevron{
-  font-size: 10px;
-  line-height: 1;
-  transition: transform 180ms ease;
-}
-
-.navItem--hasMenu:hover .navChevron{
-  transform: rotate(180deg);
-}
+.navItem--hasMenu::after{ content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 14px; }
+.navChevron{ font-size: 10px; line-height: 1; transition: transform 180ms ease; }
+.navItem--hasMenu:hover .navChevron{ transform: rotate(180deg); }
 
 .navSubmenu{
   position: absolute;
@@ -129,12 +86,7 @@
   z-index: 4;
 }
 
-.navItem--hasMenu:hover .navSubmenu{
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transform: translateY(0) scale(1);
-}
+.navItem--hasMenu:hover .navSubmenu{ opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0) scale(1); }
 
 .navSubLink{
   display: flex;
@@ -151,11 +103,7 @@
   transition: background 140ms ease, color 140ms ease, transform 140ms ease;
 }
 
-.navSubLink:hover{
-  background: var(--surface-hover);
-  color: var(--ink);
-}
-
+.navSubLink:hover{ background: var(--surface-hover); color: var(--ink); }
 .navSubLink:active{ transform: scale(.99); }
 
 .navSocialDock{
@@ -183,149 +131,224 @@
   transition: background 140ms ease, color 140ms ease, border-color 140ms ease, transform 140ms ease;
 }
 
-.navSocialIcon:hover{
-  background: var(--surface-hover);
-  color: var(--ink);
-  border-color: var(--glass-border);
-}
-
+.navSocialIcon:hover{ background: var(--surface-hover); color: var(--ink); border-color: var(--glass-border); }
 .navSocialIcon:active{ transform: scale(.97); }
 
-.navBar.isOnLight .navLink{
-  color: rgba(0,0,0,0.78);
-}
+.navMobileToggle,
+.mobileNavOverlay{ display: none; }
 
-.navBar.isOnLight .navLink:hover{
-  background: rgba(0,0,0,0.06);
-  color: rgba(0,0,0,0.94);
-}
-
-.navBar.isOnLight .navLink.isActive{
-  background: rgba(0,159,183,0.16);
-  border-color: rgba(0,159,183,0.42);
-  color: rgba(0,0,0,0.94);
-}
-
-.navBar.isOnLight .navSubmenu{
-  border-color: rgba(0,0,0,0.10);
-  background: rgba(255,255,255,0.9);
-}
-
-.navBar.isOnLight .navSubLink{
-  color: rgba(0,0,0,0.74);
-}
-
-.navBar.isOnLight .navSubLink:hover{
-  background: rgba(0,0,0,0.06);
-  color: rgba(0,0,0,0.94);
-}
-
-.navBar.isOnLight .navSocialDock{
-  border-left-color: rgba(0,0,0,0.14);
-}
-
-.navBar.isOnLight .navSocialIcon{
-  color: rgba(0,0,0,0.72);
-}
-
-.navBar.isOnLight .navSocialIcon:hover{
-  background: rgba(0,0,0,0.06);
-  color: rgba(0,0,0,0.94);
-  border-color: rgba(0,0,0,0.12);
-}
+.navBar.isOnLight .navLink{ color: rgba(0,0,0,0.78); }
+.navBar.isOnLight .navLink:hover{ background: rgba(0,0,0,0.06); color: rgba(0,0,0,0.94); }
+.navBar.isOnLight .navLink.isActive{ background: rgba(0,159,183,0.16); border-color: rgba(0,159,183,0.42); color: rgba(0,0,0,0.94); }
+.navBar.isOnLight .navSubmenu{ border-color: rgba(0,0,0,0.10); background: rgba(255,255,255,0.9); }
+.navBar.isOnLight .navSubLink{ color: rgba(0,0,0,0.74); }
+.navBar.isOnLight .navSubLink:hover{ background: rgba(0,0,0,0.06); color: rgba(0,0,0,0.94); }
+.navBar.isOnLight .navSocialDock{ border-left-color: rgba(0,0,0,0.14); }
+.navBar.isOnLight .navSocialIcon{ color: rgba(0,0,0,0.72); }
+.navBar.isOnLight .navSocialIcon:hover{ background: rgba(0,0,0,0.06); color: rgba(0,0,0,0.94); border-color: rgba(0,0,0,0.12); }
 
 @media (max-width: 900px){
-  .navShell{
-    width: calc(100% - 16px);
-  }
-
-  .navBar{
-    gap: 8px;
-    padding: 8px 10px;
-  }
-
-  .navLogo{
-    height: 20px;
-    max-width: 96px;
-  }
-
-  .navLinks{
-    gap: 3px;
-    overflow: visible;
-  }
-
-  .navLink{
-    height: 30px;
-    padding: 0 9px;
-    font-size: 12px;
-  }
-
-  .navSocialDock{
-    margin-left: 6px;
-    padding-left: 8px;
-    gap: 4px;
-  }
-
-  .navSocialIcon{
-    width: 28px;
-    height: 28px;
-    font-size: 14px;
-  }
+  .navShell{ width: calc(100% - 16px); }
+  .navBar{ gap: 8px; padding: 8px 10px; }
+  .navLogo{ height: 20px; max-width: 96px; }
+  .navLinks{ gap: 3px; overflow: visible; }
+  .navLink{ height: 30px; padding: 0 9px; font-size: 12px; }
+  .navSocialDock{ margin-left: 6px; padding-left: 8px; gap: 4px; }
+  .navSocialIcon{ width: 28px; height: 28px; font-size: 14px; }
 }
 
 @media (max-width: 720px){
-  .navShell{
-    top: auto;
-    bottom: 10px;
-    width: calc(100% - 12px);
-  }
+  body.mobileMenuOpen{ overflow: hidden; }
+
+  .navShell{ top: auto; bottom: 14px; width: calc(100% - 24px); }
 
   .navBar{
-    padding: 8px 10px;
+    width: min(390px, calc(100% - 12px));
+    margin: 0 auto;
+    border-radius: 999px;
+    padding: 6px;
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+    box-shadow: var(--shadow-float), inset 0 1px 0 var(--glass-highlight);
+  }
+
+  .navBrand,
+  .navLinks{ display: none; }
+
+  .navMobileToggle{
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 50px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--glass-border) 85%, transparent);
+    background: color-mix(in srgb, var(--glass-bg) 92%, rgba(11,18,32,0.18));
+    color: var(--text);
+    padding: 0 16px;
+    cursor: pointer;
+    transition: transform 160ms ease, background 160ms ease;
+  }
+
+  .navMobileToggle:active{ transform: scale(.985); }
+
+  .navMobileToggleLogo{ height: 20px; width: auto; opacity: .95; }
+
+  .navHamburger{
+    width: 21px;
+    height: 14px;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .navHamburger span{
+    height: 2px;
+    width: 100%;
+    border-radius: 999px;
+    background: currentColor;
+  }
+
+  .mobileNavOverlay{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 0 12px;
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 220ms ease;
+    background: rgba(5, 8, 18, 0.42);
+    backdrop-filter: blur(4px);
+  }
+
+  .mobileNavOverlay.isOpen{ opacity: 1; pointer-events: auto; }
+
+  .mobileNavPanel{
+    width: min(84vw, 360px);
+    max-height: 54svh;
+    border-radius: 26px;
+    padding: 18px 16px;
+    border: 1px solid var(--glass-border);
+    background: color-mix(in srgb, var(--glass-bg) 95%, rgba(11,18,32,0.1));
+    box-shadow: var(--shadow-float), inset 0 1px 0 var(--glass-highlight);
+    overflow-y: auto;
+    transform: translateY(16px) scale(0.985);
+    transition: transform 250ms cubic-bezier(.2,.75,.2,1);
+  }
+
+  .mobileNavOverlay.isOpen .mobileNavPanel{ transform: translateY(0) scale(1); }
+
+  .mobileNavList{ display: grid; gap: 8px; }
+
+  .mobileNavLink{
+    width: 100%;
+    min-height: 40px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 13px;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--text);
+    border: 1px solid transparent;
+    background: transparent;
+    transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+  }
+
+  .mobileNavLink.isActive{
+    border-color: var(--brand-border);
+    background: var(--brand-bg);
+    color: var(--ink);
+  }
+
+  .mobileTalksRow{
+    margin-top: 4px;
+    margin-bottom: 2px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 8px;
   }
 
-  .navLogo{
-    height: 20px;
-    max-width: 92px;
+  .mobileTalksLink{
+    min-height: 34px;
+    border-radius: 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text);
+    border: 1px solid color-mix(in srgb, var(--glass-border) 85%, transparent);
+    background: color-mix(in srgb, var(--surface-hover) 35%, transparent);
   }
 
-  .navLinks{
-    gap: 2px;
-    min-width: 0;
-    overflow: hidden;
+  .mobileNavSocialRow{
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
   }
 
-  .navLink{
-    height: 28px;
-    padding: 0 clamp(6px, 1.8vw, 9px);
-    font-size: clamp(10px, 2.4vw, 11px);
-    letter-spacing: 0;
+  .mobileNavSocialIcon{
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--text);
+    border: 1px solid color-mix(in srgb, var(--glass-border) 88%, transparent);
+    background: color-mix(in srgb, var(--surface-hover) 28%, transparent);
   }
 
-  .navItem--hasMenu{
-    position: static;
+  .mobileNavClose{
+    margin-top: 8px;
+    width: 60px;
+    height: 60px;
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    box-shadow: var(--shadow-float), inset 0 1px 0 var(--glass-highlight);
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    cursor: pointer;
+    transition: transform 170ms ease;
   }
 
-  .navSocialDock{
-    display: none;
+  .mobileNavClose:active{ transform: scale(.96); }
+
+  .navBar.isOnLight .navMobileToggle,
+  .mobileNavOverlay.isOnLight .mobileNavPanel,
+  .mobileNavOverlay.isOnLight .mobileNavClose{
+    background: rgba(255,255,255,0.90);
+    border-color: rgba(0,0,0,0.12);
+    box-shadow: 0 14px 40px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.70);
+    color: rgba(0,0,0,0.84);
   }
 
-  .navItem--hasMenu::after{
-    display: none;
+  .mobileNavOverlay.isOnLight .mobileNavLink,
+  .mobileNavOverlay.isOnLight .mobileTalksLink,
+  .mobileNavOverlay.isOnLight .mobileNavSocialIcon{
+    color: rgba(0,0,0,0.78);
+    border-color: rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.65);
   }
 
-  .navSubmenu{
-    left: 50%;
-    top: auto;
-    bottom: calc(100% + 8px);
-    width: min(240px, calc(100vw - 28px));
-    min-width: 0;
-    transform-origin: bottom center;
-    transform: translateX(-50%) translateY(6px) scale(0.98);
-  }
-
-  .navItem--hasMenu:hover .navSubmenu{
-    transform: translateX(-50%) translateY(0) scale(1);
+  .mobileNavOverlay.isOnLight .mobileNavLink.isActive{
+    background: rgba(0,159,183,0.16);
+    border-color: rgba(0,159,183,0.42);
+    color: rgba(0,0,0,0.94);
   }
 }
