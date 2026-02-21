@@ -15,8 +15,8 @@ const LINKS = [
     id: "talks",
     label: "Talks",
     children: [
-      { id: "spin-talks", label: "Spin Talks", href: "#spin-talks" },
-      { id: "capri-talks", label: "Capri Talks", href: "#capri-talks" },
+      { id: "spin-talks", label: "Spin Talks", href: "https://spinfactor.it/spin-talks", external: true },
+      { id: "capri-talks", label: "Capri Talks", href: "https://spinfactor.it/capri-talks", external: true },
     ],
   },
   { id: "human", label: "Human Data" },
@@ -335,7 +335,13 @@ export default function Navbar() {
                       href={child.href}
                       role="menuitem"
                       className="navSubLink"
-                      onClick={(e) => onNav(e, child.id)}
+                      target={child.external ? "_blank" : undefined}
+                      rel={child.external ? "noreferrer" : undefined}
+                      onClick={
+                        child.external
+                          ? undefined
+                          : (e) => onNav(e, child.id)
+                      }
                     >
                       {child.label}
                     </a>

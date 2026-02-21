@@ -43,7 +43,7 @@
   gap: 6px;
   flex: 1 1 auto;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
   justify-content: flex-end;
 }
 
@@ -251,6 +251,7 @@
 
   .navLinks{
     gap: 3px;
+    overflow: visible;
   }
 
   .navLink{
