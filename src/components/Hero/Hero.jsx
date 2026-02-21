@@ -6,7 +6,13 @@ import "./Hero.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function Hero({ id = "top", src, alt = "", title, durationPx = 900 }) {
+export default function Hero({
+  id = "top",
+  src,
+  alt = "",
+  title,
+  durationPx = 900,
+}) {
   const shellRef = useRef(null);
   const imgRef = useRef(null);
   const titleRef = useRef(null);
@@ -24,7 +30,7 @@ export default function Hero({ id = "top", src, alt = "", title, durationPx = 90
     const ctx = gsap.context(() => {
       ScrollTrigger.getById("heroFX")?.kill(true);
 
-      gsap.set(shell, { backgroundColor: "#000" });
+      // gsap.set(shell, { backgroundColor: "#000" });
       gsap.set(img, {
         opacity: 1,
         filter: "blur(0px) brightness(1) contrast(1)",
@@ -66,7 +72,7 @@ export default function Hero({ id = "top", src, alt = "", title, durationPx = 90
           scale: 1.04,
           ease: "none",
         },
-        0.12
+        0.12,
       );
 
       tl.to(img, { opacity: 0, ease: "none" }, 0.99);

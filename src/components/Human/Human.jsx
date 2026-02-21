@@ -65,6 +65,7 @@ export default function Human({
 
     const ctx = gsap.context(() => {
       ScrollTrigger.getById(`human-${id}`)?.kill(true);
+      ScrollTrigger.getById(`human-img-pre-${id}`)?.kill(true);
 
       const track = root.querySelector("[data-htrack]");
 
@@ -127,11 +128,11 @@ export default function Human({
       let textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
 
       // testo statico: accorciamo molto la fase intro per arrivare prima ai servizi
-      textPxFinal = Math.round(textPxFinal * (isMobile ? 0.5 : 0.4));
-      textPxFinal = Math.max(isMobile ? 320 : 420, textPxFinal);
+       textPxFinal = Math.round(textPxFinal * (isMobile ? 0.24 : 0.18));
+      textPxFinal = Math.max(isMobile ? 120 : 150, textPxFinal);
 
       const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75));
-      const servicesPx = Math.round(Math.max(760, window.innerHeight * 0.95));
+      const servicesPx = Math.round(Math.max(300, window.innerHeight * 0.36));
       const totalPx = textPxFinal + horizPx + servicesPx;
 
       const tl = gsap.timeline({ defaults: { ease: "none" } });
@@ -156,9 +157,32 @@ export default function Human({
       const wrap = Math.round(textPxFinal * 0.06);
       const titleSeg = Math.round(textPxFinal * 0.22);
 
-
       const t_titleWrapStart = wrap;
-      // const t_titleStart = t_titleWrapStart + wrap;
+
+      // pre-reveal: avvia il logo prima del pin per evitare stacco testo/logo
+      gsap.timeline({
+        scrollTrigger: {
+          id: `human-img-pre-${id}`,
+          trigger: root,
+          start: "top 92%",
+          end: "top 76%",
+          scrub: true,
+          invalidateOnRefresh: true,
+        },
+      })
+        .to(
+          imgWrap,
+          {
+            autoAlpha: 0.45,
+            y: 8,
+            scale: 0.995,
+            ease: "none",
+          },
+          0,
+        )
+        .to(img, { scale: 1.01, ease: "none" }, 0);
+
+      // reveal principale: resta nel pin (coerente con Siamo/Facciamo)
 
       // logo entra PRIMA e in sync
       if (!prefersReduced) {
