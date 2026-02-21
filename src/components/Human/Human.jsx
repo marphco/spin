@@ -127,13 +127,16 @@ export default function Human({
 
       let textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
 
-      // testo statico: accorciamo molto la fase intro per arrivare prima ai servizi
-       textPxFinal = Math.round(textPxFinal * (isMobile ? 0.24 : 0.18));
-      textPxFinal = Math.max(isMobile ? 120 : 150, textPxFinal);
+      // riduce il tratto "vuoto" prima/after dei servizi (desktop + mobile)
+      textPxFinal = Math.round(textPxFinal * 0.14);
+      textPxFinal = Math.max(70, textPxFinal);
 
-      const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75));
-      const servicesPx = Math.round(Math.max(300, window.innerHeight * 0.36));
-      const totalPx = textPxFinal + horizPx + servicesPx;
+      // tratto intro quasi nullo: evita scroll a vuoto prima dei servizi
+      const introHoldPx = isMobile ? 18 : 24;
+
+      const horizPx = Math.round(Math.max(300, window.innerWidth * 0.5));
+      const servicesPx = 6;
+      const totalPx = introHoldPx + horizPx + servicesPx;
 
       const tl = gsap.timeline({ defaults: { ease: "none" } });
 
@@ -142,7 +145,7 @@ export default function Human({
         trigger: root,
         start: "top top",
         end: () => `+=${totalPx}`,
-        scrub: isMobile ? 0.6 : true,
+        scrub: isMobile ? 0.7 : true,
         pin: true,
         pinSpacing: true,
         anticipatePin: isMobile ? 2 : 1,
@@ -153,23 +156,24 @@ export default function Human({
       // -------------------------
       // A) TEXT SEGMENTS
       // -------------------------
-      
+
       const wrap = Math.round(textPxFinal * 0.06);
       const titleSeg = Math.round(textPxFinal * 0.22);
 
       const t_titleWrapStart = wrap;
 
       // pre-reveal: avvia il logo prima del pin per evitare stacco testo/logo
-      gsap.timeline({
-        scrollTrigger: {
-          id: `human-img-pre-${id}`,
-          trigger: root,
-          start: "top 92%",
-          end: "top 76%",
-          scrub: true,
-          invalidateOnRefresh: true,
-        },
-      })
+      gsap
+        .timeline({
+          scrollTrigger: {
+            id: `human-img-pre-${id}`,
+            trigger: root,
+            start: "top 92%",
+            end: "top 76%",
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        })
         .to(
           imgWrap,
           {
@@ -186,26 +190,40 @@ export default function Human({
 
       // logo entra PRIMA e in sync
       if (!prefersReduced) {
-        const imgDur = Math.max(120, Math.round(titleSeg * 0.55));
+        const imgDur = isMobile
+          ? Math.max(55, Math.round(titleSeg * 0.28))
+          : Math.max(120, Math.round(titleSeg * 0.55));
         const imgAt = 0;
 
-        tl.to(imgWrap, { autoAlpha: 1, y: 0, scale: 1, duration: imgDur }, imgAt);
-        tl.to(img, { scale: 1, duration: Math.round(imgDur * 0.9) }, imgAt + 10);
+        tl.to(
+          imgWrap,
+          { autoAlpha: 1, y: 0, scale: 1, duration: imgDur },
+          imgAt,
+        );
+        tl.to(
+          img,
+          { scale: 1, duration: Math.round(imgDur * 0.9) },
+          imgAt + 10,
+        );
       } else {
-        tl.to(imgWrap, { autoAlpha: 1, y: 0, scale: 1, duration: 1 }, t_titleWrapStart);
+        tl.to(
+          imgWrap,
+          { autoAlpha: 1, y: 0, scale: 1, duration: 1 },
+          t_titleWrapStart,
+        );
         tl.to(img, { scale: 1, duration: 1 }, t_titleWrapStart);
       }
 
       // -------------------------
       // B) HORIZONTAL intro -> services
       // -------------------------
-      const hStart = textPxFinal + 1;
+      const hStart = introHoldPx;
       tl.to(track, { x: () => -window.innerWidth, duration: horizPx }, hStart);
 
       // -------------------------
       // C) SERVICES reveal
       // -------------------------
-      const sStart = hStart + horizPx + 1;
+      const sStart = hStart + horizPx;
 
       tl.to(servicesWrap, { autoAlpha: 1, duration: 1 }, sStart);
 
@@ -339,7 +357,11 @@ export default function Human({
                   })}
                 </h2>
 
-                <div className="humUnderline" data-hunderline aria-hidden="true" />
+                <div
+                  className="humUnderline"
+                  data-hunderline
+                  aria-hidden="true"
+                />
 
                 <div className="humBody" data-hbodywrap aria-label={bodyText}>
                   {bodyTokens.map((tok, idx) => {

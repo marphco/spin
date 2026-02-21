@@ -132,17 +132,20 @@ export default function Facciamo({
       let textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
 
       // testo statico: accorciamo molto la fase intro per arrivare prima ai servizi
-      textPxFinal = Math.round(textPxFinal * (isMobile ? 0.24 : 0.18));
-      textPxFinal = Math.max(isMobile ? 120 : 150, textPxFinal);
+      // testo già statico: minimizziamo la permanenza su intro (no blocco percepito)
+      // riduce il tratto "vuoto" prima/after dei servizi (desktop + mobile)
+      textPxFinal = Math.round(textPxFinal * 0.14);
+      textPxFinal = Math.max(70, textPxFinal);
 
-      // durate
-      const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75));
-      const svcSlidePx = Math.round(Math.max(520, window.innerWidth * 0.85));
-      const servicesSettlePx = Math.round(
-        Math.max(120, window.innerHeight * 0.16),
-      );
+      // tratto intro quasi nullo: evita scroll a vuoto prima dei servizi
+      const introHoldPx = isMobile ? 18 : 24;
 
-      const totalPx = textPxFinal + horizPx + svcSlidePx + servicesSettlePx;
+      // durate core servizi: più corte per sblocco rapido del pin
+      const horizPx = Math.round(Math.max(300, window.innerWidth * 0.5));
+      const svcSlidePx = Math.round(Math.max(300, window.innerWidth * 0.56));
+      const servicesSettlePx = 6;
+
+      const totalPx = introHoldPx + horizPx + svcSlidePx + servicesSettlePx;
 
       const tl = gsap.timeline({ defaults: { ease: "none" } });
 
@@ -151,7 +154,7 @@ export default function Facciamo({
         trigger: root,
         start: "top top",
         end: () => `+=${totalPx}`,
-        scrub: isMobile ? 0.6 : true,
+        scrub: isMobile ? 0.7 : true,
         pin: true,
         pinSpacing: true,
         anticipatePin: isMobile ? 2 : 1,
@@ -196,7 +199,9 @@ export default function Facciamo({
       // Testo statico: resta solo l'animazione dell'immagine
       // - entra tra titleWrap e titleTargets, non dopo
       if (!prefersReduced) {
-        const imgDur = Math.max(120, Math.round(titleSeg * 0.55));
+        const imgDur = isMobile
+          ? Math.max(55, Math.round(titleSeg * 0.28))
+          : Math.max(120, Math.round(titleSeg * 0.55));
         const imgAt = 0;
 
         tl.to(
@@ -221,13 +226,13 @@ export default function Facciamo({
       }
 
       // -------------------------
-      // B) HORIZONTAL SLIDE intro -> services
+      // B) HORIZONTAL intro -> services
       // -------------------------
-      const hStart = textPxFinal + 1;
+      const hStart = introHoldPx;
       tl.to(track, { x: () => -window.innerWidth, duration: horizPx }, hStart);
 
       // -------------------------
-      // C) SERVICES reveal + slide + reveal
+      // C) SERVICES reveal
       // -------------------------
       const sStart = hStart + horizPx;
       tl.to(servicesWrap, { autoAlpha: 1, duration: 1 }, sStart);
