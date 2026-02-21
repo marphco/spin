@@ -73,8 +73,7 @@ export default function Siamo({
     const isTouch = window.matchMedia("(hover: none)").matches;
 
     const ctx = gsap.context(() => {
-      ScrollTrigger.getById(`siamo-${id}`)?.kill(true);
-      ScrollTrigger.getById(`siamo-img-pre-${id}`)?.kill(true);
+      ScrollTrigger.getById(`siamo-img-reveal-${id}`)?.kill(true);
 
       const kickerEl = root.querySelector("[data-kicker]");
       const underlineEl = root.querySelector("[data-underline]");
@@ -99,27 +98,13 @@ export default function Siamo({
       gsap.set(imgWrap, { autoAlpha: 0, y: 14, rotate: -0.4, scale: 0.98 });
       gsap.set(img, { scale: 1.04 });
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          id: `siamo-${id}`,
-          trigger: root,
-          start: "top top",
-          end: `+=${durationPx}`,
-          scrub: true,
-          pin: false,
-          pinSpacing: true,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-        },
-      });
-
-      // pre-reveal: avvia l'entrata dell'immagine PRIMA del pin
+      // reveal: l'immagine arriva a opacità 1 quando la sezione occupa tutta la viewport
       gsap.timeline({
         scrollTrigger: {
-          id: `siamo-img-pre-${id}`,
+          id: `siamo-img-reveal-${id}`,
           trigger: root,
-          start: "top 92%",
-          end: "top 76%",
+          start: "top bottom",
+          end: "top top",
           scrub: true,
           invalidateOnRefresh: true,
         },
@@ -127,30 +112,15 @@ export default function Siamo({
         .to(
           imgWrap,
           {
-            autoAlpha: 0.45,
-            y: 8,
-            rotate: -0.2,
-            scale: 0.99,
+            autoAlpha: 1,
+            y: 0,
+            rotate: 0,
+            scale: 1,
             ease: "none",
           },
           0,
         )
-        .to(img, { scale: 1.02, ease: "none" }, 0);
-
-      // reveal principale: resta agganciato al pin (come comportamento originale)
-      tl.to(
-        imgWrap,
-        {
-          autoAlpha: 1,
-          y: 0,
-          rotate: 0,
-          scale: 1,
-          ease: "none",
-          duration: 0.18,
-        },
-        0,
-      );
-      tl.to(img, { scale: 1, ease: "none", duration: 0.22 }, 0.01);
+        .to(img, { scale: 1, ease: "none" }, 0);
 
       // testo già visibile: nessun reveal legato allo scroll
 

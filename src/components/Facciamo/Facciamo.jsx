@@ -63,7 +63,7 @@ export default function Facciamo({
 
     const ctx = gsap.context(() => {
       ScrollTrigger.getById(`facciamo-${id}`)?.kill(true);
-      ScrollTrigger.getById(`facciamo-img-pre-${id}`)?.kill(true);
+      ScrollTrigger.getById(`facciamo-img-reveal-${id}`)?.kill(true);
 
       const track = root.querySelector("[data-ftrack]");
 
@@ -121,26 +121,17 @@ export default function Facciamo({
         window.innerWidth || 0,
       );
 
-      // ⛔️ prima: 1.35 su mobile = scroll lunghissimo
-      // ✅ ora: boost più leggero + compressione ulteriore solo mobile
       const mobileBoost = vw < 640 ? 1.1 : vw < 900 ? 1.05 : 1;
 
       const textPxAuto = Math.round(
         Math.max(980, Math.min(2600, charsCount * 3.4)) * mobileBoost,
       );
 
-      let textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
+      const textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
+      void textPxFinal;
 
-      // testo statico: accorciamo molto la fase intro per arrivare prima ai servizi
-      // testo già statico: minimizziamo la permanenza su intro (no blocco percepito)
-      // riduce il tratto "vuoto" prima/after dei servizi (desktop + mobile)
-      textPxFinal = Math.round(textPxFinal * 0.14);
-      textPxFinal = Math.max(70, textPxFinal);
-
-      // tratto intro quasi nullo: evita scroll a vuoto prima dei servizi
       const introHoldPx = isMobile ? 18 : 24;
 
-      // durate core servizi: più corte per sblocco rapido del pin
       const horizPx = Math.round(Math.max(300, window.innerWidth * 0.5));
       const svcSlidePx = Math.round(Math.max(300, window.innerWidth * 0.56));
       const servicesSettlePx = 6;
@@ -162,78 +153,33 @@ export default function Facciamo({
         animation: tl,
       });
 
-      // -------------------------
-      // A) TEXT SEGMENTS
-      // -------------------------
-
-      const wrap = Math.round(textPxFinal * 0.06);
-      const titleSeg = Math.round(textPxFinal * 0.22);
-
-      const t_titleWrapStart = wrap;
-
-      // pre-reveal: avvia l'immagine poco prima che inizi il pin
-      gsap
-        .timeline({
-          scrollTrigger: {
-            id: `facciamo-img-pre-${id}`,
-            trigger: root,
-            start: "top 92%",
-            end: "top 76%",
-            scrub: true,
-            invalidateOnRefresh: true,
-          },
-        })
+      // reveal: l'immagine arriva a opacità 1 quando la sezione occupa tutta la viewport
+      gsap.timeline({
+        scrollTrigger: {
+          id: `facciamo-img-reveal-${id}`,
+          trigger: root,
+          start: "top bottom",
+          end: "top top",
+          scrub: true,
+          invalidateOnRefresh: true,
+        },
+      })
         .to(
-          imgWrap,
-          {
-            autoAlpha: 0.45,
-            y: 8,
-            rotate: -0.2,
-            scale: 0.99,
-            ease: "none",
-          },
-          0,
-        )
-        .to(img, { scale: 1.02, ease: "none" }, 0);
-
-      // Testo statico: resta solo l'animazione dell'immagine
-      // - entra tra titleWrap e titleTargets, non dopo
-      if (!prefersReduced) {
-        const imgDur = isMobile
-          ? Math.max(55, Math.round(titleSeg * 0.28))
-          : Math.max(120, Math.round(titleSeg * 0.55));
-        const imgAt = 0;
-
-        tl.to(
           imgWrap,
           {
             autoAlpha: 1,
             y: 0,
             rotate: 0,
             scale: 1,
-            duration: imgDur,
+            ease: "none",
           },
-          imgAt,
-        );
-        tl.to(
-          img,
-          { scale: 1, duration: Math.round(imgDur * 0.9) },
-          imgAt + 10,
-        );
-      } else {
-        tl.to(imgWrap, { autoAlpha: 1, y: 0, duration: 1 }, t_titleWrapStart);
-        tl.to(img, { scale: 1, duration: 1 }, t_titleWrapStart);
-      }
+          0,
+        )
+        .to(img, { scale: 1, ease: "none" }, 0);
 
-      // -------------------------
-      // B) HORIZONTAL intro -> services
-      // -------------------------
       const hStart = introHoldPx;
       tl.to(track, { x: () => -window.innerWidth, duration: horizPx }, hStart);
 
-      // -------------------------
-      // C) SERVICES reveal
-      // -------------------------
       const sStart = hStart + horizPx;
       tl.to(servicesWrap, { autoAlpha: 1, duration: 1 }, sStart);
 
@@ -243,9 +189,6 @@ export default function Facciamo({
         sStart + 1,
       );
 
-      // -------------------------
-      // ✅ FLOATING LOOP premium (come Siamo)
-      // -------------------------
       if (!prefersReduced) {
         gsap.to(imgWrap, {
           y: "-=7",
@@ -256,9 +199,6 @@ export default function Facciamo({
         });
       }
 
-      // -------------------------
-      // ✅ HOVER TILT (solo desktop con hover)
-      // -------------------------
       if (!prefersReduced && !isTouch) {
         const setRX = gsap.quickTo(imgWrap, "rotationX", {
           duration: 0.45,
@@ -308,7 +248,6 @@ export default function Facciamo({
         imgWrap.addEventListener("mouseenter", onEnter);
         imgWrap.addEventListener("mouseleave", onLeave);
 
-        // IMPORTANT: cleanup in return
         return () => {
           imgWrap.removeEventListener("mousemove", onMove);
           imgWrap.removeEventListener("mouseenter", onEnter);
@@ -316,9 +255,6 @@ export default function Facciamo({
         };
       }
 
-      // -------------------------
-      // ✅ TAP FEEL mobile (micro feedback)
-      // -------------------------
       if (!prefersReduced && isTouch) {
         const onDown = () =>
           gsap.to(imgWrap, { scale: 0.99, duration: 0.18, ease: "power2.out" });
@@ -348,11 +284,9 @@ export default function Facciamo({
 
       <div className="facViewport">
         <div className="facTrack" data-ftrack>
-          {/* PANEL 1: INTRO */}
           <div className="facPanel" data-fpanel="intro">
             <div className="facIntroLayer" data-fintro>
               <div className="facInner">
-                {/* MEDIA */}
                 <div className="facMedia" ref={imgWrapRef} aria-hidden="true">
                   <div className="facPhotoFrame">
                     <img
@@ -365,7 +299,6 @@ export default function Facciamo({
                   </div>
                 </div>
 
-                {/* COPY */}
                 <div className="facCopy">
                   <div className="facKicker" data-fkicker>
                     {kicker}
@@ -403,7 +336,6 @@ export default function Facciamo({
             </div>
           </div>
 
-          {/* PANEL 2: SERVICES */}
           <div className="facPanel" data-fpanel="services">
             <div className="facServicesLayer" data-fservicespanel>
               <FacciamoServizi />

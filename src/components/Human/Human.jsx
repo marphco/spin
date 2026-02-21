@@ -65,7 +65,7 @@ export default function Human({
 
     const ctx = gsap.context(() => {
       ScrollTrigger.getById(`human-${id}`)?.kill(true);
-      ScrollTrigger.getById(`human-img-pre-${id}`)?.kill(true);
+      ScrollTrigger.getById(`human-img-reveal-${id}`)?.kill(true);
 
       const track = root.querySelector("[data-htrack]");
 
@@ -125,11 +125,8 @@ export default function Human({
         Math.max(950, Math.min(2500, charsCount * 3.4)) * mobileBoost,
       );
 
-      let textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
-
-      // riduce il tratto "vuoto" prima/after dei servizi (desktop + mobile)
-      textPxFinal = Math.round(textPxFinal * 0.14);
-      textPxFinal = Math.max(70, textPxFinal);
+      const textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
+      void textPxFinal;
 
       // tratto intro quasi nullo: evita scroll a vuoto prima dei servizi
       const introHoldPx = isMobile ? 18 : 24;
@@ -157,62 +154,28 @@ export default function Human({
       // A) TEXT SEGMENTS
       // -------------------------
 
-      const wrap = Math.round(textPxFinal * 0.06);
-      const titleSeg = Math.round(textPxFinal * 0.22);
-
-      const t_titleWrapStart = wrap;
-
-      // pre-reveal: avvia il logo prima del pin per evitare stacco testo/logo
-      gsap
-        .timeline({
-          scrollTrigger: {
-            id: `human-img-pre-${id}`,
-            trigger: root,
-            start: "top 92%",
-            end: "top 76%",
-            scrub: true,
-            invalidateOnRefresh: true,
-          },
-        })
+      // reveal: il logo arriva a opacità 1 quando la sezione occupa tutta la viewport
+      gsap.timeline({
+        scrollTrigger: {
+          id: `human-img-reveal-${id}`,
+          trigger: root,
+          start: "top bottom",
+          end: "top top",
+          scrub: true,
+          invalidateOnRefresh: true,
+        },
+      })
         .to(
           imgWrap,
           {
-            autoAlpha: 0.45,
-            y: 8,
-            scale: 0.995,
+            autoAlpha: 1,
+            y: 0,
+            scale: 1,
             ease: "none",
           },
           0,
         )
-        .to(img, { scale: 1.01, ease: "none" }, 0);
-
-      // reveal principale: resta nel pin (coerente con Siamo/Facciamo)
-
-      // logo entra PRIMA e in sync
-      if (!prefersReduced) {
-        const imgDur = isMobile
-          ? Math.max(55, Math.round(titleSeg * 0.28))
-          : Math.max(120, Math.round(titleSeg * 0.55));
-        const imgAt = 0;
-
-        tl.to(
-          imgWrap,
-          { autoAlpha: 1, y: 0, scale: 1, duration: imgDur },
-          imgAt,
-        );
-        tl.to(
-          img,
-          { scale: 1, duration: Math.round(imgDur * 0.9) },
-          imgAt + 10,
-        );
-      } else {
-        tl.to(
-          imgWrap,
-          { autoAlpha: 1, y: 0, scale: 1, duration: 1 },
-          t_titleWrapStart,
-        );
-        tl.to(img, { scale: 1, duration: 1 }, t_titleWrapStart);
-      }
+        .to(img, { scale: 1, ease: "none" }, 0);
 
       // -------------------------
       // B) HORIZONTAL intro -> services

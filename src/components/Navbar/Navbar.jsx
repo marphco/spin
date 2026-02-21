@@ -176,6 +176,16 @@ export default function Navbar() {
         return;
       }
 
+      const center = window.innerHeight * 0.5;
+      const siamoEl = document.getElementById("siamo");
+      if (siamoEl) {
+        const siamoRect = siamoEl.getBoundingClientRect();
+        if (siamoRect.top > center) {
+          setActive(null);
+          return;
+        }
+      }
+
       for (const id of ids) {
         if (id === "talks") continue;
         const st = ScrollTrigger.getById(getPinnedTriggerId(id));
@@ -186,7 +196,6 @@ export default function Navbar() {
         }
       }
 
-      const center = window.innerHeight * 0.5;
       for (const { id, el } of elsRef.current) {
         const rect = el.getBoundingClientRect();
         if (rect.top <= center && rect.bottom >= center) {

@@ -181,7 +181,7 @@ export default function Home() {
 
           <Human
             id="human"
-            kicker="HUMAN"
+            kicker="HUMAN DATA"
             title="Trasformare l’ascolto in direzione"
             paragraphs={[
               "Human è la piattaforma di web e social listening di Spin Factor, sviluppata con Osservatorio Social. Analizza conversazioni, trend e performance, misura sentiment e reputazione e restituisce insight chiari e utilizzabili.",
