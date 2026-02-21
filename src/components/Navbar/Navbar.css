@@ -8,35 +8,21 @@
   top: 16px;
 }
 
-/* mobile: bottom */
-@media (max-width: 720px){
-  .navShell{
-    top: auto;
-    bottom: 12px;
-    width: calc(100% - 16px);
-  }
-}
-
 .navBar{
   pointer-events: auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-
   padding: 10px 12px;
   border-radius: 999px;
-
-  /* ✅ lascia qui i default (GSAP li anima) */
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(14px);
   box-shadow: var(--shadow-float), inset 0 1px 0 var(--glass-highlight);
-
   will-change: background-color, border-color, box-shadow, backdrop-filter;
 }
 
-/* brand */
 .navBrand{
   display: inline-flex;
   align-items: center;
@@ -51,16 +37,14 @@
   display: block;
 }
 
-/* links */
 .navLinks{
   display: flex;
   align-items: center;
   gap: 6px;
   flex: 1 1 auto;
   min-width: 0;
-
   flex-wrap: nowrap;
-  overflow: hidden;
+  overflow: visible;
   justify-content: flex-end;
 }
 
@@ -68,19 +52,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   height: 34px;
   padding: 0 12px;
   border-radius: 999px;
-
   font-size: 13px;
+  line-height: 1;
   letter-spacing: .01em;
-
   color: var(--text);
   border: 1px solid transparent;
-
   white-space: nowrap;
-
+  text-decoration: none;
   transition: background 140ms ease, color 140ms ease, border-color 140ms ease, transform 140ms ease;
 }
 
@@ -97,10 +78,89 @@
   color: var(--ink);
 }
 
-/* ✅ Solo colori “light” (il background viene animato da GSAP) */
-.navBar.isOnLight .navLink{
-  color: rgba(0,0,0,0.60);
+.navItem{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
 }
+
+.navTrigger{
+  gap: 4px;
+  background: transparent;
+}
+
+.navItem--hasMenu::after{
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 14px;
+}
+
+.navChevron{
+  font-size: 10px;
+  line-height: 1;
+  transition: transform 180ms ease;
+}
+
+.navItem--hasMenu:hover .navChevron{
+  transform: rotate(180deg);
+}
+
+.navSubmenu{
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: auto;
+  min-width: 170px;
+  padding: 8px;
+  border-radius: 18px;
+  border: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--glass-bg) 92%, rgba(11, 18, 32, 0.12));
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-float), inset 0 1px 0 var(--glass-highlight);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(6px) scale(0.98);
+  transform-origin: top left;
+  transition: opacity 150ms ease, transform 150ms ease;
+  z-index: 4;
+}
+
+.navItem--hasMenu:hover .navSubmenu{
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.navSubLink{
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  letter-spacing: .01em;
+  line-height: 1;
+  color: var(--text);
+  text-decoration: none;
+  transition: background 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.navSubLink:hover{
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+
+.navSubLink:active{
+  transform: scale(.99);
+}
+
+.navBar.isOnLight .navLink{ color: rgba(0,0,0,0.60); }
 
 .navBar.isOnLight .navLink:hover{
   background: rgba(0,0,0,0.06);
@@ -113,9 +173,21 @@
   color: rgba(0,0,0,0.92);
 }
 
-/* MOBILE: compressione */
+.navBar.isOnLight .navSubmenu{
+  border-color: rgba(0,0,0,0.10);
+  background: rgba(255,255,255,0.88);
+}
+
+.navBar.isOnLight .navSubLink{ color: rgba(0,0,0,0.68); }
+
+.navBar.isOnLight .navSubLink:hover{
+  background: rgba(0,0,0,0.06);
+  color: rgba(0,0,0,0.92);
+}
+
 @media (max-width: 720px){
   .navShell{
+    top: auto;
     bottom: 10px;
     width: calc(100% - 12px);
   }
@@ -132,8 +204,8 @@
 
   .navLinks{
     gap: 2px;
-    overflow: hidden;
     min-width: 0;
+    overflow: hidden;
   }
 
   .navLink{
@@ -141,11 +213,31 @@
     padding: 0 clamp(6px, 1.8vw, 9px);
     font-size: clamp(10px, 2.4vw, 11px);
     letter-spacing: 0;
-  }
-
-  .navLink{
     min-width: 0;
     flex: 0 1 auto;
+  }
+
+  .navItem--hasMenu{
+    position: static;
+  }
+
+  .navItem--hasMenu::after{
+    display: none;
+  }
+
+  .navSubmenu{
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: calc(100% + 8px);
+    width: min(240px, calc(100vw - 28px));
+    min-width: 0;
+    transform-origin: bottom center;
+    transform: translateX(-50%) translateY(6px) scale(0.98);
+  }
+
+  .navItem--hasMenu:hover .navSubmenu{
+    transform: translateX(-50%) translateY(0) scale(1);
   }
 
   .navLink.isActive{

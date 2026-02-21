@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import "./Navbar.css";
 import logo from "../../assets/logo.svg";
 
@@ -10,30 +16,43 @@ gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 const LINKS = [
   { id: "siamo", label: "Siamo" },
   { id: "facciamo", label: "Facciamo" },
-  { id: "human", label: "Human" },
+  {
+    id: "talks",
+    label: "Talks",
+    children: [
+      { id: "spin-talks", label: "Spin Talks", href: "#spin-talks" },
+      { id: "capri-talks", label: "Capri Talks", href: "#capri-talks" },
+    ],
+  },
+  { id: "human", label: "Human Data" },
   { id: "press", label: "Press" },
   { id: "contatti", label: "Contatti" },
 ];
 
+const SCROLL_LINKS = LINKS.filter((l) => !l.children);
+
 export default function Navbar() {
   const [active, setActive] = useState(null);
-  const ids = useMemo(() => LINKS.map((l) => l.id), []);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const ids = useMemo(() => SCROLL_LINKS.map((l) => l.id), []);
 
   const navLock = useRef(false);
   const elsRef = useRef([]);
   const barRef = useRef(null);
 
   const OFFSETS_DESKTOP = {
-    siamo: 350,
-    facciamo: 350,
-    human: 660,
-    press: 50,
-    contatti: 200,
+    siamo: 0,
+    facciamo: 0,
+    talks: 0,
+    human: 0,
+    press: 0,
+    contatti: 0,
   };
 
   const OFFSETS_MOBILE = {
     siamo: 500,
     facciamo: 900,
+    talks: 900,
     human: 900,
     press: 50,
     contatti: 50,
@@ -53,7 +72,8 @@ export default function Navbar() {
     () => ({
       backgroundColor: "rgba(255,255,255,0.72)",
       borderColor: "rgba(0,0,0,0.10)",
-      boxShadow: "0 14px 40px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.70)",
+      boxShadow:
+        "0 14px 40px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.70)",
       backdropFilter: "blur(16px)",
     }),
     [],
@@ -69,21 +89,44 @@ export default function Navbar() {
     [],
   );
 
-  const animateSkin = (mode) => {
-    const el = barRef.current;
-    if (!el) return;
+  const animateSkin = useCallback(
+    (mode) => {
+      const el = barRef.current;
+      if (!el) return;
 
-    gsap.to(el, {
-      ...(mode === "light" ? toLightSkin : toDarkSkin),
-      duration: 0.45,
-      ease: "power2.out",
-      overwrite: "auto",
-    });
+      gsap.to(el, {
+        ...(mode === "light" ? toLightSkin : toDarkSkin),
+        duration: 0.45,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
 
-    // classe solo per i colori dei link (non per il background)
-    if (mode === "light") el.classList.add("isOnLight");
-    else el.classList.remove("isOnLight");
-  };
+      if (mode === "light") el.classList.add("isOnLight");
+      else el.classList.remove("isOnLight");
+    },
+    [toDarkSkin, toLightSkin],
+  );
+
+  useEffect(() => {
+    if (!openMenuId) return;
+
+    const onGlobalClick = (event) => {
+      if (!event.target.closest(".navItem--hasMenu")) {
+        setOpenMenuId(null);
+      }
+    };
+
+    const onEscape = (event) => {
+      if (event.key === "Escape") setOpenMenuId(null);
+    };
+
+    document.addEventListener("click", onGlobalClick);
+    document.addEventListener("keydown", onEscape);
+    return () => {
+      document.removeEventListener("click", onGlobalClick);
+      document.removeEventListener("keydown", onEscape);
+    };
+  }, [openMenuId]);
 
   // ---------------------------------------------------
   // TRIGGERS
@@ -99,9 +142,7 @@ export default function Navbar() {
       return document.getElementById(id);
     };
 
-    const els = ids
-      .map((id) => ({ id, el: getNavEl(id) }))
-      .filter((x) => x.el);
+    const els = ids.map((id) => ({ id, el: getNavEl(id) })).filter((x) => x.el);
 
     elsRef.current = els;
 
@@ -171,7 +212,9 @@ export default function Navbar() {
       const pressEl = document.getElementById("press");
       if (!pressEl) return;
       const r = pressEl.getBoundingClientRect();
-      const inPress = r.top < window.innerHeight * 0.25 && r.bottom > window.innerHeight * 0.25;
+      const inPress =
+        r.top < window.innerHeight * 0.25 &&
+        r.bottom > window.innerHeight * 0.25;
       animateSkin(inPress ? "light" : "dark");
     });
 
@@ -182,12 +225,8 @@ export default function Navbar() {
       topTrigger.kill();
       pressSkin.kill();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ids]);
+  }, [animateSkin, ids]);
 
-  // ---------------------------------------------------
-  // CLICK SCROLL
-  // ---------------------------------------------------
   const finalizeNav = (id) => {
     requestAnimationFrame(() => {
       ScrollTrigger.update();
@@ -275,17 +314,54 @@ export default function Navbar() {
         </a>
 
         <div className="navLinks" aria-label="Menu">
-          {LINKS.map((l) => (
-            <a
-              key={l.id}
-              href={`#${l.id}`}
-              onClick={(e) => onNav(e, l.id)}
-              className={`navLink ${active === l.id ? "isActive" : ""}`}
-              aria-current={active === l.id ? "page" : undefined}
-            >
-              {l.label}
-            </a>
-          ))}
+          {LINKS.map((l) => {
+            if (!l.children) {
+              return (
+                <a
+                  key={l.id}
+                  href={`#${l.id}`}
+                  onClick={(e) => onNav(e, l.id)}
+                  className={`navLink ${active === l.id ? "isActive" : ""}`}
+                  aria-current={active === l.id ? "page" : undefined}
+                >
+                  {l.label}
+                </a>
+              );
+            }
+
+            return (
+              <div key={l.id} className="navItem navItem--hasMenu">
+                <a
+                  href={`#${l.id}`}
+                  onClick={(e) => onNav(e, l.id)}
+                  className={`navLink navTrigger ${active === l.id ? "isActive" : ""}`}
+                  aria-current={active === l.id ? "page" : undefined}
+                >
+                  {l.label}
+                  <span className="navChevron" aria-hidden="true">
+                    ▾
+                  </span>
+                </a>
+
+                <div
+                  className="navSubmenu"
+                  role="menu"
+                  aria-label="Talks submenu"
+                >
+                  {l.children.map((child) => (
+                    <a
+                      key={child.id}
+                      href={child.href}
+                      role="menuitem"
+                      className="navSubLink"
+                    >
+                      {child.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
