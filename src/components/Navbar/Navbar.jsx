@@ -1,10 +1,5 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FaInstagram, FaLinkedinIn, FaTiktok, FaXTwitter } from "react-icons/fa6";
 import "./Navbar.css";
 import logo from "../../assets/logo.svg";
 
@@ -29,12 +24,36 @@ const LINKS = [
   { id: "contatti", label: "Contatti" },
 ];
 
-const SCROLL_LINKS = LINKS.filter((l) => !l.children);
+const SOCIAL_LINKS = [
+  {
+    id: "instagram",
+    label: "Instagram",
+    href: "https://www.instagram.com/spin.factor?igsh=MWs3azVwd2dodHFlbw==",
+    icon: FaInstagram,
+  },
+  {
+    id: "tiktok",
+    label: "TikTok",
+    href: "https://www.tiktok.com/@spin.factor?_r=1&_t=ZP-92dbyl6XukZ",
+    icon: FaTiktok,
+  },
+  {
+    id: "x",
+    label: "X",
+    href: "https://x.com/SpinFactorIT",
+    icon: FaXTwitter,
+  },
+  {
+    id: "linkedin",
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/company/spinfactor/",
+    icon: FaLinkedinIn,
+  },
+];
 
 export default function Navbar() {
   const [active, setActive] = useState(null);
-  const [openMenuId, setOpenMenuId] = useState(null);
-  const ids = useMemo(() => SCROLL_LINKS.map((l) => l.id), []);
+  const ids = useMemo(() => LINKS.map((l) => l.id), []);
 
   const navLock = useRef(false);
   const elsRef = useRef([]);
@@ -47,15 +66,19 @@ export default function Navbar() {
     human: 0,
     press: 0,
     contatti: 0,
+    "spin-talks": 0,
+    "capri-talks": 0,
   };
 
   const OFFSETS_MOBILE = {
-    siamo: 500,
-    facciamo: 900,
-    talks: 900,
-    human: 900,
-    press: 50,
-    contatti: 50,
+    siamo: 0,
+    facciamo: 0,
+    talks: 0,
+    human: 0,
+    press: 0,
+    contatti: 0,
+    "spin-talks": 0,
+    "capri-talks": 0,
   };
 
   const getOffset = (id) => {
@@ -65,9 +88,6 @@ export default function Navbar() {
 
   const getPinnedTriggerId = (id) => `${id}-${id}`;
 
-  // ---------------------------------------------------
-  // NAVBAR SKIN ANIMATION (dark <-> light) — smooth
-  // ---------------------------------------------------
   const toLightSkin = useMemo(
     () => ({
       backgroundColor: "rgba(255,255,255,0.72)",
@@ -108,30 +128,6 @@ export default function Navbar() {
   );
 
   useEffect(() => {
-    if (!openMenuId) return;
-
-    const onGlobalClick = (event) => {
-      if (!event.target.closest(".navItem--hasMenu")) {
-        setOpenMenuId(null);
-      }
-    };
-
-    const onEscape = (event) => {
-      if (event.key === "Escape") setOpenMenuId(null);
-    };
-
-    document.addEventListener("click", onGlobalClick);
-    document.addEventListener("keydown", onEscape);
-    return () => {
-      document.removeEventListener("click", onGlobalClick);
-      document.removeEventListener("keydown", onEscape);
-    };
-  }, [openMenuId]);
-
-  // ---------------------------------------------------
-  // TRIGGERS
-  // ---------------------------------------------------
-  useEffect(() => {
     ids.forEach((id) => ScrollTrigger.getById(`nav-${id}`)?.kill());
     ScrollTrigger.getById("nav-top")?.kill();
     ScrollTrigger.getById("nav-smart")?.kill();
@@ -142,7 +138,9 @@ export default function Navbar() {
       return document.getElementById(id);
     };
 
-    const els = ids.map((id) => ({ id, el: getNavEl(id) })).filter((x) => x.el);
+    const els = ids
+      .map((id) => ({ id, el: getNavEl(id) }))
+      .filter((x) => x.el);
 
     elsRef.current = els;
 
@@ -150,7 +148,6 @@ export default function Navbar() {
       if (navLock.current) return;
 
       const center = window.innerHeight * 0.5;
-
       const stSiamo = ScrollTrigger.getById("siamo-siamo");
       if (stSiamo && window.scrollY < stSiamo.start + 1) {
         setActive(null);
@@ -159,12 +156,10 @@ export default function Navbar() {
 
       let best = null;
       let bestDist = Infinity;
-
       for (const { id, el } of elsRef.current) {
         const rect = el.getBoundingClientRect();
         const elCenter = rect.top + rect.height / 2;
         const dist = Math.abs(elCenter - center);
-
         if (dist < bestDist) {
           bestDist = dist;
           best = id;
@@ -195,7 +190,6 @@ export default function Navbar() {
       },
     });
 
-    // ✅ transizione soft su Press
     const pressSkin = ScrollTrigger.create({
       id: "nav-press-skin",
       trigger: "#press",
@@ -207,7 +201,6 @@ export default function Navbar() {
       onLeaveBack: () => animateSkin("dark"),
     });
 
-    // init: forza skin corretta al load
     requestAnimationFrame(() => {
       const pressEl = document.getElementById("press");
       if (!pressEl) return;
@@ -230,13 +223,10 @@ export default function Navbar() {
   const finalizeNav = (id) => {
     requestAnimationFrame(() => {
       ScrollTrigger.update();
-
       requestAnimationFrame(() => {
         ScrollTrigger.update();
-
         setActive(id === "top" ? null : id);
         navLock.current = false;
-
         ScrollTrigger.refresh(true);
 
         if (id === "human") {
@@ -258,7 +248,6 @@ export default function Navbar() {
 
     requestAnimationFrame(() => {
       const offset = getOffset(id);
-
       if (id === "top") {
         gsap.to(window, {
           scrollTo: 0,
@@ -273,10 +262,8 @@ export default function Navbar() {
 
       const st = ScrollTrigger.getById(getPinnedTriggerId(id));
       if (st) {
-        const y = st.start + offset;
-
         gsap.to(window, {
-          scrollTo: y,
+          scrollTo: st.start + offset,
           duration: 0.95,
           ease: "power2.out",
           overwrite: "auto",
@@ -293,10 +280,8 @@ export default function Navbar() {
         return;
       }
 
-      const y = anchor.getBoundingClientRect().top + window.scrollY + offset;
-
       gsap.to(window, {
-        scrollTo: y,
+        scrollTo: anchor.getBoundingClientRect().top + window.scrollY + offset,
         duration: 0.95,
         ease: "power2.out",
         overwrite: "auto",
@@ -343,17 +328,14 @@ export default function Navbar() {
                   </span>
                 </a>
 
-                <div
-                  className="navSubmenu"
-                  role="menu"
-                  aria-label="Talks submenu"
-                >
+                <div className="navSubmenu" role="menu" aria-label="Talks submenu">
                   {l.children.map((child) => (
                     <a
                       key={child.id}
                       href={child.href}
                       role="menuitem"
                       className="navSubLink"
+                      onClick={(e) => onNav(e, child.id)}
                     >
                       {child.label}
                     </a>
@@ -362,6 +344,22 @@ export default function Navbar() {
               </div>
             );
           })}
+
+          <div className="navSocialDock" aria-label="Social links">
+            {SOCIAL_LINKS.map(({ id, href, icon, label }) => (
+              <a
+                key={id}
+                href={href}
+                className="navSocialIcon"
+                target="_blank"
+                rel="noreferrer"
+                aria-label={label}
+                title={label}
+              >
+                {React.createElement(icon, { "aria-hidden": "true" })}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
     </div>
