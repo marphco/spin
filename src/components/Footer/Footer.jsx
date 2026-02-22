@@ -208,11 +208,6 @@ export default function Footer({
                   aria-label="X"
                   target="_blank"
                   rel="noreferrer"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    window.open(xHref, "_blank", "noopener,noreferrer");
-                  }}
                 >
                   <FaXTwitter />
                 </a>

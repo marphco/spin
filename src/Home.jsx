@@ -151,7 +151,7 @@ export default function Home() {
             id="top"
             src={heroImg}
             alt="Hero"
-            title={<>Hanno<br/>Tutti<br/>Ragione</>}
+            // title={<>Hanno<br/>Tutti<br/>Ragione</>}
             durationPx={900}
           />
 
@@ -181,7 +181,7 @@ export default function Home() {
 
           <Human
             id="human"
-            kicker="HUMAN DATA"
+            kicker="HUMAN"
             title="Trasformare l’ascolto in direzione"
             paragraphs={[
               "Human è la piattaforma di web e social listening di Spin Factor, sviluppata con Osservatorio Social. Analizza conversazioni, trend e performance, misura sentiment e reputazione e restituisce insight chiari e utilizzabili.",
@@ -193,8 +193,7 @@ export default function Home() {
           <Press id="press" items={PRESS_ITEMS} />
 
           <Footer
-            facebookHref="#"
-            xHref="#"
+            xHref="https://x.com/SpinFactorIT"
             privacyHref="/privacy-policy"
             cookieHref="/cookie-policy"
           />

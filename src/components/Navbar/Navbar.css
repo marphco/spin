@@ -229,13 +229,13 @@
 
   .mobileNavPanel{
     width: min(84vw, 360px);
-    max-height: 54svh;
+    max-height: min(72svh, 640px);
     border-radius: 26px;
     padding: 18px 16px;
     border: 1px solid var(--glass-border);
     background: color-mix(in srgb, var(--glass-bg) 95%, rgba(11,18,32,0.1));
     box-shadow: var(--shadow-float), inset 0 1px 0 var(--glass-highlight);
-    overflow-y: auto;
+    overflow: hidden;
     transform: translateY(16px) scale(0.985);
     transition: transform 250ms cubic-bezier(.2,.75,.2,1);
   }
@@ -339,11 +339,16 @@
   }
 
   .mobileNavOverlay.isOnLight .mobileNavLink,
-  .mobileNavOverlay.isOnLight .mobileTalksLink,
-  .mobileNavOverlay.isOnLight .mobileNavSocialIcon{
+  .mobileNavOverlay.isOnLight .mobileTalksLink{
     color: rgba(0,0,0,0.78);
-    border-color: rgba(0,0,0,0.12);
-    background: rgba(255,255,255,0.65);
+    border-color: transparent;
+    background: transparent;
+  }
+
+  .mobileNavOverlay.isOnLight .mobileNavSocialIcon{
+    color: rgba(0,0,0,0.72);
+    border-color: rgba(0,0,0,0.16);
+    background: rgba(255,255,255,0.55);
   }
 
   .mobileNavOverlay.isOnLight .mobileNavLink.isActive{
