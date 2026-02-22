@@ -65,6 +65,7 @@ export default function Human({
 
     const ctx = gsap.context(() => {
       ScrollTrigger.getById(`human-${id}`)?.kill(true);
+      ScrollTrigger.getById(`human-img-reveal-${id}`)?.kill(true);
 
       const track = root.querySelector("[data-htrack]");
 
@@ -93,11 +94,11 @@ export default function Human({
       // INITIAL STATE
       // -------------------------
       gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], {
-        autoAlpha: 0,
-        y: 10,
+        autoAlpha: 1,
+        y: 0,
       });
-      gsap.set(titleTargets, { autoAlpha: 0, y: 10 });
-      gsap.set(bodyTargets, { autoAlpha: 0, y: 6 });
+      gsap.set(titleTargets, { autoAlpha: 1, y: 0 });
+      gsap.set(bodyTargets, { autoAlpha: 1, y: 0 });
 
       // logo (no rotate: è un logo)
       gsap.set(imgWrap, { autoAlpha: 0, y: 14, scale: 0.985 });
@@ -106,8 +107,8 @@ export default function Human({
       gsap.set(track, { x: 0 });
 
       gsap.set(servicesPanel, { autoAlpha: 1 });
-      gsap.set(servicesWrap, { autoAlpha: 0 });
-      gsap.set(serviceItems, { autoAlpha: 0, y: 18 });
+      gsap.set(servicesWrap, { autoAlpha: 1 });
+      gsap.set(serviceItems, { autoAlpha: 1, y: 0 });
 
       // -------------------------
       // DURATIONS (coerenti con Facciamo fix)
@@ -124,14 +125,15 @@ export default function Human({
         Math.max(950, Math.min(2500, charsCount * 3.4)) * mobileBoost,
       );
 
-      let textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
+      const textPxFinal = typeof textPx === "number" ? textPx : textPxAuto;
+      void textPxFinal;
 
-      // accorcia il “tratto morto” solo mobile (come Facciamo)
-      if (isMobile) textPxFinal = Math.round(textPxFinal * 0.72);
+      // tratto intro quasi nullo: evita scroll a vuoto prima dei servizi
+      const introHoldPx = isMobile ? 18 : 24;
 
-      const horizPx = Math.round(Math.max(520, window.innerWidth * 0.75));
-      const servicesPx = Math.round(Math.max(720, window.innerHeight * 1.05));
-      const totalPx = textPxFinal + horizPx + servicesPx;
+      const horizPx = Math.round(Math.max(300, window.innerWidth * 0.5));
+      const servicesPx = 6;
+      const totalPx = introHoldPx + horizPx + servicesPx;
 
       const tl = gsap.timeline({ defaults: { ease: "none" } });
 
@@ -140,7 +142,7 @@ export default function Human({
         trigger: root,
         start: "top top",
         end: () => `+=${totalPx}`,
-        scrub: isMobile ? 0.6 : true,
+        scrub: isMobile ? 0.7 : true,
         pin: true,
         pinSpacing: true,
         anticipatePin: isMobile ? 2 : 1,
@@ -151,114 +153,42 @@ export default function Human({
       // -------------------------
       // A) TEXT SEGMENTS
       // -------------------------
-      const pad = 12;
-      const frame = Math.round(textPxFinal * 0.12);
-      const wrap = Math.round(textPxFinal * 0.06);
-      const titleSeg = Math.round(textPxFinal * 0.22);
 
-      const t_frameStart = pad;
-      const t_frameEnd = t_frameStart + frame;
-
-      const t_titleWrapStart = t_frameEnd;
-      const t_titleWrapEnd = t_titleWrapStart + wrap;
-
-      const t_titleStart = t_titleWrapEnd;
-      const t_titleEnd = t_titleStart + titleSeg;
-
-      const t_bodyWrapStart = t_titleEnd;
-      const t_bodyWrapEnd = t_bodyWrapStart + wrap;
-
-      const bodySeg = Math.max(1, textPxFinal - t_bodyWrapEnd);
-      const t_bodyStart = t_bodyWrapEnd;
-
-      const staggerEachFit = (segmentDur, n) => {
-        if (n <= 1) return 0;
-        const perCharDur = 1;
-        return Math.max(0, (segmentDur - perCharDur) / (n - 1));
-      };
-
-      tl.to(
-        [kickerEl, underlineEl],
-        { autoAlpha: 1, y: 0, duration: frame },
-        t_frameStart,
-      );
-
-      tl.to(
-        titleWrap,
-        { autoAlpha: 1, y: 0, duration: wrap },
-        t_titleWrapStart,
-      );
-
-      // logo entra PRIMA e in sync
-      if (!prefersReduced) {
-        const imgDur = Math.max(120, Math.round(titleSeg * 0.55));
-        const imgAt = Math.max(
-          t_titleWrapStart + Math.round(wrap * 0.55),
-          t_titleStart - Math.round(titleSeg * 0.25),
-        );
-
-        tl.to(imgWrap, { autoAlpha: 1, y: 0, scale: 1, duration: imgDur }, imgAt);
-        tl.to(img, { scale: 1, duration: Math.round(imgDur * 0.9) }, imgAt + 10);
-      } else {
-        tl.to(imgWrap, { autoAlpha: 1, y: 0, scale: 1, duration: 1 }, t_titleWrapStart);
-        tl.to(img, { scale: 1, duration: 1 }, t_titleWrapStart);
-      }
-
-      tl.to(
-        titleTargets,
-        isMobile
-          ? { autoAlpha: 1, y: 0, duration: titleSeg }
-          : {
-              autoAlpha: 1,
-              y: 0,
-              duration: 1,
-              stagger: {
-                each: staggerEachFit(titleSeg, titleEls.length),
-                from: "start",
-              },
-            },
-        t_titleStart,
-      );
-
-      tl.to(bodyWrap, { autoAlpha: 1, y: 0, duration: wrap }, t_bodyWrapStart);
-
-      tl.to(
-        bodyTargets,
-        isMobile
-          ? { autoAlpha: 1, y: 0, duration: bodySeg }
-          : {
-              autoAlpha: 1,
-              y: 0,
-              duration: 1,
-              stagger: {
-                each: staggerEachFit(bodySeg, bodyEls.length),
-                from: "start",
-              },
-            },
-        t_bodyStart,
-      );
+      // reveal: il logo arriva a opacità 1 quando la sezione occupa tutta la viewport
+      gsap.timeline({
+        scrollTrigger: {
+          id: `human-img-reveal-${id}`,
+          trigger: root,
+          start: "top bottom",
+          end: "top top",
+          scrub: true,
+          invalidateOnRefresh: true,
+        },
+      })
+        .to(
+          imgWrap,
+          {
+            autoAlpha: 1,
+            y: 0,
+            scale: 1,
+            ease: "none",
+          },
+          0,
+        )
+        .to(img, { scale: 1, ease: "none" }, 0);
 
       // -------------------------
       // B) HORIZONTAL intro -> services
       // -------------------------
-      const hStart = textPxFinal + 1;
+      const hStart = introHoldPx;
       tl.to(track, { x: () => -window.innerWidth, duration: horizPx }, hStart);
 
       // -------------------------
       // C) SERVICES reveal
       // -------------------------
-      const sStart = hStart + horizPx + 1;
+      const sStart = hStart + horizPx;
 
-      tl.to(servicesWrap, { autoAlpha: 1, duration: 120 }, sStart);
-
-      const step = Math.round(servicesPx / (serviceItems.length + 1));
-      serviceItems.forEach((el, i) => {
-        tl.to(
-          el,
-          { autoAlpha: 1, y: 0, duration: Math.round(step * 0.7) },
-          sStart + 80 + step * i,
-        );
-      });
+      tl.to(servicesWrap, { autoAlpha: 1, duration: 1 }, sStart);
 
       // -------------------------
       // FLOATING + HOVER/TAP (come Siamo)
@@ -390,7 +320,11 @@ export default function Human({
                   })}
                 </h2>
 
-                <div className="humUnderline" data-hunderline aria-hidden="true" />
+                <div
+                  className="humUnderline"
+                  data-hunderline
+                  aria-hidden="true"
+                />
 
                 <div className="humBody" data-hbodywrap aria-label={bodyText}>
                   {bodyTokens.map((tok, idx) => {

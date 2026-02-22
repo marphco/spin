@@ -73,7 +73,7 @@ export default function Siamo({
     const isTouch = window.matchMedia("(hover: none)").matches;
 
     const ctx = gsap.context(() => {
-      ScrollTrigger.getById(`siamo-${id}`)?.kill(true);
+      ScrollTrigger.getById(`siamo-img-reveal-${id}`)?.kill(true);
 
       const kickerEl = root.querySelector("[data-kicker]");
       const underlineEl = root.querySelector("[data-underline]");
@@ -86,91 +86,43 @@ export default function Siamo({
       const titleTargets = reduceChars ? [titleWrap] : titleEls;
       const bodyTargets = reduceChars ? [bodyWrap] : bodyEls;
 
-      // stato iniziale testo
+      // testo statico: tutto visibile subito
       gsap.set([kickerEl, underlineEl, titleWrap, bodyWrap], {
-        autoAlpha: 0,
-        y: 10,
+        autoAlpha: 1,
+        y: 0,
       });
-      gsap.set(titleTargets, { autoAlpha: 0, y: 10 });
-      gsap.set(bodyTargets, { autoAlpha: 0, y: 6 });
+      gsap.set(titleTargets, { autoAlpha: 1, y: 0 });
+      gsap.set(bodyTargets, { autoAlpha: 1, y: 0 });
 
       // ✅ stato iniziale immagine (reveal in sync)
       gsap.set(imgWrap, { autoAlpha: 0, y: 14, rotate: -0.4, scale: 0.98 });
       gsap.set(img, { scale: 1.04 });
 
-      const tl = gsap.timeline({
+      // reveal: l'immagine arriva a opacità 1 quando la sezione occupa tutta la viewport
+      gsap.timeline({
         scrollTrigger: {
-          id: `siamo-${id}`,
+          id: `siamo-img-reveal-${id}`,
           trigger: root,
-          start: "top top",
-          end: `+=${durationPx}`,
+          start: "top bottom",
+          end: "top top",
           scrub: true,
-          pin: true,
-          pinSpacing: true,
-          anticipatePin: 1,
           invalidateOnRefresh: true,
         },
-      });
+      })
+        .to(
+          imgWrap,
+          {
+            autoAlpha: 1,
+            y: 0,
+            rotate: 0,
+            scale: 1,
+            ease: "none",
+          },
+          0,
+        )
+        .to(img, { scale: 1, ease: "none" }, 0);
 
-      tl.to(
-        [kickerEl, underlineEl],
-        { autoAlpha: 1, y: 0, ease: "none", duration: 0.12 },
-        0.02,
-      );
-      tl.to(
-        titleWrap,
-        { autoAlpha: 1, y: 0, ease: "none", duration: 0.06 },
-        0.06,
-      );
-
-      tl.to(
-        titleTargets,
-        reduceChars
-          ? { autoAlpha: 1, y: 0, ease: "none", duration: 0.22 }
-          : {
-              autoAlpha: 1,
-              y: 0,
-              ease: "none",
-              duration: 0.22,
-              stagger: { amount: 0.22, from: "start" },
-            },
-        0.08,
-      );
-
-      // ✅ reveal immagine: subito dopo title/underline, prima del body
-      tl.to(
-        imgWrap,
-        {
-          autoAlpha: 1,
-          y: 0,
-          rotate: 0,
-          scale: 1,
-          ease: "none",
-          duration: 0.18,
-        },
-        0.16,
-      );
-      tl.to(img, { scale: 1, ease: "none", duration: 0.22 }, 0.18);
-
-      tl.to(
-        bodyWrap,
-        { autoAlpha: 1, y: 0, ease: "none", duration: 0.06 },
-        0.22,
-      );
-
-      tl.to(
-        bodyTargets,
-        reduceChars
-          ? { autoAlpha: 1, y: 0, ease: "none", duration: 0.45 }
-          : {
-              autoAlpha: 1,
-              y: 0,
-              ease: "none",
-              duration: 0.78,
-              stagger: { amount: 0.85, from: "start" },
-            },
-        0.24,
-      );
+      // testo già visibile: nessun reveal legato allo scroll
 
       // -------------------------
       // ✅ FLOATING LOOP premium (anche mobile)
@@ -337,4 +289,3 @@ export default function Siamo({
     </section>
   );
 }
-

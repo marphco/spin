@@ -151,7 +151,7 @@ export default function Home() {
             id="top"
             src={heroImg}
             alt="Hero"
-            title={<>Hanno<br/>Tutti<br/>Ragione</>}
+            // title={<>Hanno<br/>Tutti<br/>Ragione</>}
             durationPx={900}
           />
 
@@ -193,8 +193,7 @@ export default function Home() {
           <Press id="press" items={PRESS_ITEMS} />
 
           <Footer
-            facebookHref="#"
-            xHref="#"
+            xHref="https://x.com/SpinFactorIT"
             privacyHref="/privacy-policy"
             cookieHref="/cookie-policy"
           />
